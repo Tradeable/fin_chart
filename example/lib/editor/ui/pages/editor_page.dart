@@ -716,12 +716,29 @@ class _EditorPageState extends State<EditorPage> {
       }
     }
 
+    // Quick options for MCQ
+    final List<String> quickOptions = [
+      'True',
+      'False',
+      'Yes',
+      'No',
+      'Up',
+      'Down',
+      'Correct',
+      'Incorrect',
+      'All of the above',
+      'None of the above'
+    ];
+
     return showDialog<AddMcqTask>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            // Current selected option for quick option insertion
+            int selectedOptionIndex = 0;
+
             return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -840,6 +857,63 @@ class _EditorPageState extends State<EditorPage> {
                                     decoration: InputDecoration(
                                       hintText: 'Option ${index + 1}',
                                       border: const OutlineInputBorder(),
+                                      // Add a small button to select this field for quick options
+                                      suffixIcon: IconButton(
+                                        icon: const Icon(
+                                            Icons.add_circle_outline),
+                                        tooltip: 'Apply quick option',
+                                        onPressed: () {
+                                          // Set the selected index for quick options
+                                          selectedOptionIndex = index;
+                                          // Show bottom sheet with quick options
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.all(16),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Quick Options for Option ${index + 1}',
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .titleMedium,
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    Wrap(
+                                                      spacing: 8,
+                                                      runSpacing: 8,
+                                                      children: quickOptions
+                                                          .map((option) {
+                                                        return ActionChip(
+                                                          label: Text(option),
+                                                          onPressed: () {
+                                                            // Apply the selected quick option
+                                                            setState(() {
+                                                              options[selectedOptionIndex] =
+                                                                  option;
+                                                              optionController
+                                                                      .text =
+                                                                  option;
+                                                            });
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                        );
+                                                      }).toList(),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
                                     onChanged: (value) {
                                       options[index] = value;
@@ -863,6 +937,50 @@ class _EditorPageState extends State<EditorPage> {
                           );
                         },
                       ),
+                    ),
+
+                    // Quick options section
+                    const SizedBox(height: 16),
+                    Text(
+                      'Quick Options:',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        // True/False preset
+                        ActionChip(
+                          label: const Text('Add True/False'),
+                          onPressed: () {
+                            setState(() {
+                              options = ['True', 'False'];
+                              selectedOptions = [false, false];
+                            });
+                          },
+                        ),
+                        // Yes/No preset
+                        ActionChip(
+                          label: const Text('Add Yes/No'),
+                          onPressed: () {
+                            setState(() {
+                              options = ['Yes', 'No'];
+                              selectedOptions = [false, false];
+                            });
+                          },
+                        ),
+                        // Up/Down preset
+                        ActionChip(
+                          label: const Text('Add Up/Down'),
+                          onPressed: () {
+                            setState(() {
+                              options = ['Up', 'Down'];
+                              selectedOptions = [false, false];
+                            });
+                          },
+                        ),
+                      ],
                     ),
 
                     // Add option button

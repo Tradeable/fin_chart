@@ -19,20 +19,21 @@ class ChartPainter extends CustomPainter {
   final Layer? selectedLayer;
   final double? animationValue;
 
-  ChartPainter(
-      {super.repaint,
-      required this.leftPos,
-      required this.topPos,
-      required this.rightPos,
-      required this.bottomPos,
-      required this.xStepWidth,
-      required this.xOffset,
-      required this.xAxisSettings,
-      required this.regions,
-      required this.dataLength,
-      required this.data,
-      this.selectedLayer,
-      this.animationValue});
+  ChartPainter({
+    super.repaint,
+    required this.leftPos,
+    required this.topPos,
+    required this.rightPos,
+    required this.bottomPos,
+    required this.xStepWidth,
+    required this.xOffset,
+    required this.xAxisSettings,
+    required this.regions,
+    required this.dataLength,
+    required this.data,
+    this.selectedLayer,
+    this.animationValue,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -86,6 +87,7 @@ class ChartPainter extends CustomPainter {
     }
     // selectedLayer?.onAimationUpdate(
     //     canvas: canvas, animationValue: animationValue ?? 1);
+    // drawFundamentalEvents(canvas);
   }
 
   @override

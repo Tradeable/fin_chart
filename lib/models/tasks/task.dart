@@ -2,6 +2,7 @@ import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
+import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
@@ -52,6 +53,8 @@ abstract class Task {
         return AddIndicatorTask.fromJson(json);
       case 'waitTask':
         return WaitTask.fromJson(json);
+      case 'addMcq':
+        return AddMcqTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

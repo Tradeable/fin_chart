@@ -3,6 +3,7 @@ enum TaskType {
   addIndicator,
   addLayer,
   addPrompt,
+  addMcq,
   // addLayerOfType,
   waitTask
 }

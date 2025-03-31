@@ -4,7 +4,6 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
-import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/task.dart';
@@ -51,7 +50,7 @@ class _ChartDemoState extends State<ChartDemo> {
         _chartKey.currentState
             ?.addDataWithAnimation(
                 recipe.data.sublist(task.fromPoint, task.tillPoint),
-                const Duration(milliseconds: 50))
+                const Duration(milliseconds: 10))
             .then((value) {
           if (value) {
             onTaskFinish();
@@ -76,6 +75,9 @@ class _ChartDemoState extends State<ChartDemo> {
         onTaskFinish();
         break;
       case TaskType.waitTask:
+        setState(() {});
+        break;
+      case TaskType.addMcq:
         setState(() {});
         break;
     }
@@ -124,18 +126,48 @@ class _ChartDemoState extends State<ChartDemo> {
                   // xAxisSettings: const XAxisSettings(xAxisPos: XAxisPos.bottom),
                   // candles: const [],
                   onInteraction: (p0, p1) {})),
-          Flexible(
-            flex: 1,
-            child: currentTask.actionType == ActionType.interupt
-                ? ElevatedButton(
-                    onPressed: () {
-                      onTaskFinish();
-                    },
-                    child: Text((currentTask as WaitTask).btnText))
-                : Container(),
-          )
+          Flexible(flex: 1, child: userActionContainer()
+
+              // currentTask.actionType == ActionType.interupt
+              //     ? ElevatedButton(
+              //         onPressed: () {
+              //           onTaskFinish();
+              //         },
+              //         child: Text((currentTask as WaitTask).btnText))
+              //     : Container(),
+              )
         ],
       )),
     );
+  }
+
+  Widget userActionContainer() {
+    switch (currentTask.taskType) {
+      case TaskType.addData:
+      case TaskType.addIndicator:
+      case TaskType.addLayer:
+      case TaskType.addPrompt:
+        return Container();
+      case TaskType.addMcq:
+        Task task = currentTask as AddMcqTask;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ...(task as AddMcqTask).options.map((e) {
+              return ElevatedButton(
+                  onPressed: () {
+                    onTaskFinish();
+                  },
+                  child: Text(e));
+            })
+          ],
+        );
+      case TaskType.waitTask:
+        return ElevatedButton(
+            onPressed: () {
+              onTaskFinish();
+            },
+            child: Text((currentTask as WaitTask).btnText));
+    }
   }
 }

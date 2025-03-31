@@ -286,18 +286,21 @@ class MainPlotRegion extends PlotRegion {
   }
 
   int _findCandleIndexForDate(DateTime date) {
-    // Find the closest candle to the event date
+    // Find the closest candle to the event date and time
+    int closestIndex = -1;
+    Duration smallestDifference = const Duration(days: 99999);
+
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
-      if (isSameDay(candle.date, date)) {
-        return i;
+      final difference = date.difference(candle.date).abs();
+
+      if (difference < smallestDifference) {
+        smallestDifference = difference;
+        closestIndex = i;
       }
     }
-    return -1;
-  }
 
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+    return closestIndex;
   }
 
   void _drawEventTooltip(Canvas canvas, FundamentalEvent event) {

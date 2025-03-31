@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:fin_chart/models/enums/candle_state.dart';
+import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
@@ -9,14 +10,18 @@ import 'package:fin_chart/utils/calculations.dart';
 import 'package:fin_chart/utils/constants.dart';
 import 'package:flutter/material.dart';
 
+
 class MainPlotRegion extends PlotRegion {
   final List<ICandle> candles;
   final List<Indicator> indicators = [];
+  final List<FundamentalEvent> fundamentalEvents;
+  FundamentalEvent? selectedEvent;
 
   MainPlotRegion({
     String? id,
     required this.candles,
     required super.yAxisSettings,
+    this.fundamentalEvents = const [],
     super.yMinValue,
     super.yMaxValue,
   }) : super(id: id ?? generateV4()) {
@@ -145,6 +150,7 @@ class MainPlotRegion extends PlotRegion {
     for (Indicator indicator in indicators) {
       indicator.drawIndicator(canvas: canvas);
     }
+    drawFundamentalEvents(canvas);
   }
 
   @override
@@ -216,5 +222,102 @@ class MainPlotRegion extends PlotRegion {
                 onDelete: onDelete))
           ],
         ));
+  }
+
+  
+  void drawFundamentalEvents(Canvas canvas) {
+    if (fundamentalEvents.isEmpty) return;
+
+    // Loop through events
+    for (final event in fundamentalEvents) {
+      // Find the index of the candle closest to event date
+      int index = _findCandleIndexForDate(event.date);
+
+      // Skip events that don't have a corresponding candle or fall outside visible range
+      if (index < 0) continue;
+
+      // Calculate x position
+      final xPos = leftPos + xOffset + xStepWidth / 2 + index * xStepWidth;
+
+      // Skip if outside visible area
+      if (xPos < leftPos || xPos > rightPos) continue;
+      final yPos = bottomPos - 20; // Position below x-axis
+
+      // Set position for later tooltip reference
+      event.position = Offset(xPos, yPos);
+
+      // Draw event icon with larger size for visibility
+      final paint = Paint()
+        ..color = event.color
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(event.position!, 12, paint); // Increased size
+
+      // Draw event text with white background for contrast
+      final textSpan = TextSpan(
+        text: event.iconText,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 15, // Increased size
+          fontWeight: FontWeight.bold,
+        ),
+      );
+
+      final textPainter = TextPainter(
+        text: textSpan,
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      textPainter.paint(
+        canvas,
+        Offset(
+          event.position!.dx - textPainter.width / 2,
+          event.position!.dy - textPainter.height / 2,
+        ),
+      );
+
+      // If selected, draw tooltip and vertical line
+      if (event.isSelected) {
+        event.topPos = topPos; // Add this line
+        event.bottomPos = bottomPos; // Add this line
+        _drawEventTooltip(canvas, event);
+      }
+    }
+  }
+
+  int _findCandleIndexForDate(DateTime date) {
+    // Find the closest candle to the event date
+    for (int i = 0; i < candles.length; i++) {
+      final candle = candles[i];
+      if (isSameDay(candle.date, date)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  bool isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  void _drawEventTooltip(Canvas canvas, FundamentalEvent event) {
+    event.drawTooltip(canvas);
+  }
+
+  void handleEventTap(Offset tapPosition) {
+    selectedEvent = null;
+    for (var event in fundamentalEvents) {
+      if (event.position != null &&
+          (event.position! - tapPosition).distance < 20) {
+        event.isSelected = true;
+        selectedEvent = event;
+      } else {
+        event.isSelected = false;
+      }
+    }
+  }
+
+  void updateFundamentalEvents(List<FundamentalEvent> newEvents) {
+    fundamentalEvents.addAll(newEvents);
   }
 }

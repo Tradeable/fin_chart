@@ -234,7 +234,7 @@ class BollingerBands extends Indicator {
       type: IndicatorType.bollingerBand,
       displayMode: DisplayMode.main,
       period: json['period'] ?? 20,
-      multiplier: json['multiplier'] ?? 2.0,
+      multiplier: json['multiplier'].toDouble() ?? 2.0,
       upperBandColor: json['upperBandColor'] != null
           ? colorFromJson(json['upperBandColor'])
           : Colors.red,
@@ -244,7 +244,7 @@ class BollingerBands extends Indicator {
       lowerBandColor: json['lowerBandColor'] != null
           ? colorFromJson(json['lowerBandColor'])
           : Colors.green,
-      alpha: json['alpha'] ?? 0.2,
+      alpha: json['alpha'] ?? 51,
     );
   }
 }

@@ -31,7 +31,7 @@ class Label extends Layer {
       label: json['label'] ?? '',
       textStyle: TextStyle(
           color: colorFromJson(json['textColor']),
-          fontSize: json['fontSize'] ?? 16.0,
+          fontSize: json['fontSize'].toDouble() ?? 16.0,
           fontWeight: fontWeightFromJson(json[
               'fontWeight']) //json['fontWeight'] == 'bold' ? FontWeight.bold : FontWeight.normal,
           ),

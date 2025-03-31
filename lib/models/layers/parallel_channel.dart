@@ -58,9 +58,9 @@ class ParallelChannel extends Layer {
         bottomLeft: offsetFromJson(json['bottomLeft']),
         bottomRight: offsetFromJson(json['bottomRight']),
         color: colorFromJson(json['color']),
-        strokeWidth: json['strokeWidth'] ?? 2.0,
+        strokeWidth: json['strokeWidth'].toDouble() ?? 2.0,
         channelAlpha: json['channelAlpha'] ?? 51,
-        endPointRadius: json['endPointRadius'] ?? 5.0,
+        endPointRadius: json['endPointRadius'].toDouble() ?? 5.0,
         isLocked: json['isLocked'] ?? false);
   }
 

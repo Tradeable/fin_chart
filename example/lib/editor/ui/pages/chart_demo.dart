@@ -51,7 +51,7 @@ class _ChartDemoState extends State<ChartDemo> {
         _chartKey.currentState
             ?.addDataWithAnimation(
                 recipe.data.sublist(task.fromPoint, task.tillPoint),
-                const Duration(milliseconds: 50))
+                const Duration(milliseconds: 10))
             .then((value) {
           if (value) {
             onTaskFinish();
@@ -79,8 +79,8 @@ class _ChartDemoState extends State<ChartDemo> {
         setState(() {});
         break;
       case TaskType.addMcq:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        setState(() {});
+        break;
     }
     // if (currentTask.actionType == ActionType.empty) {
     //   onTaskFinish();
@@ -127,16 +127,16 @@ class _ChartDemoState extends State<ChartDemo> {
                   // xAxisSettings: const XAxisSettings(xAxisPos: XAxisPos.bottom),
                   // candles: const [],
                   onInteraction: (p0, p1) {})),
-          Flexible(
-            flex: 1,
-            child: currentTask.actionType == ActionType.interupt
-                ? ElevatedButton(
-                    onPressed: () {
-                      onTaskFinish();
-                    },
-                    child: Text((currentTask as WaitTask).btnText))
-                : Container(),
-          )
+          Flexible(flex: 1, child: userActionContainer()
+
+              // currentTask.actionType == ActionType.interupt
+              //     ? ElevatedButton(
+              //         onPressed: () {
+              //           onTaskFinish();
+              //         },
+              //         child: Text((currentTask as WaitTask).btnText))
+              //     : Container(),
+              )
         ],
       )),
     );
@@ -151,7 +151,18 @@ class _ChartDemoState extends State<ChartDemo> {
         return Container();
       case TaskType.addMcq:
         Task task = currentTask as AddMcqTask;
-        return Container();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ...(task as AddMcqTask).options.map((e) {
+              return ElevatedButton(
+                  onPressed: () {
+                    onTaskFinish();
+                  },
+                  child: Text(e));
+            })
+          ],
+        );
       case TaskType.waitTask:
         return ElevatedButton(
             onPressed: () {

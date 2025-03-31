@@ -1,8 +1,19 @@
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
+import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
 
-enum IndicatorType { rsi, macd, sma, ema, bollingerBand, stochastic, mfi, adx, atr}
+enum IndicatorType {
+  rsi,
+  macd,
+  sma,
+  ema,
+  bollingerBand,
+  stochastic,
+  mfi,
+  adx,
+  atr
+}
 
 enum DisplayMode { main, panel }
 
@@ -13,11 +24,27 @@ abstract class Indicator with RegionProp {
   late List<double> yValues;
   late Size yLabelSize;
 
-  Indicator({required this.id, required this.type, required this.displayMode});
+  Indicator(
+      {required this.id,
+      required this.type,
+      required this.displayMode,
+      double yMinValue = 0,
+      double yMaxValue = 1}) {
+    this.yMinValue = yMinValue;
+    this.yMaxValue = yMaxValue;
+    yValues = generateNiceAxisValues(yMinValue, yMaxValue);
+    this.yMinValue = yValues.first;
+    this.yMaxValue = yValues.last;
+  }
+
+  calculateYValueRange(List<ICandle> data) {}
 
   updateData(List<ICandle> data);
 
   drawIndicator({required Canvas canvas});
+
+  showIndicatorSettings(
+      {required BuildContext context, required Function(Indicator) onUpdate});
 
   Widget indicatorToolTip(
       {Widget? child,
@@ -72,9 +99,6 @@ abstract class Indicator with RegionProp {
                 ),
               ));
   }
-
-  showIndicatorSettings(
-      {required BuildContext context, required Function(Indicator) onUpdate}) {}
 
   factory Indicator.fromJson({required Map<String, dynamic> json}) {
     IndicatorType type = json['type'].toString().toIndicatorType()!;

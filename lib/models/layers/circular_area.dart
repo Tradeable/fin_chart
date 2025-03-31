@@ -28,7 +28,7 @@ class CircularArea extends Layer {
         type: (json['type'] as String).toLayerType() ?? LayerType.circularArea,
         isLocked: json['isLocked'] ?? false,
         point: offsetFromJson(json['point']),
-        radius: json['radius'] ?? 20.0,
+        radius: json['radius'].toDouble() ?? 20.0,
         color: colorFromJson(json['color']));
   }
 

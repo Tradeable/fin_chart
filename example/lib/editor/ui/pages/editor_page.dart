@@ -56,6 +56,7 @@ class _EditorPageState extends State<EditorPage> {
   final GlobalKey<ChartState> _chartKey = GlobalKey();
   List<ICandle> candleData = [];
   List<Task> tasks = [];
+  int insertPosition = -1;
 
   LayerType? _selectedLayerType;
   IndicatorType? _selectedIndicatorType;
@@ -213,28 +214,14 @@ class _EditorPageState extends State<EditorPage> {
                         //     const XAxisSettings(xAxisPos: XAxisPos.bottom),
                         onLayerSelect: _onLayerSelect,
                         onRegionSelect: _onRegionSelect,
-                        onIndicatorSelect: (indicator) {
-                          setState(() {
-                            if (_currentTaskType == TaskType.addIndicator) {
-                              tasks.add(AddIndicatorTask(indicator: indicator));
-                              _currentTaskType = null;
-                            }
-                          });
-                        },
+                        onIndicatorSelect: _onIndicatorSelect,
                         onInteraction: _onInteraction)
                     : Chart.from(
                         key: _chartKey,
                         recipe: recipe!,
                         onLayerSelect: _onLayerSelect,
                         onRegionSelect: _onRegionSelect,
-                        onIndicatorSelect: (indicator) {
-                          setState(() {
-                            if (_currentTaskType == TaskType.addIndicator) {
-                              tasks.add(AddIndicatorTask(indicator: indicator));
-                              _currentTaskType = null;
-                            }
-                          });
-                        },
+                        onIndicatorSelect: _onIndicatorSelect,
                         onInteraction: _onInteraction),
               )),
           Expanded(flex: 1, child: _buildToolBox()),
@@ -246,7 +233,9 @@ class _EditorPageState extends State<EditorPage> {
   _onLayerSelect(PlotRegion region, Layer layer) {
     if (_currentTaskType == TaskType.addLayer) {
       setState(() {
-        tasks.add(AddLayerTask(regionId: region.id, layer: layer));
+        //tasks.add(AddLayerTask(regionId: region.id, layer: layer));
+        tasks.insert(
+            insertPosition, AddLayerTask(regionId: region.id, layer: layer));
         _currentTaskType = null;
       });
     }
@@ -254,6 +243,16 @@ class _EditorPageState extends State<EditorPage> {
 
   _onRegionSelect(PlotRegion region) {
     selectedRegion = region;
+  }
+
+  _onIndicatorSelect(Indicator indicator) {
+    setState(() {
+      if (_currentTaskType == TaskType.addIndicator) {
+        //tasks.add(AddIndicatorTask(indicator: indicator));
+        tasks.insert(insertPosition, AddIndicatorTask(indicator: indicator));
+        _currentTaskType = null;
+      }
+    });
   }
 
   _onInteraction(Offset tapDownPoint, Offset updatedPoint) {
@@ -389,7 +388,7 @@ class _EditorPageState extends State<EditorPage> {
     );
   }
 
-  _onTaskAdd(TaskType taskType) {
+  _onTaskAdd(TaskType taskType, int pos) {
     setState(() {
       switch (taskType) {
         case TaskType.addIndicator:
@@ -408,6 +407,11 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.waitTask:
           waitTaskPrompt();
           break;
+      }
+      if (pos >= 0 && pos <= tasks.length) {
+        insertPosition = pos;
+      } else {
+        insertPosition = tasks.length;
       }
     });
   }
@@ -441,16 +445,24 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   _onTaskReorder(int oldIndex, int newIndex) {
+    // setState(() {
+    //   if (oldIndex < newIndex) {
+    //     newIndex -= 1;
+    //   }
+
+    //   if (newIndex >= tasks.length) {
+    //     return;
+    //   }
+
+    //   final Task item = tasks.removeAt(oldIndex);
+    //   tasks.insert(newIndex, item);
+    // });
+
     setState(() {
       if (oldIndex < newIndex) {
         newIndex -= 1;
       }
-
-      if (newIndex >= tasks.length) {
-        return;
-      }
-
-      final Task item = tasks.removeAt(oldIndex);
+      final item = tasks.removeAt(oldIndex);
       tasks.insert(newIndex, item);
     });
   }
@@ -459,7 +471,8 @@ class _EditorPageState extends State<EditorPage> {
     await showPromptDialog(context: context).then((data) {
       setState(() {
         if (data != null) {
-          tasks.add(data);
+          //tasks.add(data);
+          tasks.insert(insertPosition, data);
         }
         _currentTaskType = null;
       });
@@ -483,7 +496,8 @@ class _EditorPageState extends State<EditorPage> {
     await showWaitTaskDialog(context: context).then((data) {
       setState(() {
         if (data != null) {
-          tasks.add(data);
+          //tasks.add(data);
+          tasks.insert(insertPosition, data);
         }
         _currentTaskType = null;
       });

@@ -1,4 +1,5 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/enums/candle_state.dart';
 import 'package:flutter/material.dart';
 
 class AddDataDialog extends StatelessWidget {
@@ -30,7 +31,10 @@ class AddDataDialog extends StatelessWidget {
               child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    onDataUpdate(iCandleData);
+                    onDataUpdate(iCandleData.map((candle) {
+                      candle.state = CandleState.natural;
+                      return candle;
+                    }).toList());
                   },
                   child: const Text("Submit")),
             )

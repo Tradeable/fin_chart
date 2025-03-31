@@ -4,7 +4,6 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
-import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/task.dart';

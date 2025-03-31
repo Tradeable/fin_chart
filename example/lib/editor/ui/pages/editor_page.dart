@@ -427,8 +427,8 @@ class _EditorPageState extends State<EditorPage> {
         editWaitTask(task as WaitTask);
         break;
       case TaskType.addMcq:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        editMcqPrompt(task as AddMcqTask);
+        break;
     }
   }
 
@@ -442,19 +442,6 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   _onTaskReorder(int oldIndex, int newIndex) {
-    // setState(() {
-    //   if (oldIndex < newIndex) {
-    //     newIndex -= 1;
-    //   }
-
-    //   if (newIndex >= tasks.length) {
-    //     return;
-    //   }
-
-    //   final Task item = tasks.removeAt(oldIndex);
-    //   tasks.insert(newIndex, item);
-    // });
-
     setState(() {
       if (oldIndex < newIndex) {
         newIndex -= 1;
@@ -518,6 +505,19 @@ class _EditorPageState extends State<EditorPage> {
           tasks.insert(insertPosition, data);
         }
         _currentTaskType = null;
+      });
+    });
+  }
+
+  void editMcqPrompt(AddMcqTask task) async {
+    await showMcqTaskDialog(context: context, initialTask: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.isMultiSelect = data.isMultiSelect;
+          task.arrangementType = data.arrangementType;
+          task.options = data.options;
+          task.correctOptionIndices = data.correctOptionIndices;
+        }
       });
     });
   }

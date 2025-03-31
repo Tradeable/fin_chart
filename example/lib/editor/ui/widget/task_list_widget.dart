@@ -227,7 +227,28 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           ],
         );
       case TaskType.addMcq:
-        return Text((task as AddMcqTask).arrangementType.name);
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (task as AddMcqTask).arrangementType.name,
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
     }
   }
 }

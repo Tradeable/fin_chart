@@ -171,7 +171,7 @@ class _EditorPageState extends State<EditorPage> {
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromTool(
-                pos: (task as AddDataTask).tillPoint.toDouble());
+                pos: (task as AddDataTask).tillPoint.toDouble() - 1);
             layer.isLocked = true;
             _chartKey.currentState?.addLayerAtRegion(
                 recipe.chartSettings.mainPlotRegionId, layer);

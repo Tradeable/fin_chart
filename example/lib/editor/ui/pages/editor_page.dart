@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'package:example/dialog/add_event_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
-
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
-
 import 'package:fin_chart/models/indicators/atr.dart';
 import 'package:fin_chart/models/indicators/mfi.dart';
 import 'package:fin_chart/models/indicators/adx.dart';
@@ -118,7 +116,7 @@ class _EditorPageState extends State<EditorPage> {
                       data: candleData,
                       chartSettings: _chartKey.currentState!.getChartSettings(),
                       tasks: tasks,
-                      fundamentalEvents: fundamentalEvents, 
+                      fundamentalEvents: fundamentalEvents,
                     ).toJson())),
                   ));
             },

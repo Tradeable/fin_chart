@@ -1,17 +1,19 @@
 import 'package:fin_chart/models/enums/event_type.dart';
+import 'package:fin_chart/models/fundamental/bonus_event.dart';
 import 'package:fin_chart/models/fundamental/dividend_event.dart';
 import 'package:fin_chart/models/fundamental/earnings_event.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
+import 'package:fin_chart/models/fundamental/news_event.dart';
 import 'package:fin_chart/models/fundamental/stock_split_event.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
 
 class AddEventDialog extends StatefulWidget {
   final Function(FundamentalEvent) onEventAdded;
-  final List<DateTime> validDates;
+  final DateTime? preSelectedDate;
 
   const AddEventDialog(
-      {super.key, required this.onEventAdded, required this.validDates});
+      {super.key, required this.onEventAdded, this.preSelectedDate});
 
   @override
   State<AddEventDialog> createState() => _AddEventDialogState();
@@ -22,6 +24,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _exDividendDate;
   DateTime? _paymentDate;
+  DateTime? _recordDate;
+  DateTime? _issueDate;
   
   // Earnings event controllers
   final TextEditingController _epsActualController = TextEditingController();
@@ -35,6 +39,11 @@ class _AddEventDialogState extends State<AddEventDialog> {
   
   // Stock split event controller
   final TextEditingController _ratioController = TextEditingController();
+
+  // News event controller
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
   
   DateTime _selectedDate = DateTime.now();
 
@@ -50,41 +59,12 @@ class _AddEventDialogState extends State<AddEventDialog> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _findClosestValidDate(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      selectableDayPredicate: (DateTime date) {
-        // Check if this date exists in validDates (comparing just the date part)
-        return widget.validDates.any((validDate) =>
-            date.year == validDate.year &&
-            date.month == validDate.month &&
-            date.day == validDate.day);
-      },
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
+  @override
+  void initState() {
+    super.initState();
+    if (widget.preSelectedDate != null) {
+      _selectedDate = widget.preSelectedDate!;
     }
-  }
-
-  // Helper method to find closest valid date to current selection
-  DateTime _findClosestValidDate() {
-    if (widget.validDates.isEmpty) return DateTime.now();
-
-    if (widget.validDates.any((date) =>
-        date.year == _selectedDate.year &&
-        date.month == _selectedDate.month &&
-        date.day == _selectedDate.day)) {
-      return _selectedDate;
-    }
-
-    // If current selection is invalid, use the most recent date
-    return widget.validDates.last;
   }
 
   Widget _buildEarningsForm() {
@@ -128,10 +108,6 @@ class _AddEventDialogState extends State<AddEventDialog> {
             return null;
           },
         ),
-        // TextFormField(
-        //   controller: _currencyController,
-        //   decoration: const InputDecoration(labelText: 'Currency'),
-        // ),
 
         // Ex-Dividend Date
         InkWell(
@@ -189,15 +165,115 @@ class _AddEventDialogState extends State<AddEventDialog> {
   }
 
   Widget _buildStockSplitForm() {
-    return TextFormField(
-      controller: _ratioController,
-      decoration: const InputDecoration(labelText: 'Ratio (e.g., 2:1)'),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter the stock split ratio';
-        }
-        return null;
-      },
+    return Column(
+      children: [
+        TextFormField(
+          controller: _ratioController,
+          decoration: const InputDecoration(labelText: 'Ratio (e.g., 2:1)'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter the stock split ratio';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewsForm() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _titleController,
+          decoration: const InputDecoration(labelText: 'Title'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter the title';
+            }
+            return null;
+          },
+        ),
+        TextFormField(
+          controller: _descriptionController,
+          decoration: const InputDecoration(labelText: 'More Details'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Description';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBonusForm() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _ratioController,
+          decoration: const InputDecoration(labelText: 'Ratio (e.g., 2:1)'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter the bonus ratio';
+            }
+            return null;
+          },
+        ),
+
+               // Ex-Dividend Date
+        InkWell(
+          onTap: () async {
+            final DateTime? picked = await showDatePicker(
+              context: context,
+              initialDate: _recordDate ?? _selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null) {
+              setState(() {
+                _recordDate = picked;
+              });
+            }
+          },
+          child: InputDecorator(
+            decoration:
+                const InputDecoration(labelText: 'Record Date (Optional)'),
+            child: Text(
+              _recordDate != null
+                  ? "${_recordDate!.toLocal()}".split(' ')[0]
+                  : "Not set",
+            ),
+          ),
+        ),
+
+        // Payment Date
+        InkWell(
+          onTap: () async {
+            final DateTime? picked = await showDatePicker(
+              context: context,
+              initialDate: _issueDate ?? _selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null) {
+              setState(() {
+                _issueDate = picked;
+              });
+            }
+          },
+          child: InputDecorator(
+            decoration:
+                const InputDecoration(labelText: 'Issue Date (Optional)'),
+            child: Text(
+              _issueDate != null
+                  ? "${_issueDate!.toLocal()}".split(' ')[0]
+                  : "Not set",
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -229,17 +305,14 @@ class _AddEventDialogState extends State<AddEventDialog> {
                   }
                 },
               ),
-              
-              InkWell(
-                onTap: () => _selectDate(context),
-                child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Date'),
-                  child: Text(
-                    "${_selectedDate.toLocal()}".split(' ')[0],
-                  ),
+
+              InputDecorator(
+                decoration: const InputDecoration(labelText: 'Date'),
+                child: Text(
+                  _formatDate(_selectedDate),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
               
               // Show different form fields based on selected event type
@@ -248,7 +321,11 @@ class _AddEventDialogState extends State<AddEventDialog> {
               else if (_selectedEventType == EventType.dividend)
                 _buildDividendForm()
               else if (_selectedEventType == EventType.stockSplit)
-                _buildStockSplitForm(),
+                _buildStockSplitForm()
+              else if (_selectedEventType == EventType.news)
+                _buildNewsForm()
+              else if (_selectedEventType == EventType.bonus) 
+                _buildBonusForm(),
             ],
           ),
         ),
@@ -308,17 +385,31 @@ class _AddEventDialogState extends State<AddEventDialog> {
                   exDividendDate: _exDividendDate,
                   paymentDate: _paymentDate,
                   amount: double.parse(_amountController.text),
-                  // currency: _currencyController.text,
                 );
-              } else {
+              } else if (_selectedEventType == EventType.stockSplit) {
                 event = StockSplitEvent(
                   id: id,
                   date: _selectedDate,
                   title: "Stock SPlit",
                   ratio: _ratioController.text,
                 );
+              } else if (_selectedEventType == EventType.news) {
+                event = NewsEvent(
+                  id: id,
+                  date: _selectedDate,
+                  title: _titleController.text,
+                  description: _descriptionController.text,
+                );
+              } else {
+                event = BonusEvent(
+                  id: id,
+                  date: _selectedDate,
+                  title: "Bonus",
+                  ratio: _ratioController.text,
+                  recordDate: _recordDate,
+                  issueDate: _issueDate,
+                );
               }
-              
               widget.onEventAdded(event);
               Navigator.of(context).pop();
             }
@@ -327,5 +418,9 @@ class _AddEventDialogState extends State<AddEventDialog> {
         ),
       ],
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 }

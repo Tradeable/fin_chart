@@ -11,6 +11,7 @@ import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/panel_plot_region.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/settings/x_axis_settings.dart';
+import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:fin_chart/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -117,6 +118,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   
   FundamentalEvent? selectedEvent;
   List<FundamentalEvent> fundamentalEvents = [];
+  bool isWaitingForEventPosition = false;
+  double? eventSelectionPosition;
 
   @override
   void initState() {
@@ -364,7 +367,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                         bottomPos: bottomPos,
                         data: currentData,
                         selectedLayer: selectedLayer,
-                        animationValue: _animation.value,),
+                        animationValue: _animation.value,
+                        eventSelectionPosition: eventSelectionPosition,),
                     size: Size(constraints.maxWidth, constraints.maxHeight),
                   ),
                 ),
@@ -564,9 +568,56 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
-  _onTapDown(TapDownDetails details) {
+_onTapDown(TapDownDetails details) {
     setState(() {
       isUserInteracting = true;
+
+      // Handle event position selection mode
+      if (isWaitingForEventPosition) {
+        // Get the clicked candle
+        int candleIndex =
+            ((details.localPosition.dx - leftPos - xOffset - xStepWidth / 2) /
+                    xStepWidth)
+                .round();
+
+        // Check if index is valid
+        if (candleIndex >= 0 && candleIndex < currentData.length) {
+          // Calculate the exact x position using the same formula as used in RegionProp
+          eventSelectionPosition =
+              leftPos + xOffset + xStepWidth / 2 + candleIndex * xStepWidth;
+          DateTime candleDate = currentData[candleIndex].date;
+
+          // Show the dialog
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AddEventDialog(
+                onEventAdded: (event) {
+                  setState(() {
+                    fundamentalEvents.add(event);
+                    for (PlotRegion region in regions) {
+                      if (region is MainPlotRegion) {
+                        region.fundamentalEvents.add(event);
+                      }
+                    }
+                    // Clear the selection position when done
+                    isWaitingForEventPosition = false;
+                    eventSelectionPosition = null;
+                  });
+                },
+                preSelectedDate: candleDate,
+              );
+            },
+          ).then((_) {
+            // Clear the selection position when dialog is closed
+            setState(() {
+              isWaitingForEventPosition = false;
+              eventSelectionPosition = null;
+            });
+          });
+        }
+        return;
+      }
       // Handle fundamental events through the main plot region
       for (PlotRegion region in regions) {
         if (region is MainPlotRegion) {

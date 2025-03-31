@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:example/dialog/add_event_dialog.dart';
+// import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/atr.dart';
 import 'package:fin_chart/models/indicators/mfi.dart';
 import 'package:fin_chart/models/indicators/adx.dart';
-import 'package:fin_chart/models/region/main_plot_region.dart';
+// import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
@@ -741,33 +741,10 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void _showAddEventDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          // Get all valid dates from candles in the main region
-          List<DateTime> validDates = [];
-          for (PlotRegion region in _chartKey.currentState?.regions ?? []) {
-            if (region is MainPlotRegion) {
-              validDates = region.candles.map((candle) => candle.date).toList();
-              break;
-            }
-          }
-
-          return AddEventDialog(
-            onEventAdded: (event) {
-              setState(() {
-                fundamentalEvents.add(event);
-                for (PlotRegion region
-                    in _chartKey.currentState?.regions ?? []) {
-                  if (region is MainPlotRegion) {
-                    region.fundamentalEvents.add(event);
-                  }
-                }
-              });
-            },
-            validDates: validDates,
-          );
-        });
+    setState(() {
+      // Enable waiting mode in chart
+      _chartKey.currentState?.isWaitingForEventPosition = true;
+    });
   }
 
   void _addIndicator(IndicatorType indicatorType) {

@@ -2,6 +2,8 @@ enum EventType {
   earnings,
   dividend,
   stockSplit,
+  bonus,
+  news,
 }
 
 extension EventTypeParsingExtension on String {

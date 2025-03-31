@@ -1,5 +1,7 @@
 import 'package:fin_chart/models/enums/event_type.dart';
+import 'package:fin_chart/models/fundamental/bonus_event.dart';
 import 'package:fin_chart/models/fundamental/dividend_event.dart';
+import 'package:fin_chart/models/fundamental/news_event.dart';
 import 'package:fin_chart/models/fundamental/stock_split_event.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/fundamental/earnings_event.dart';
@@ -40,6 +42,10 @@ abstract class FundamentalEvent {
         return DividendEvent.fromJson(json);
       case EventType.stockSplit:
         return StockSplitEvent.fromJson(json);
+      case EventType.bonus:
+        return BonusEvent.fromJson(json);
+      case EventType.news:
+        return NewsEvent.fromJson(json);
     }
   }
 

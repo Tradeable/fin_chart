@@ -40,7 +40,7 @@ class _ChartDemoState extends State<ChartDemo> {
   }
 
   void dd() async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 1000));
     onTaskRun();
   }
 

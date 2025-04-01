@@ -6,6 +6,7 @@ class NewsEvent extends FundamentalEvent {
 
   NewsEvent({
     required super.id,
+    required super.index,
     required super.date,
     required super.title,
     required super.description,
@@ -21,6 +22,7 @@ class NewsEvent extends FundamentalEvent {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'index': index,
       'type': type.name,
       'date': date.toIso8601String(),
       'title': title,
@@ -31,6 +33,7 @@ class NewsEvent extends FundamentalEvent {
   factory NewsEvent.fromJson(Map<String, dynamic> json) {
     return NewsEvent(
       id: json['id'],
+      index: json['index'],
       date: DateTime.parse(json['date']),
       title: json['title'],
       description: json['description'],

@@ -10,10 +10,11 @@ import 'package:flutter/material.dart';
 
 class AddEventDialog extends StatefulWidget {
   final Function(FundamentalEvent) onEventAdded;
-  final DateTime? preSelectedDate;
+  final DateTime preSelectedDate;
+  final int index;
 
   const AddEventDialog(
-      {super.key, required this.onEventAdded, this.preSelectedDate});
+      {super.key, required this.onEventAdded, required this.preSelectedDate, required this.index});
 
   @override
   State<AddEventDialog> createState() => _AddEventDialogState();
@@ -44,9 +45,6 @@ class _AddEventDialogState extends State<AddEventDialog> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  
-  DateTime _selectedDate = DateTime.now();
-
   @override
   void dispose() {
     _epsActualController.dispose();
@@ -62,9 +60,6 @@ class _AddEventDialogState extends State<AddEventDialog> {
   @override
   void initState() {
     super.initState();
-    if (widget.preSelectedDate != null) {
-      _selectedDate = widget.preSelectedDate!;
-    }
   }
 
   Widget _buildEarningsForm() {
@@ -114,7 +109,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
           onTap: () async {
             final DateTime? picked = await showDatePicker(
               context: context,
-              initialDate: _exDividendDate ?? _selectedDate,
+              initialDate: _exDividendDate ?? widget.preSelectedDate,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
@@ -140,7 +135,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
           onTap: () async {
             final DateTime? picked = await showDatePicker(
               context: context,
-              initialDate: _paymentDate ?? _selectedDate,
+              initialDate: _paymentDate ?? widget.preSelectedDate,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
@@ -227,7 +222,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
           onTap: () async {
             final DateTime? picked = await showDatePicker(
               context: context,
-              initialDate: _recordDate ?? _selectedDate,
+              initialDate: _recordDate ?? widget.preSelectedDate,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
@@ -253,7 +248,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
           onTap: () async {
             final DateTime? picked = await showDatePicker(
               context: context,
-              initialDate: _issueDate ?? _selectedDate,
+              initialDate: _issueDate ?? widget.preSelectedDate,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
@@ -309,7 +304,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
               InputDecorator(
                 decoration: const InputDecoration(labelText: 'Date'),
                 child: Text(
-                  _formatDate(_selectedDate),
+                  _formatDate(widget.preSelectedDate),
                 ),
               ),
 
@@ -367,7 +362,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
 
                 event = EarningsEvent(
                   id: id,
-                  date: _selectedDate,
+                  index: widget.index,
+                  date: widget.preSelectedDate,
                   title: "Earnings",
                   description: "",
                   epsActual: actualEps,
@@ -380,7 +376,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
               } else if (_selectedEventType == EventType.dividend) {
                 event = DividendEvent(
                   id: id,
-                  date: _selectedDate,
+                  index: widget.index,
+                  date: widget.preSelectedDate,
                   title: "Dividend",
                   exDividendDate: _exDividendDate,
                   paymentDate: _paymentDate,
@@ -389,21 +386,24 @@ class _AddEventDialogState extends State<AddEventDialog> {
               } else if (_selectedEventType == EventType.stockSplit) {
                 event = StockSplitEvent(
                   id: id,
-                  date: _selectedDate,
+                  index: widget.index,
+                  date: widget.preSelectedDate,
                   title: "Stock SPlit",
                   ratio: _ratioController.text,
                 );
               } else if (_selectedEventType == EventType.news) {
                 event = NewsEvent(
                   id: id,
-                  date: _selectedDate,
+                  index: widget.index,
+                  date: widget.preSelectedDate,
                   title: _titleController.text,
                   description: _descriptionController.text,
                 );
               } else {
                 event = BonusEvent(
                   id: id,
-                  date: _selectedDate,
+                  index: widget.index,
+                  date: widget.preSelectedDate,
                   title: "Bonus",
                   ratio: _ratioController.text,
                   recordDate: _recordDate,

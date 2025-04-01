@@ -41,6 +41,7 @@ import 'package:fin_chart/models/layers/rect_area.dart';
 import 'package:fin_chart/models/layers/trend_line.dart';
 import 'package:fin_chart/models/layers/vertical_line.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
+import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -71,6 +72,7 @@ class _EditorPageState extends State<EditorPage> {
   Recipe? recipe;
 
   List<FundamentalEvent> fundamentalEvents = [];
+  bool isWaitingForEventPosition = false;
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -114,7 +116,7 @@ class _EditorPageState extends State<EditorPage> {
                       data: candleData,
                       chartSettings: _chartKey.currentState!.getChartSettings(),
                       tasks: tasks,
-                      fundamentalEvents: fundamentalEvents, 
+                      fundamentalEvents: fundamentalEvents,
                     ).toJson())),
                   ));
             },
@@ -128,7 +130,8 @@ class _EditorPageState extends State<EditorPage> {
                             data: candleData,
                             chartSettings:
                                 _chartKey.currentState!.getChartSettings(),
-                            tasks: tasks)
+                            tasks: tasks,
+                            fundamentalEvents: fundamentalEvents)
                         .toJson())))
                 .then((_) {
               if (context.mounted) {
@@ -160,7 +163,7 @@ class _EditorPageState extends State<EditorPage> {
       candleData.addAll(recipe.data);
       _chartKey.currentState?.addData(candleData);
       tasks.addAll(recipe.tasks);
-      fundamentalEvents.addAll(recipe.fundamentalEvents);
+      fundamentalEvents.addAll(recipe.fundamentalEvents ?? []);
       for (Task task in tasks) {
         switch (task.taskType) {
           case TaskType.addPrompt:
@@ -206,7 +209,7 @@ class _EditorPageState extends State<EditorPage> {
                     ? Chart(
                         key: _chartKey,
                         candles: candleData,
-                        fundamentalEvents: fundamentalEvents,
+                        // fundamentalEvents: fundamentalEvents,
                         // dataFit: DataFit.fixedWidth,
                         // yAxisSettings:
                         //     const YAxisSettings(yAxisPos: YAxisPos.left),
@@ -367,6 +370,29 @@ class _EditorPageState extends State<EditorPage> {
             });
           }
         }
+      });
+    }
+    if (isWaitingForEventPosition) {
+      setState(() {
+        isWaitingForEventPosition = false;
+        DateTime candleDate = candleData[tapDownPoint.dx.round()].date;
+
+        // Show the dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AddEventDialog(
+              index: tapDownPoint.dx.round(),
+              onEventAdded: (event) {
+                setState(() {
+                  _chartKey.currentState?.addFundamentalEvent(event);
+                  fundamentalEvents.add(event);
+                });
+              },
+              preSelectedDate: candleDate,
+            );
+          },
+        );
       });
     }
   }
@@ -743,6 +769,7 @@ class _EditorPageState extends State<EditorPage> {
   void _showAddEventDialog() {
     setState(() {
       // Enable waiting mode in chart
+      isWaitingForEventPosition = true;
       _chartKey.currentState?.isWaitingForEventPosition = true;
     });
   }

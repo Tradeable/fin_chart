@@ -9,6 +9,7 @@ class BonusEvent extends FundamentalEvent {
 
   BonusEvent({
     required super.id,
+    required super.index,
     required super.date,
     required super.title,
     required this.ratio,
@@ -27,6 +28,7 @@ class BonusEvent extends FundamentalEvent {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'index': index,
       'type': type.name,
       'date': date.toIso8601String(),
       'title': title,
@@ -40,6 +42,7 @@ class BonusEvent extends FundamentalEvent {
   factory BonusEvent.fromJson(Map<String, dynamic> json) {
     return BonusEvent(
       id: json['id'],
+      index: json['index'],
       date: DateTime.parse(json['date']),
       title: json['title'],
       description: json['description'] ?? '',

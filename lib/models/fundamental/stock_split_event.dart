@@ -7,6 +7,7 @@ class StockSplitEvent extends FundamentalEvent {
 
   StockSplitEvent({
     required super.id,
+    required super.index,
     required super.date,
     required super.title,
     required this.ratio,
@@ -23,6 +24,7 @@ class StockSplitEvent extends FundamentalEvent {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'index': index,
       'type': type.name,
       'date': date.toIso8601String(),
       'title': title,
@@ -34,6 +36,7 @@ class StockSplitEvent extends FundamentalEvent {
   factory StockSplitEvent.fromJson(Map<String, dynamic> json) {
     return StockSplitEvent(
       id: json['id'],
+      index: json['index'],
       date: DateTime.parse(json['date']),
       title: json['title'],
       description: json['description'] ?? '',

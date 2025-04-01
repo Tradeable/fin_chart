@@ -9,14 +9,15 @@ class Recipe {
   final List<Task> tasks;
   final ChartSettings chartSettings;
   String version;
-  final List<FundamentalEvent> fundamentalEvents;
+  final List<FundamentalEvent>? fundamentalEvents;
 
   Recipe(
       {required this.data,
       required this.tasks,
       required this.chartSettings,
       this.version = packageVersion,
-      this.fundamentalEvents = const []});
+      this.fundamentalEvents
+      });
 
   Map<String, dynamic> toJson() {
     return {
@@ -24,7 +25,7 @@ class Recipe {
       'data': data.map((candle) => candle.toJson()).toList(),
       'chartSettings': chartSettings.toJson(),
       'tasks': tasks.map((task) => task.toJson()).toList(),
-      'fundamentalEvents': fundamentalEvents.map((event) => event.toJson()).toList(),
+      'fundamentalEvents': fundamentalEvents?.map((event) => event.toJson()).toList(),
     };
   }
 
@@ -39,7 +40,7 @@ class Recipe {
           (json['tasks'] as List).map((task) => Task.fromJson(task)).toList(),
       fundamentalEvents: json.containsKey('fundamentalEvents')
           ? (json['fundamentalEvents'] as List)
-              .map((event) => FundamentalEvent.fromJson(event))
+              .map((event) => FundamentalEvent.fromJson(json : event))
               .toList()
           : [],
     );

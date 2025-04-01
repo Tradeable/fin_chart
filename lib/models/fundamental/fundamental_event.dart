@@ -16,12 +16,14 @@ abstract class FundamentalEvent {
   bool isSelected = false;
   double topPos = 0;
   double bottomPos = 0; 
+  final int index;
 
   FundamentalEvent({
     required this.id,
     required this.type,
     required this.date,
     required this.title,
+    required this.index,
     this.description = '',
   });
 
@@ -32,8 +34,8 @@ abstract class FundamentalEvent {
 
   Map<String, dynamic> toJson();
 
-  factory FundamentalEvent.fromJson(Map<String, dynamic> json) {
-    final type = (json['type'] as String).toEventType();
+  factory FundamentalEvent.fromJson({required Map<String, dynamic> json}) {
+    EventType type = json['type'].toString().toEventType();
 
     switch (type) {
       case EventType.earnings:

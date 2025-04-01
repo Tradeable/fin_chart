@@ -64,7 +64,7 @@ class Chart extends StatefulWidget {
       yAxisSettings: recipe.chartSettings.yAxisSettings,
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
-      fundamentalEvents: recipe.fundamentalEvents, 
+      fundamentalEvents: recipe.fundamentalEvents,
     );
   }
 
@@ -112,9 +112,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   Offset layerToolBoxOffset = Offset.zero;
 
-
   bool isUserInteracting = false;
-  
+
   FundamentalEvent? selectedEvent;
   List<FundamentalEvent> fundamentalEvents = [];
 
@@ -353,25 +352,25 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                       _onScaleUpdate(details, constraints),
                   child: CustomPaint(
                     painter: ChartPainter(
-                        regions: regions,
-                        xAxisSettings: widget.xAxisSettings!,
-                        xOffset: xOffset,
-                        xStepWidth: xStepWidth,
-                        dataLength: currentData.length,
-                        leftPos: leftPos,
-                        topPos: topPos,
-                        rightPos: rightPos,
-                        bottomPos: bottomPos,
-                        data: currentData,
-                        selectedLayer: selectedLayer,
-                        animationValue: _animation.value,),
+                      regions: regions,
+                      xAxisSettings: widget.xAxisSettings!,
+                      xOffset: xOffset,
+                      xStepWidth: xStepWidth,
+                      dataLength: currentData.length,
+                      leftPos: leftPos,
+                      topPos: topPos,
+                      rightPos: rightPos,
+                      bottomPos: bottomPos,
+                      data: currentData,
+                      selectedLayer: selectedLayer,
+                      animationValue: _animation.value,
+                    ),
                     size: Size(constraints.maxWidth, constraints.maxHeight),
                   ),
                 ),
               ),
               ...regions.map((region) => region.renderIndicatorToolTip(
-                  selectedIndicator:
-                      widget.recipe != null ? null : selectedIndicator,
+                  selectedIndicator: selectedIndicator,
                   onClick: (indicator) {
                     widget.onIndicatorSelect?.call(indicator);
                     setState(() {
@@ -390,48 +389,47 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                   onDelete: () {
                     removeIndicator(selectedIndicator!);
                   })),
-              if (widget.recipe == null)
-                selectedLayer == null
-                    ? Container()
-                    : Positioned(
-                        left: layerToolBoxOffset.dx,
-                        top: layerToolBoxOffset.dy,
-                        child: GestureDetector(
-                          onPanUpdate: (details) {
-                            setState(() {
-                              layerToolBoxOffset += details.delta;
-                            });
-                          },
-                          child: selectedLayer?.layerToolTip(
-                                  child: Text(selectedLayer?.type.name ?? ""),
-                                  onSettings: () {
-                                    selectedLayer?.showSettingsDialog(context,
-                                        (layer) {
-                                      setState(() {
-                                        selectedLayer = layer;
-                                      });
-                                    });
-                                  },
-                                  onLockUpdate: () {
+              selectedLayer == null
+                  ? Container()
+                  : Positioned(
+                      left: layerToolBoxOffset.dx,
+                      top: layerToolBoxOffset.dy,
+                      child: GestureDetector(
+                        onPanUpdate: (details) {
+                          setState(() {
+                            layerToolBoxOffset += details.delta;
+                          });
+                        },
+                        child: selectedLayer?.layerToolTip(
+                                child: Text(selectedLayer?.type.name ?? ""),
+                                onSettings: () {
+                                  selectedLayer?.showSettingsDialog(context,
+                                      (layer) {
                                     setState(() {
-                                      if (selectedLayer!.isLocked) {
-                                        selectedLayer?.isLocked = false;
-                                      } else {
-                                        selectedLayer?.isLocked = true;
-                                        selectedLayer?.isSelected = false;
-                                        selectedLayer = null;
-                                      }
+                                      selectedLayer = layer;
                                     });
-                                  },
-                                  onDelete: () {
-                                    setState(() {
-                                      removeLayerById(selectedLayer!.id);
-                                      selectedLayer == null;
-                                    });
-                                  }) ??
-                              Container(),
-                        ),
+                                  });
+                                },
+                                onLockUpdate: () {
+                                  setState(() {
+                                    if (selectedLayer!.isLocked) {
+                                      selectedLayer?.isLocked = false;
+                                    } else {
+                                      selectedLayer?.isLocked = true;
+                                      selectedLayer?.isSelected = false;
+                                      selectedLayer = null;
+                                    }
+                                  });
+                                },
+                                onDelete: () {
+                                  setState(() {
+                                    removeLayerById(selectedLayer!.id);
+                                    selectedLayer == null;
+                                  });
+                                }) ??
+                            Container(),
                       ),
+                    ),
             ],
           );
         }));

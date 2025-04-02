@@ -80,10 +80,11 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.addMcq:
         setState(() {});
         break;
+      case TaskType.clearTask:
+        _chartKey.currentState?.clearChart();
+        onTaskFinish();
+        break;
     }
-    // if (currentTask.actionType == ActionType.empty) {
-    //   onTaskFinish();
-    // }
   }
 
   void onTaskFinish() {
@@ -147,6 +148,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.addIndicator:
       case TaskType.addLayer:
       case TaskType.addPrompt:
+      case TaskType.clearTask:
         return Container();
       case TaskType.addMcq:
         Task task = currentTask as AddMcqTask;

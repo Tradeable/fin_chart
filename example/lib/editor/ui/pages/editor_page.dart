@@ -16,6 +16,7 @@ import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
+import 'package:fin_chart/models/tasks/clear.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
@@ -168,6 +169,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.addPrompt:
           case TaskType.waitTask:
           case TaskType.addMcq:
+          case TaskType.clearTask:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromTool(
@@ -413,6 +415,14 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.addMcq:
           mcqPrompt();
           break;
+        case TaskType.clearTask:
+          if (pos >= 0 && pos <= tasks.length) {
+            insertPosition = pos;
+          } else {
+            insertPosition = tasks.length;
+          }
+          tasks.insert(insertPosition, ClearTask());
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -431,6 +441,7 @@ class _EditorPageState extends State<EditorPage> {
       case TaskType.addData:
       case TaskType.addIndicator:
       case TaskType.addLayer:
+      case TaskType.clearTask:
         break;
       case TaskType.addPrompt:
         editPrompt(task as AddPromptTask);

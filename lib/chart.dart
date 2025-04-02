@@ -329,6 +329,14 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
+  void clearChart() {
+    setState(() {
+      for (PlotRegion region in regions) {
+        region.layers.clear();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

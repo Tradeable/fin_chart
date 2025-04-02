@@ -5,7 +5,8 @@ enum TaskType {
   addPrompt,
   addMcq,
   // addLayerOfType,
-  waitTask
+  waitTask,
+  clearTask,
 }
 
 // extension TaskTypeExtension on TaskType {

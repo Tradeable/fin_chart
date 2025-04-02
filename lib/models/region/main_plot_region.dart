@@ -14,7 +14,8 @@ class MainPlotRegion extends PlotRegion {
   final List<ICandle> candles;
   final List<Indicator> indicators = [];
   final List<FundamentalEvent> fundamentalEvents = [];
-  FundamentalEvent? selectedEvent;
+  FundamentalEvent? get selectedEvent => _selectedEvent;
+  FundamentalEvent? _selectedEvent;
 
   MainPlotRegion({
     String? id,
@@ -277,7 +278,6 @@ class MainPlotRegion extends PlotRegion {
         if (event.isSelected) {
           event.topPos = topPos; // Add this line
           event.bottomPos = bottomPos; // Add this line
-          _drawEventTooltip(canvas, event);
         }
       }
       // Loop through events
@@ -292,17 +292,25 @@ class MainPlotRegion extends PlotRegion {
     }
   }
 
-  void _drawEventTooltip(Canvas canvas, FundamentalEvent event) {
-    event.drawTooltip(canvas);
+  // void _drawEventTooltip(Canvas canvas, FundamentalEvent event) {
+  //   event.drawTooltip(canvas);
+  // }
+
+  void drawEventTooltips(Canvas canvas) {
+    for (final event in fundamentalEvents) {
+      if (event.isSelected && event.position != null) {
+        event.drawTooltip(canvas);
+      }
+    }
   }
 
   void handleEventTap(Offset tapPosition) {
-    selectedEvent = null;
+    _selectedEvent = null;
     for (var event in fundamentalEvents) {
       if (event.position != null &&
           (event.position! - tapPosition).distance < 20) {
         event.isSelected = true;
-        selectedEvent = event;
+        _selectedEvent = event;
       } else {
         event.isSelected = false;
       }

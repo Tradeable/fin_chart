@@ -7,6 +7,7 @@ import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/atr.dart';
 import 'package:fin_chart/models/indicators/mfi.dart';
 import 'package:fin_chart/models/indicators/adx.dart';
+import 'package:fin_chart/models/region/main_plot_region.dart';
 // import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
@@ -73,6 +74,7 @@ class _EditorPageState extends State<EditorPage> {
 
   List<FundamentalEvent> fundamentalEvents = [];
   bool isWaitingForEventPosition = false;
+  FundamentalEvent? selectedEvent;
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -95,6 +97,12 @@ class _EditorPageState extends State<EditorPage> {
         // const SizedBox(
         //   width: 20,
         // ),
+        if (selectedEvent != null)
+          IconButton(
+            onPressed: _deleteSelectedEvent,
+            icon: const Icon(Icons.delete),
+            tooltip: "Delete Event",
+          ),
         Switch(
           value: _isRecording,
           onChanged: (value) {
@@ -145,6 +153,22 @@ class _EditorPageState extends State<EditorPage> {
         )
       ],
     );
+  }
+
+  void _deleteSelectedEvent() {
+    if (selectedEvent != null) {
+      setState(() {
+        fundamentalEvents.removeWhere((event) => event.id == selectedEvent!.id);
+        // Update the chart to reflect the removal
+        for (var region in _chartKey.currentState!.regions) {
+          if (region is MainPlotRegion) {
+            region.fundamentalEvents
+                .removeWhere((event) => event.id == selectedEvent!.id);
+          }
+        }
+        selectedEvent = null;
+      });
+    }
   }
 
   @override
@@ -244,8 +268,19 @@ class _EditorPageState extends State<EditorPage> {
     }
   }
 
-  _onRegionSelect(PlotRegion region) {
+  void _onRegionSelect(PlotRegion region) {
     selectedRegion = region;
+
+    // Check if the region has a selected event
+    if (region is MainPlotRegion && region.selectedEvent != null) {
+      setState(() {
+        selectedEvent = region.selectedEvent;
+      });
+    } else {
+      setState(() {
+        selectedEvent = null;
+      });
+    }
   }
 
   _onIndicatorSelect(Indicator indicator) {
@@ -726,6 +761,10 @@ class _EditorPageState extends State<EditorPage> {
           children: [
             ElevatedButton(
               onPressed: _showAddEventDialog,
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                    isWaitingForEventPosition ? Colors.tealAccent : null),
+              ),
               child: const Text("Add Event"),
             ),
             const SizedBox(width: 20),

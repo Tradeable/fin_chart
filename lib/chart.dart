@@ -299,18 +299,18 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   //   });
   // }
 
-  void addFundamentalEvents(List<FundamentalEvent> newEvents) {
-    setState(() {
-      for (int i = 0; i < regions.length; i++) {
-        if (regions[i] is MainPlotRegion) {
-          (regions[i] as MainPlotRegion).updateFundamentalEvents(newEvents);
-        }
-      }
-      if (!isUserInteracting) {
-        xOffset = _getMaxLeftOffset();
-      }
-    });
-  }
+  // void addFundamentalEvents(List<FundamentalEvent> newEvents) {
+  //   setState(() {
+  //     for (int i = 0; i < regions.length; i++) {
+  //       if (regions[i] is MainPlotRegion) {
+  //         (regions[i] as MainPlotRegion).updateFundamentalEvents(newEvents);
+  //       }
+  //     }
+  //     if (!isUserInteracting) {
+  //       xOffset = _getMaxLeftOffset();
+  //     }
+  //   });
+  // }
 
   void addFundamentalEvent(FundamentalEvent event) {
     setState(() {

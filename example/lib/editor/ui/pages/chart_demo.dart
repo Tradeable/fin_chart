@@ -40,7 +40,7 @@ class _ChartDemoState extends State<ChartDemo> {
   }
 
   void dd() async {
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 300));
     onTaskRun();
   }
 
@@ -51,7 +51,7 @@ class _ChartDemoState extends State<ChartDemo> {
         _chartKey.currentState
             ?.addDataWithAnimation(
                 recipe.data.sublist(task.fromPoint, task.tillPoint),
-                const Duration(milliseconds: 50))
+                const Duration(milliseconds: 10))
             .then((value) {
           if (value) {
             onTaskFinish();

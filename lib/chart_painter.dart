@@ -1,4 +1,5 @@
 import 'package:fin_chart/models/layers/layer.dart';
+import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/settings/x_axis_settings.dart';
 import 'package:fin_chart/utils/constants.dart';
@@ -94,6 +95,7 @@ class ChartPainter extends CustomPainter {
     // selectedLayer?.onAimationUpdate(
     //     canvas: canvas, animationValue: animationValue ?? 1);
     // drawFundamentalEvents(canvas);
+    drawEventTooltips(canvas);
   }
 
   @override
@@ -132,6 +134,14 @@ class ChartPainter extends CustomPainter {
     }
 
     canvas.drawPath(path, paint);
+  }
+
+  void drawEventTooltips(Canvas canvas) {
+    for (PlotRegion region in regions) {
+      if (region is MainPlotRegion) {
+        region.drawEventTooltips(canvas);
+      }
+    }
   }
 
   void drawXAxis(Canvas canvas) {

@@ -249,6 +249,8 @@ class _TaskListWidgetState extends State<TaskListWidget> {
             ),
           ],
         );
+      case TaskType.clearTask:
+        return const Text("Clear");
     }
   }
 }

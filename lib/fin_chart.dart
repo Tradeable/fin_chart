@@ -18,3 +18,4 @@ export 'package:fin_chart/models/indicators/atr.dart';
 export 'package:fin_chart/models/indicators/mfi.dart';
 export 'package:fin_chart/models/indicators/adx.dart';
 export 'package:fin_chart/models/tasks/add_mcq.task.dart';
+export 'package:fin_chart/models/tasks/clear.task.dart';

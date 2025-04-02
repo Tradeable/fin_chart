@@ -56,13 +56,16 @@ class HorizontalBand extends Layer {
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(leftPos, toY(value)),
         Offset(rightPos, toY(value)))) {
+      isSelected = true;
       return this;
     }
+    isSelected = false;
     return super.onTapDown(details: details);
   }
 
   @override
   void onScaleUpdate({required ScaleUpdateDetails details}) {
+    if (isLocked) return;
     value = toYInverse(toY(value) + details.focalPointDelta.dy);
   }
 

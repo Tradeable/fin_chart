@@ -97,8 +97,10 @@ class HorizontalLine extends Layer {
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(leftPos, toY(value)),
         Offset(rightPos, toY(value)))) {
+      isSelected = true;
       return this;
     }
+    isSelected = false;
     return super.onTapDown(details: details);
   }
 

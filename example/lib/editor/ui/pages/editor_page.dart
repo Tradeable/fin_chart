@@ -329,10 +329,12 @@ class _EditorPageState extends State<EditorPage> {
             }
           }
           setState(() {
-            tasks.add(AddDataTask(
-                fromPoint: fromPoint,
-                tillPoint: tapDownPoint.dx.round() + 1,
-                verticleLineId: layer?.id ?? ""));
+            tasks.insert(
+                insertPosition,
+                AddDataTask(
+                    fromPoint: fromPoint,
+                    tillPoint: tapDownPoint.dx.round() + 1,
+                    verticleLineId: layer?.id ?? ""));
             _currentTaskType = null;
           });
           break;

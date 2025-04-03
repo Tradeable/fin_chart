@@ -11,11 +11,9 @@ import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/panel_plot_region.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/settings/x_axis_settings.dart';
-// import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:fin_chart/utils/constants.dart';
 import 'package:flutter/material.dart';
-
 import 'models/settings/y_axis_settings.dart';
 
 class Chart extends StatefulWidget {
@@ -29,7 +27,6 @@ class Chart extends StatefulWidget {
   final Function(PlotRegion region)? onRegionSelect;
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
-  // final List<FundamentalEvent> fundamentalEvents;
 
   const Chart({
     super.key,
@@ -43,7 +40,6 @@ class Chart extends StatefulWidget {
     this.yAxisSettings = const YAxisSettings(),
     this.xAxisSettings = const XAxisSettings(),
     this.recipe,
-    // this.fundamentalEvents = const [],
   });
 
   factory Chart.from(
@@ -65,7 +61,6 @@ class Chart extends StatefulWidget {
       yAxisSettings: recipe.chartSettings.yAxisSettings,
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
-      fundamentalEvents: recipe.fundamentalEvents,
     );
   }
 
@@ -116,7 +111,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   bool isUserInteracting = false;
 
   FundamentalEvent? selectedEvent;
-  // List<FundamentalEvent> fundamentalEvents = [];
+
   bool isWaitingForEventPosition = false;
   double? eventSelectionPosition;
 
@@ -153,12 +148,12 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     regions.add(MainPlotRegion(
         id: recipe.chartSettings.mainPlotRegionId,
         candles: currentData,
-        // fundamentalEvents: recipe.fundamentalEvents ?? [],
         yAxisSettings: widget.yAxisSettings!,
         yMinValue: yMinValue,
         yMaxValue: yMaxValue));
 
-       (regions[0] as MainPlotRegion).updateFundamentalEvents(recipe.fundamentalEvents ?? []);
+    (regions[0] as MainPlotRegion)
+        .updateFundamentalEvents(recipe.fundamentalEvents ?? []);
   }
 
   void _initializeControllers() {
@@ -288,29 +283,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
-  // void addEvent(FundamentalEvent event) {
-  //   setState(() {
-  //     for (int i = 0; i < regions.length; i++) {
-  //       if (regions[i] is MainPlotRegion) {
-  //         (regions[i] as MainPlotRegion).updateFundamentalEvents([event]);
-  //       }
-  //     }
-  //   });
-  // }
-
-  // void addFundamentalEvents(List<FundamentalEvent> newEvents) {
-  //   setState(() {
-  //     for (int i = 0; i < regions.length; i++) {
-  //       if (regions[i] is MainPlotRegion) {
-  //         (regions[i] as MainPlotRegion).updateFundamentalEvents(newEvents);
-  //       }
-  //     }
-  //     if (!isUserInteracting) {
-  //       xOffset = _getMaxLeftOffset();
-  //     }
-  //   });
-  // }
-
   void addFundamentalEvent(FundamentalEvent event) {
     setState(() {
       for (int i = 0; i < regions.length; i++) {
@@ -383,19 +355,20 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                       _onScaleUpdate(details, constraints),
                   child: CustomPaint(
                     painter: ChartPainter(
-                        regions: regions,
-                        xAxisSettings: widget.xAxisSettings!,
-                        xOffset: xOffset,
-                        xStepWidth: xStepWidth,
-                        dataLength: currentData.length,
-                        leftPos: leftPos,
-                        topPos: topPos,
-                        rightPos: rightPos,
-                        bottomPos: bottomPos,
-                        data: currentData,
-                        selectedLayer: selectedLayer,
-                        animationValue: _animation.value,
-                        eventSelectionPosition: eventSelectionPosition,),
+                      regions: regions,
+                      xAxisSettings: widget.xAxisSettings!,
+                      xOffset: xOffset,
+                      xStepWidth: xStepWidth,
+                      dataLength: currentData.length,
+                      leftPos: leftPos,
+                      topPos: topPos,
+                      rightPos: rightPos,
+                      bottomPos: bottomPos,
+                      data: currentData,
+                      selectedLayer: selectedLayer,
+                      animationValue: _animation.value,
+                      eventSelectionPosition: eventSelectionPosition,
+                    ),
                     size: Size(constraints.maxWidth, constraints.maxHeight),
                   ),
                 ),
@@ -596,55 +569,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   _onTapDown(TapDownDetails details) {
     setState(() {
       isUserInteracting = true;
-
-      // // Handle event position selection mode
-      // if (isWaitingForEventPosition) {
-      //   // Get the clicked candle
-      //   int candleIndex =
-      //       ((details.localPosition.dx - leftPos - xOffset - xStepWidth / 2) /
-      //               xStepWidth)
-      //           .round();
-
-      //   // Check if index is valid
-      //   if (candleIndex >= 0 && candleIndex < currentData.length) {
-      //     // Calculate the exact x position using the same formula as used in RegionProp
-      //     eventSelectionPosition =
-      //         leftPos + xOffset + xStepWidth / 2 + candleIndex * xStepWidth;
-      //     DateTime candleDate = currentData[candleIndex].date;
-
-      //     // Show the dialog
-      //     showDialog(
-      //       context: context,
-      //       builder: (BuildContext context) {
-      //         return AddEventDialog(
-      //           onEventAdded: (event) {
-      //             setState(() {
-      //               // Find the MainPlotRegion and add the event directly to it
-      //               for (PlotRegion region in regions) {
-      //                 if (region is MainPlotRegion) {
-      //                   region.updateFundamentalEvents([event]);
-      //                 }
-      //               }
-      //               // Clear the selection position when done
-      //               isWaitingForEventPosition = false;
-      //               eventSelectionPosition = null;
-      //             });
-      //           },
-      //           preSelectedDate: candleDate,
-      //         );
-      //       },
-      //     ).then((_) {
-      //       // Clear the selection position when dialog is closed
-      //       setState(() {
-      //         isWaitingForEventPosition = false;
-      //         eventSelectionPosition = null;
-      //       });
-      //     });
-      //   }
-      //   return;
-      // }
-
-      // Handle fundamental events through the main plot region
       for (PlotRegion region in regions) {
         if (region is MainPlotRegion) {
           region.handleEventTap(details.localPosition);

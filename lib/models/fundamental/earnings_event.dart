@@ -12,6 +12,7 @@ class EarningsEvent extends FundamentalEvent {
 
   EarningsEvent({
     required super.id,
+    required super.index,
     required super.date,
     required super.title,
     super.description,
@@ -34,6 +35,7 @@ class EarningsEvent extends FundamentalEvent {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'index': index,
       'type': type.name,
       'date': date.toIso8601String(),
       'title': title,
@@ -50,6 +52,7 @@ class EarningsEvent extends FundamentalEvent {
   factory EarningsEvent.fromJson(Map<String, dynamic> json) {
     return EarningsEvent(
       id: json['id'],
+      index: json['index'],
       date: DateTime.parse(json['date']),
       title: json['title'],
       description: json['description'] ?? '',

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:example/dialog/add_event_dialog.dart';
+// import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
@@ -9,6 +9,7 @@ import 'package:fin_chart/models/indicators/atr.dart';
 import 'package:fin_chart/models/indicators/mfi.dart';
 import 'package:fin_chart/models/indicators/adx.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
+// import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
@@ -44,6 +45,7 @@ import 'package:fin_chart/models/layers/rect_area.dart';
 import 'package:fin_chart/models/layers/trend_line.dart';
 import 'package:fin_chart/models/layers/vertical_line.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
+import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -74,6 +76,8 @@ class _EditorPageState extends State<EditorPage> {
   Recipe? recipe;
 
   List<FundamentalEvent> fundamentalEvents = [];
+  bool isWaitingForEventPosition = false;
+  FundamentalEvent? selectedEvent;
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -96,6 +100,12 @@ class _EditorPageState extends State<EditorPage> {
         // const SizedBox(
         //   width: 20,
         // ),
+        if (selectedEvent != null)
+          IconButton(
+            onPressed: _deleteSelectedEvent,
+            icon: const Icon(Icons.delete),
+            tooltip: "Delete Event",
+          ),
         Switch(
           value: _isRecording,
           onChanged: (value) {
@@ -131,7 +141,8 @@ class _EditorPageState extends State<EditorPage> {
                             data: candleData,
                             chartSettings:
                                 _chartKey.currentState!.getChartSettings(),
-                            tasks: tasks)
+                            tasks: tasks,
+                            fundamentalEvents: fundamentalEvents)
                         .toJson())))
                 .then((_) {
               if (context.mounted) {
@@ -145,6 +156,22 @@ class _EditorPageState extends State<EditorPage> {
         )
       ],
     );
+  }
+
+  void _deleteSelectedEvent() {
+    if (selectedEvent != null) {
+      setState(() {
+        fundamentalEvents.removeWhere((event) => event.id == selectedEvent!.id);
+        // Update the chart to reflect the removal
+        for (var region in _chartKey.currentState!.regions) {
+          if (region is MainPlotRegion) {
+            region.fundamentalEvents
+                .removeWhere((event) => event.id == selectedEvent!.id);
+          }
+        }
+        selectedEvent = null;
+      });
+    }
   }
 
   @override
@@ -163,7 +190,7 @@ class _EditorPageState extends State<EditorPage> {
       candleData.addAll(recipe.data);
       _chartKey.currentState?.addData(candleData);
       tasks.addAll(recipe.tasks);
-      fundamentalEvents.addAll(recipe.fundamentalEvents);
+      fundamentalEvents.addAll(recipe.fundamentalEvents ?? []);
       for (Task task in tasks) {
         switch (task.taskType) {
           case TaskType.addPrompt:
@@ -211,7 +238,7 @@ class _EditorPageState extends State<EditorPage> {
                     ? Chart(
                         key: _chartKey,
                         candles: candleData,
-                        fundamentalEvents: fundamentalEvents,
+                        // fundamentalEvents: fundamentalEvents,
                         // dataFit: DataFit.fixedWidth,
                         // yAxisSettings:
                         //     const YAxisSettings(yAxisPos: YAxisPos.left),
@@ -246,8 +273,19 @@ class _EditorPageState extends State<EditorPage> {
     }
   }
 
-  _onRegionSelect(PlotRegion region) {
+  void _onRegionSelect(PlotRegion region) {
     selectedRegion = region;
+
+    // Check if the region has a selected event
+    if (region is MainPlotRegion && region.selectedEvent != null) {
+      setState(() {
+        selectedEvent = region.selectedEvent;
+      });
+    } else {
+      setState(() {
+        selectedEvent = null;
+      });
+    }
   }
 
   _onIndicatorSelect(Indicator indicator) {
@@ -374,6 +412,29 @@ class _EditorPageState extends State<EditorPage> {
             });
           }
         }
+      });
+    }
+    if (isWaitingForEventPosition) {
+      setState(() {
+        isWaitingForEventPosition = false;
+        DateTime candleDate = candleData[tapDownPoint.dx.round()].date;
+
+        // Show the dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AddEventDialog(
+              index: tapDownPoint.dx.round(),
+              onEventAdded: (event) {
+                setState(() {
+                  _chartKey.currentState?.addFundamentalEvent(event);
+                  fundamentalEvents.add(event);
+                });
+              },
+              preSelectedDate: candleDate,
+            );
+          },
+        );
       });
     }
   }
@@ -1112,6 +1173,10 @@ class _EditorPageState extends State<EditorPage> {
           children: [
             ElevatedButton(
               onPressed: _showAddEventDialog,
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(
+                    isWaitingForEventPosition ? Colors.tealAccent : null),
+              ),
               child: const Text("Add Event"),
             ),
             const SizedBox(width: 20),
@@ -1153,33 +1218,11 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void _showAddEventDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          // Get all valid dates from candles in the main region
-          List<DateTime> validDates = [];
-          for (PlotRegion region in _chartKey.currentState?.regions ?? []) {
-            if (region is MainPlotRegion) {
-              validDates = region.candles.map((candle) => candle.date).toList();
-              break;
-            }
-          }
-
-          return AddEventDialog(
-            onEventAdded: (event) {
-              setState(() {
-                fundamentalEvents.add(event);
-                for (PlotRegion region
-                    in _chartKey.currentState?.regions ?? []) {
-                  if (region is MainPlotRegion) {
-                    region.fundamentalEvents.add(event);
-                  }
-                }
-              });
-            },
-            validDates: validDates,
-          );
-        });
+    setState(() {
+      // Enable waiting mode in chart
+      isWaitingForEventPosition = true;
+      _chartKey.currentState?.isWaitingForEventPosition = true;
+    });
   }
 
   void _addIndicator(IndicatorType indicatorType) {

@@ -2,23 +2,27 @@ import 'package:fin_chart/models/enums/event_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:flutter/material.dart';
 
-class StockSplitEvent extends FundamentalEvent {
-  final String ratio; // e.g., "2:1" or "3:2"
+class BonusEvent extends FundamentalEvent {
+  final String ratio;
+  final DateTime? recordDate;
+  final DateTime? issueDate;
 
-  StockSplitEvent({
+  BonusEvent({
     required super.id,
     required super.index,
     required super.date,
     required super.title,
     required this.ratio,
+    this.recordDate,
+    this.issueDate,
     super.description,
-  }) : super(type: EventType.stockSplit);
+  }) : super(type: EventType.bonus);
 
   @override
-  Color get color => Colors.purple;
+  Color get color => Colors.amber;
 
   @override
-  String get iconText => 'S';
+  String get iconText => 'B';
 
   @override
   Map<String, dynamic> toJson() {
@@ -30,17 +34,25 @@ class StockSplitEvent extends FundamentalEvent {
       'title': title,
       'description': description,
       'ratio': ratio,
+      'recordDate': recordDate?.toIso8601String(),
+      'issueDate': issueDate?.toIso8601String(),
     };
   }
 
-  factory StockSplitEvent.fromJson(Map<String, dynamic> json) {
-    return StockSplitEvent(
+  factory BonusEvent.fromJson(Map<String, dynamic> json) {
+    return BonusEvent(
       id: json['id'],
       index: json['index'],
       date: DateTime.parse(json['date']),
       title: json['title'],
       description: json['description'] ?? '',
       ratio: json['ratio'] ?? '1:1',
+      recordDate: json['recordDate'] != null
+          ? DateTime.parse(json['recordDate'])
+          : null,
+      issueDate: json['issueDate'] != null
+          ? DateTime.parse(json['issueDate'])
+          : null,
     );
   }
 
@@ -56,7 +68,7 @@ class StockSplitEvent extends FundamentalEvent {
     List<TextSpan> textSpans = [];
 
     textSpans.add(const TextSpan(
-      text: 'Stock Split\n',
+      text: 'Bonus Shares\n',
       style: TextStyle(
           fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
     ));
@@ -70,6 +82,20 @@ class StockSplitEvent extends FundamentalEvent {
       text: 'Ratio: $ratio\n',
       style: const TextStyle(color: Colors.black, fontSize: 11),
     ));
+
+    if (recordDate != null) {
+      textSpans.add(TextSpan(
+        text: 'Record Date: ${_formatDate(recordDate!)}\n',
+        style: const TextStyle(color: Colors.black, fontSize: 11),
+      ));
+    }
+
+    if (issueDate != null) {
+      textSpans.add(TextSpan(
+        text: 'Issue Date: ${_formatDate(issueDate!)}\n',
+        style: const TextStyle(color: Colors.black, fontSize: 11),
+      ));
+    }
 
     if (description.isNotEmpty) {
       textSpans.add(TextSpan(

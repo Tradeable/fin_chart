@@ -2,23 +2,21 @@ import 'package:fin_chart/models/enums/event_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:flutter/material.dart';
 
-class StockSplitEvent extends FundamentalEvent {
-  final String ratio; // e.g., "2:1" or "3:2"
+class NewsEvent extends FundamentalEvent {
 
-  StockSplitEvent({
+  NewsEvent({
     required super.id,
     required super.index,
     required super.date,
     required super.title,
-    required this.ratio,
-    super.description,
-  }) : super(type: EventType.stockSplit);
+    required super.description,
+  }) : super(type: EventType.news);
 
   @override
-  Color get color => Colors.purple;
+  Color get color => Colors.indigo;
 
   @override
-  String get iconText => 'S';
+  String get iconText => 'N';
 
   @override
   Map<String, dynamic> toJson() {
@@ -29,23 +27,17 @@ class StockSplitEvent extends FundamentalEvent {
       'date': date.toIso8601String(),
       'title': title,
       'description': description,
-      'ratio': ratio,
     };
   }
 
-  factory StockSplitEvent.fromJson(Map<String, dynamic> json) {
-    return StockSplitEvent(
+  factory NewsEvent.fromJson(Map<String, dynamic> json) {
+    return NewsEvent(
       id: json['id'],
       index: json['index'],
       date: DateTime.parse(json['date']),
       title: json['title'],
-      description: json['description'] ?? '',
-      ratio: json['ratio'] ?? '1:1',
+      description: json['description'],
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
   
   @override
@@ -55,9 +47,9 @@ class StockSplitEvent extends FundamentalEvent {
 
     List<TextSpan> textSpans = [];
 
-    textSpans.add(const TextSpan(
-      text: 'Stock Split\n',
-      style: TextStyle(
+    textSpans.add(TextSpan(
+      text: '$title\n',
+      style: const TextStyle(
           fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
     ));
 
@@ -67,16 +59,10 @@ class StockSplitEvent extends FundamentalEvent {
     ));
 
     textSpans.add(TextSpan(
-      text: 'Ratio: $ratio\n',
+      text: '$description\n',
       style: const TextStyle(color: Colors.black, fontSize: 11),
     ));
 
-    if (description.isNotEmpty) {
-      textSpans.add(TextSpan(
-        text: '\nDetails: $description',
-        style: const TextStyle(color: Colors.black, fontSize: 11),
-      ));
-    }
     // After creating the textSpans list, render it:
     final textSpan = TextSpan(children: textSpans);
     final textPainter = TextPainter(
@@ -146,5 +132,9 @@ class StockSplitEvent extends FundamentalEvent {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 }

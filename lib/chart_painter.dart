@@ -1,4 +1,5 @@
 import 'package:fin_chart/models/layers/layer.dart';
+import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/settings/x_axis_settings.dart';
 import 'package:fin_chart/utils/constants.dart';
@@ -18,6 +19,8 @@ class ChartPainter extends CustomPainter {
   final List<ICandle> data;
   final Layer? selectedLayer;
   final double? animationValue;
+  final double? eventSelectionPosition;
+  
 
   ChartPainter({
     super.repaint,
@@ -33,6 +36,7 @@ class ChartPainter extends CustomPainter {
     required this.data,
     this.selectedLayer,
     this.animationValue,
+    this.eventSelectionPosition,
   });
 
   @override
@@ -85,14 +89,59 @@ class ChartPainter extends CustomPainter {
             ..color = Colors.grey
             ..strokeWidth = 3);
     }
+    if (eventSelectionPosition != null) {
+      _drawEventSelectionLine(canvas);
+    }
     // selectedLayer?.onAimationUpdate(
     //     canvas: canvas, animationValue: animationValue ?? 1);
     // drawFundamentalEvents(canvas);
+    drawEventTooltips(canvas);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
+  }
+
+  void _drawEventSelectionLine(Canvas canvas) {
+    final paint = Paint()
+      ..color = Colors.grey
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // Create a path with dashes
+    final Path path = Path();
+    path.moveTo(eventSelectionPosition!, topPos);
+
+    const dashWidth = 5.0;
+    const dashSpace = 5.0;
+    double distance = bottomPos - topPos;
+    double drawn = 0;
+
+    while (drawn < distance) {
+      double toDraw = dashWidth;
+      if (drawn + toDraw > distance) {
+        toDraw = distance - drawn;
+      }
+      path.relativeLineTo(0, toDraw);
+      drawn += toDraw;
+
+      if (drawn >= distance) break;
+
+      path.moveTo(eventSelectionPosition!, topPos + drawn + dashSpace);
+      drawn += dashSpace;
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  void drawEventTooltips(Canvas canvas) {
+    for (PlotRegion region in regions) {
+      if (region is MainPlotRegion) {
+        region.drawEventTooltips(canvas);
+      }
+    }
   }
 
   void drawXAxis(Canvas canvas) {

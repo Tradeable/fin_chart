@@ -31,59 +31,34 @@ class Atr extends Indicator {
 
   @override
   calculateYValueRange(List<ICandle> data) {
-    // Check for minimum required data first
-    if (data.length < period + 1) {
-      // Set default range for insufficient data
-      yMinValue = 0;
-      yMaxValue = 1;
-      yValues = generateNiceAxisValues(yMinValue, yMaxValue);
-      yMinValue = yValues.first;
-      yMaxValue = yValues.last;
-      yLabelSize = getLargetRnderBoxSizeForList(
-          yValues.map((v) => v.toString()).toList(),
-          const TextStyle(color: Colors.black, fontSize: 12));
-      return;
-    }
+    _calculateATR(data);
 
-    // Recalculate ATR values if necessary
-    if (atrValues.isEmpty) {
-      // If we have candles data but no ATR values, calculate them first
-      if (candles.isNotEmpty) {
-        _calculateATR(data);
-      }
-      // If we have input data but no candles, update our candles list
-      else if (data.isNotEmpty) {
-        // candles.addAll(data);
-        _calculateATR(data);
-      }
-    }
+    // Find min and max values for dynamic scaling
+    double minValue = atrValues.isEmpty
+        ? double.infinity
+        : atrValues
+            .where((value) => value > 0)
+            .fold(double.infinity, (min, value) => math.min(min, value));
+    double maxValue = atrValues.isEmpty
+        ? double.negativeInfinity
+        : atrValues.fold(
+            double.negativeInfinity, (max, value) => math.max(max, value));
 
-    // Find min and max values for y-axis
-    double minValue = double.infinity;
-    double maxValue = double.negativeInfinity;
-
-    for (int i = period - 1; i < atrValues.length; i++) {
-      minValue = math.min(minValue, atrValues[i]);
-      maxValue = math.max(maxValue, atrValues[i]);
-    }
-
-    // Add some padding
+    // Add padding to min/max
     double range = maxValue - minValue;
     minValue = math.max(0, minValue - range * 0.1); // Don't go below 0
-    maxValue += range * 0.1;
+    maxValue = maxValue + range * 0.1;
 
-    if (minValue == double.infinity) {
-      minValue = 0;
+    if (yMinValue == 0 && yMaxValue == 1) {
+      yMinValue = minValue;
+      yMaxValue = maxValue;
+    } else {
+      yMinValue = math.min(minValue, yMinValue);
+      yMaxValue = math.max(maxValue, yMaxValue);
     }
-
-    if (maxValue == double.negativeInfinity) {
-      maxValue = 1;
-    }
-
-    yMinValue = minValue;
-    yMaxValue = maxValue;
 
     yValues = generateNiceAxisValues(yMinValue, yMaxValue);
+
     yMinValue = yValues.first;
     yMaxValue = yValues.last;
     yLabelSize = getLargetRnderBoxSizeForList(
@@ -154,48 +129,50 @@ class Atr extends Indicator {
       return; // Need at least period+1 candles
     }
 
-  // Initialize array with zeros - use exact candle length
-  atrValues.addAll(List.filled(data.length, 0));
+    // Initialize array with zeros - use exact candle length
+    atrValues.addAll(List.filled(data.length, 0));
 
-  // Calculate first true range
-  double tr = candles[0].high - candles[0].low;
+    // Calculate first true range
+    double tr = candles[0].high - candles[0].low;
 
-  // Calculate subsequent true ranges
-  for (int i = 1; i < candles.length; i++) {
-    double highLow = candles[i].high - candles[i].low;
-    double highPrevClose = (candles[i].high - candles[i - 1].close).abs();
-    double lowPrevClose = (candles[i].low - candles[i - 1].close).abs();
+    // Calculate subsequent true ranges
+    for (int i = 1; i < candles.length; i++) {
+      double highLow = candles[i].high - candles[i].low;
+      double highPrevClose = (candles[i].high - candles[i - 1].close).abs();
+      double lowPrevClose = (candles[i].low - candles[i - 1].close).abs();
 
-    tr = [highLow, highPrevClose, lowPrevClose]
-        .reduce((curr, next) => curr > next ? curr : next);
+      tr = [highLow, highPrevClose, lowPrevClose]
+          .reduce((curr, next) => curr > next ? curr : next);
 
-    // Just calculate TR values here, don't store them in a separate list
-    
-    // For the first period-1 candles, ATR is 0
-    if (i >= period) {
-      // Calculate ATR using smoothing formula
-      atrValues[i] = (atrValues[i-1] * (period - 1) + tr) / period;
-    } else if (i == period - 1) {
-      // Calculate first ATR (simple average for first 'period' days)
-      double sum = 0;
-      for (int j = 0; j < period; j++) {
-        // Need to recalculate TR for previous days
-        double prevTR;
-        if (j == 0) {
-          prevTR = candles[j].high - candles[j].low;
-        } else {
-          double prevHighLow = candles[j].high - candles[j].low;
-          double prevHighPrevClose = (candles[j].high - candles[j-1].close).abs();
-          double prevLowPrevClose = (candles[j].low - candles[j-1].close).abs();
-          prevTR = [prevHighLow, prevHighPrevClose, prevLowPrevClose]
-              .reduce((curr, next) => curr > next ? curr : next);
+      // Just calculate TR values here, don't store them in a separate list
+
+      // For the first period-1 candles, ATR is 0
+      if (i >= period) {
+        // Calculate ATR using smoothing formula
+        atrValues[i] = (atrValues[i - 1] * (period - 1) + tr) / period;
+      } else if (i == period - 1) {
+        // Calculate first ATR (simple average for first 'period' days)
+        double sum = 0;
+        for (int j = 0; j < period; j++) {
+          // Need to recalculate TR for previous days
+          double prevTR;
+          if (j == 0) {
+            prevTR = candles[j].high - candles[j].low;
+          } else {
+            double prevHighLow = candles[j].high - candles[j].low;
+            double prevHighPrevClose =
+                (candles[j].high - candles[j - 1].close).abs();
+            double prevLowPrevClose =
+                (candles[j].low - candles[j - 1].close).abs();
+            prevTR = [prevHighLow, prevHighPrevClose, prevLowPrevClose]
+                .reduce((curr, next) => curr > next ? curr : next);
+          }
+          sum += prevTR;
         }
-        sum += prevTR;
+        atrValues[i] = sum / period;
       }
-      atrValues[i] = sum / period;
     }
   }
-}
 
   @override
   void showIndicatorSettings(

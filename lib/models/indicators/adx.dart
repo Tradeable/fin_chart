@@ -5,7 +5,7 @@ import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/ui/indicator_settings/adx_settings_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
-// import 'dart:math' as math;
+import 'dart:math' as math;
 
 class Adx extends Indicator {
   int period = 14;
@@ -73,7 +73,7 @@ class Adx extends Indicator {
     _drawLevelLine(canvas, 40, Colors.grey.withAlpha((0.5 * 255).toInt()));
     _drawLevelLine(canvas, 60, Colors.grey.withAlpha((0.5 * 255).toInt()));
   }
-  
+
   void _drawLevelLine(Canvas canvas, double level, Color color) {
     canvas.drawLine(
       Offset(leftPos, toY(level)),
@@ -117,74 +117,37 @@ class Adx extends Indicator {
 
   @override
   calculateYValueRange(List<ICandle> data) {
-
-    // Check for minimum required data first
-    if (data.length < period * 2) {
-      // Set default range for insufficient data
-      yMinValue = 0;
-      yMaxValue = 100;
-      yValues = generateNiceAxisValues(yMinValue, yMaxValue);
-      yMinValue = yValues.first;
-      yMaxValue = yValues.last;
-      yLabelSize = getLargetRnderBoxSizeForList(
-          yValues.map((v) => v.toString()).toList(),
-          const TextStyle(color: Colors.black, fontSize: 12));
-      return;
-    }
-    // Recalculate ADX values if necessary
-    if (adxValues.isEmpty || diPlusValues.isEmpty || diMinusValues.isEmpty) {
-      // If we have candles data but no ADX values, calculate them first
-      if (candles.isNotEmpty) {
-        _calculateADX(data);
-      }
-      // If we have input data but no candles, update our candles list
-      else if (data.isNotEmpty) {
-        //candles.addAll(data);
-        _calculateADX(data);
-      }
-
-      // If no data is available, we can't calculate the range
-      else {
-        return;
-      }
-    }
+    _calculateADX(data);
 
     // Find min and max values for dynamic scaling
-    double minValue = double.infinity;
-    double maxValue = double.negativeInfinity;
+    double minValue = adxValues.isEmpty
+        ? double.infinity
+        : adxValues
+            .where((value) => value > 0)
+            .fold(double.infinity, (min, value) => math.min(min, value));
+    double maxValue = adxValues.isEmpty
+        ? double.negativeInfinity
+        : adxValues.fold(
+            double.negativeInfinity, (max, value) => math.max(max, value));
 
-    // Check all three indicators for min/max
-    for (int i = 0; i < adxValues.length; i++) {
-      if (i >= period * 2 - 1) {
-        // Only consider valid values
-        minValue = min(minValue, adxValues[i]);
-        minValue = min(minValue, diPlusValues[i]);
-        minValue = min(minValue, diMinusValues[i]);
-        maxValue = max(maxValue, adxValues[i]);
-        maxValue = max(maxValue, diPlusValues[i]);
-        maxValue = max(maxValue, diMinusValues[i]);
-      }
-    }
+
+    // if (minValue == double.infinity) minValue = 0;
+    // if (maxValue == double.negativeInfinity) maxValue = 100;
+
+    print("data values : $minValue and $maxValue");
 
     // Add padding to min/max
     double range = maxValue - minValue;
     minValue = max(0, minValue - range * 0.1); // Don't go below 0
     maxValue = maxValue + range * 0.1;
 
-    // print(maxValue);
-    // print(minValue);
+    print("y values : $yMinValue and $yMaxValue");
 
-    if (minValue == double.infinity) {
-      minValue = 0;
-    }
+    if (data.length == period) {yValues.clear;}
 
-    if (maxValue == double.negativeInfinity) {
-      maxValue = 100;
-    }
-
-    if (yMinValue == 0 && yMaxValue == 1) {
-      yMinValue = minValue;
-      yMaxValue = maxValue;
+    if (minValue == double.infinity && maxValue == double.negativeInfinity) {
+      yMinValue = 0;
+      yMaxValue = 100;
     } else {
       yMinValue = min(minValue, yMinValue);
       yMaxValue = max(maxValue, yMaxValue);

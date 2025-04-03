@@ -1,6 +1,7 @@
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
+import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:example/editor/ui/widget/task_type_dropdown.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
@@ -225,6 +226,31 @@ class _TaskListWidgetState extends State<TaskListWidget> {
             ),
           ],
         );
+      case TaskType.addMcq:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (task as AddMcqTask).arrangementType.name,
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.clearTask:
+        return const Text("Clear");
     }
   }
 }

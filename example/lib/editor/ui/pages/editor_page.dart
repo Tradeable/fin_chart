@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-// import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
@@ -9,7 +8,6 @@ import 'package:fin_chart/models/indicators/atr.dart';
 import 'package:fin_chart/models/indicators/mfi.dart';
 import 'package:fin_chart/models/indicators/adx.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
-// import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
@@ -199,8 +197,9 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.clearTask:
             break;
           case TaskType.addData:
-            VerticalLine layer = VerticalLine.fromTool(
-                pos: (task as AddDataTask).tillPoint.toDouble() - 1);
+            VerticalLine layer = VerticalLine.fromRecipe(
+                id: (task as AddDataTask).verticleLineId,
+                pos: (task).tillPoint.toDouble() - 1);
             layer.isLocked = true;
             _chartKey.currentState?.addLayerAtRegion(
                 recipe.chartSettings.mainPlotRegionId, layer);
@@ -215,6 +214,13 @@ class _EditorPageState extends State<EditorPage> {
             break;
         }
       }
+    });
+  }
+
+  _updateTaskList(Task task) {
+    setState(() {
+      tasks.insert(insertPosition, task);
+      _currentTaskType = null;
     });
   }
 
@@ -264,12 +270,7 @@ class _EditorPageState extends State<EditorPage> {
 
   _onLayerSelect(PlotRegion region, Layer layer) {
     if (_currentTaskType == TaskType.addLayer) {
-      setState(() {
-        //tasks.add(AddLayerTask(regionId: region.id, layer: layer));
-        tasks.insert(
-            insertPosition, AddLayerTask(regionId: region.id, layer: layer));
-        _currentTaskType = null;
-      });
+      _updateTaskList(AddLayerTask(regionId: region.id, layer: layer));
     }
   }
 
@@ -289,13 +290,9 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   _onIndicatorSelect(Indicator indicator) {
-    setState(() {
-      if (_currentTaskType == TaskType.addIndicator) {
-        //tasks.add(AddIndicatorTask(indicator: indicator));
-        tasks.insert(insertPosition, AddIndicatorTask(indicator: indicator));
-        _currentTaskType = null;
-      }
-    });
+    if (_currentTaskType == TaskType.addIndicator) {
+      _updateTaskList(AddIndicatorTask(indicator: indicator));
+    }
   }
 
   _onInteraction(Offset tapDownPoint, Offset updatedPoint) {
@@ -360,21 +357,17 @@ class _EditorPageState extends State<EditorPage> {
           for (Task task in tasks) {
             if (task is AddDataTask) {
               if (tapDownPoint.dx.round() < task.tillPoint) {
-                return;
+                task.fromPoint = tapDownPoint.dx.round() + 1;
+                break;
               } else {
                 fromPoint = task.tillPoint;
               }
             }
           }
-          setState(() {
-            tasks.insert(
-                insertPosition,
-                AddDataTask(
-                    fromPoint: fromPoint,
-                    tillPoint: tapDownPoint.dx.round() + 1,
-                    verticleLineId: layer?.id ?? ""));
-            _currentTaskType = null;
-          });
+          _updateTaskList(AddDataTask(
+              fromPoint: fromPoint,
+              tillPoint: tapDownPoint.dx.round() + 1,
+              verticleLineId: layer.id));
           break;
         case null:
           layer = null;
@@ -405,12 +398,6 @@ class _EditorPageState extends State<EditorPage> {
               yMinValue: selectedRegion!.yMinValue,
               yMaxValue: selectedRegion!.yMaxValue);
           _chartKey.currentState?.addLayerUsingTool(layer);
-          if (_isRecording && layer.type != LayerType.verticalLine) {
-            setState(() {
-              tasks.add(
-                  AddLayerTask(regionId: selectedRegion!.id, layer: layer!));
-            });
-          }
         }
       });
     }
@@ -451,7 +438,6 @@ class _EditorPageState extends State<EditorPage> {
         onTaskClick: _onTaskClick,
         onTaskEdit: _onTaskEdit,
         onTaskDelete: _onTaskDelete,
-        onTaskReorder: _onTaskReorder,
       ),
     );
   }
@@ -484,7 +470,7 @@ class _EditorPageState extends State<EditorPage> {
           } else {
             insertPosition = tasks.length;
           }
-          tasks.insert(insertPosition, ClearTask());
+          _updateTaskList(ClearTask());
           break;
       }
       if (pos >= 0 && pos <= tasks.length) {
@@ -527,25 +513,11 @@ class _EditorPageState extends State<EditorPage> {
     });
   }
 
-  _onTaskReorder(int oldIndex, int newIndex) {
-    setState(() {
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
-      final item = tasks.removeAt(oldIndex);
-      tasks.insert(newIndex, item);
-    });
-  }
-
   void prompt() async {
     await showPromptDialog(context: context).then((data) {
-      setState(() {
-        if (data != null) {
-          //tasks.add(data);
-          tasks.insert(insertPosition, data);
-        }
-        _currentTaskType = null;
-      });
+      if (data != null) {
+        _updateTaskList(data);
+      }
     });
   }
 
@@ -564,13 +536,9 @@ class _EditorPageState extends State<EditorPage> {
 
   void waitTaskPrompt() async {
     await showWaitTaskDialog(context: context).then((data) {
-      setState(() {
-        if (data != null) {
-          //tasks.add(data);
-          tasks.insert(insertPosition, data);
-        }
-        _currentTaskType = null;
-      });
+      if (data != null) {
+        _updateTaskList(data);
+      }
     });
   }
 
@@ -586,12 +554,9 @@ class _EditorPageState extends State<EditorPage> {
 
   void mcqPrompt() async {
     await showMcqTaskDialog(context: context).then((data) {
-      setState(() {
-        if (data != null) {
-          tasks.insert(insertPosition, data);
-        }
-        _currentTaskType = null;
-      });
+      if (data != null) {
+        _updateTaskList(data);
+      }
     });
   }
 
@@ -1257,10 +1222,5 @@ class _EditorPageState extends State<EditorPage> {
         break;
     }
     _chartKey.currentState?.addIndicator(indicator);
-    if (_isRecording) {
-      setState(() {
-        tasks.add(AddIndicatorTask(indicator: indicator!));
-      });
-    }
   }
 }

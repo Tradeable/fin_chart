@@ -17,6 +17,11 @@ class VerticalLine extends Layer {
   VerticalLine.fromTool({required this.pos})
       : super.fromTool(id: generateV4(), type: LayerType.verticalLine);
 
+  VerticalLine.fromRecipe({
+    required super.id,
+    required this.pos,
+  }) : super.fromTool(type: LayerType.verticalLine);
+
   factory VerticalLine.fromJson({required Map<String, dynamic> json}) {
     return VerticalLine._(
         id: json['id'],

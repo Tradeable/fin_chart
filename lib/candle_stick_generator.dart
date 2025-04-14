@@ -81,6 +81,23 @@ enum TimeInterval {
   }
 }
 
+enum MarketSession {
+  preMarket,
+  regular,
+  closed;
+
+  String get label {
+    switch (this) {
+      case MarketSession.preMarket:
+        return 'PRE-MARKET';
+      case MarketSession.regular:
+        return 'REGULAR';
+      case MarketSession.closed:
+        return 'CLOSED';
+    }
+  }
+}
+
 class CandleData {
   final double open;
   final double high;
@@ -128,6 +145,124 @@ class CandleData {
   }
 }
 
+// Add this class inside the file
+class BSESchedule {
+  // Trading hours in Indian Standard Time (IST)
+  static final preMarketStart = const TimeOfDay(hour: 9, minute: 0);
+  static final preMarketEnd = const TimeOfDay(hour: 9, minute: 15);
+  static final regularStart = const TimeOfDay(hour: 9, minute: 15);
+  static final regularEnd = const TimeOfDay(hour: 15, minute: 30);
+
+  // Check if a date is a trading day (Monday to Friday)
+  static bool isTradingDay(DateTime date) {
+    int weekday = date.weekday;
+    // 1 = Monday, 7 = Sunday
+    return weekday >= 1 && weekday <= 5;
+    // Note: This doesn't account for holidays, which would need a separate list
+  }
+
+  // Get market session for a given datetime
+  static MarketSession getSession(DateTime dateTime) {
+    if (!isTradingDay(dateTime)) {
+      return MarketSession.closed;
+    }
+    
+    // Convert DateTime to TimeOfDay for easier comparison
+    final timeOfDay = TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+    
+    // Check if within pre-market hours
+    if (_isTimeInRange(timeOfDay, preMarketStart, preMarketEnd)) {
+      return MarketSession.preMarket;
+    }
+    
+    // Check if within regular trading hours
+    if (_isTimeInRange(timeOfDay, regularStart, regularEnd)) {
+      return MarketSession.regular;
+    }
+    
+    // Outside trading hours
+    return MarketSession.closed;
+  }
+  
+  // Helper to check if a time is within a range
+  static bool _isTimeInRange(TimeOfDay time, TimeOfDay start, TimeOfDay end) {
+    int timeMinutes = time.hour * 60 + time.minute;
+    int startMinutes = start.hour * 60 + start.minute;
+    int endMinutes = end.hour * 60 + end.minute;
+    
+    return timeMinutes >= startMinutes && timeMinutes < endMinutes;
+  }
+  
+  // Calculate next valid trading time from a given datetime
+  static DateTime getNextTradingTime(DateTime fromTime, Duration interval) {
+    DateTime currentTime = fromTime;
+    
+    // Keep adding the interval until we find a valid trading time
+    do {
+      currentTime = currentTime.add(interval);
+      MarketSession session = getSession(currentTime);
+      
+      // If we're in a closed session and it's the same day, 
+      // jump to the next day's opening
+      if (session == MarketSession.closed) {
+        // If after market close, move to next day's open
+        if (isTradingDay(currentTime)) {
+          TimeOfDay currentTimeOfDay = TimeOfDay(
+            hour: currentTime.hour, 
+            minute: currentTime.minute
+          );
+          
+          // If after market close on a trading day, jump to next day's open
+          if (_compareTimeOfDay(currentTimeOfDay, regularEnd) >= 0) {
+            currentTime = _setTimeToNextTradingDay(currentTime, regularStart);
+          } 
+          // If before market open on a trading day, jump to today's open
+          else if (_compareTimeOfDay(currentTimeOfDay, regularStart) < 0) {
+            currentTime = DateTime(
+              currentTime.year,
+              currentTime.month,
+              currentTime.day,
+              regularStart.hour,
+              regularStart.minute,
+            );
+          }
+        } else {
+          // If on weekend/holiday, jump to next trading day's open
+          currentTime = _setTimeToNextTradingDay(currentTime, regularStart);
+        }
+      }
+    } while (getSession(currentTime) == MarketSession.closed);
+    
+    return currentTime;
+  }
+  
+  // Helper to compare TimeOfDay
+  static int _compareTimeOfDay(TimeOfDay time1, TimeOfDay time2) {
+    int minutes1 = time1.hour * 60 + time1.minute;
+    int minutes2 = time2.hour * 60 + time2.minute;
+    return minutes1 - minutes2;
+  }
+  
+  // Find the next trading day and set time to market open
+  static DateTime _setTimeToNextTradingDay(DateTime date, TimeOfDay timeOfDay) {
+    DateTime nextDay = date.add(const Duration(days: 1));
+    
+    // Keep incrementing days until we find a trading day
+    while (!isTradingDay(nextDay)) {
+      nextDay = nextDay.add(const Duration(days: 1));
+    }
+    
+    // Set time to market open
+    return DateTime(
+      nextDay.year,
+      nextDay.month,
+      nextDay.day,
+      timeOfDay.hour,
+      timeOfDay.minute,
+    );
+  }
+}
+
 class CandleStickGenerator extends StatefulWidget {
   final Function(List<ICandle> candles) onCandleDataGenerated;
   const CandleStickGenerator({super.key, required this.onCandleDataGenerated});
@@ -164,6 +299,8 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
   int? selectedCandleIndex;
 
   final FocusNode _focusNode = FocusNode();
+
+  bool useBSESchedule = true;
 
   @override
   void initState() {
@@ -403,6 +540,14 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                   ),
                 ],
               ),
+              OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    useBSESchedule = !useBSESchedule;
+                  });
+                },
+                child: Text('BSE Schedule: ${useBSESchedule ? "ON" : "OFF"}'),
+              ),
               const SizedBox(height: 16),
               Container(
                 height: 300,
@@ -631,6 +776,21 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
     for (int i = 0; i < candleDataList.length; i++) {
       final candle = candleDataList[i];
 
+      // Apply BSE schedule logic only if enabled
+      if (useBSESchedule) {
+        currentDate = BSESchedule.getNextTradingTime(
+            currentDate, selectedTimeInterval.duration);
+      } else {
+        // Original behavior when BSE schedule is disabled
+        currentDate =
+            i == 0 ? startDate : currentDate.add(selectedTimeInterval.duration);
+      }
+
+      // Get market session if using BSE schedule
+      final marketSession = useBSESchedule
+          ? BSESchedule.getSession(currentDate)
+          : MarketSession.regular;
+
       // Create unique ID for each candle
       final id = 'candle-${currentDate.millisecondsSinceEpoch}';
 
@@ -645,11 +805,14 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
           close: candle.close,
           volume: candle.volume,
           state: candle.isAdjusted ? CandleState.selected : CandleState.natural,
+          promptText: useBSESchedule ? marketSession.label : null,
         ),
       );
 
-      // Increment date by selected interval
-      currentDate = currentDate.add(selectedTimeInterval.duration);
+      // Increment date appropriately
+      if (!useBSESchedule) {
+        currentDate = currentDate.add(selectedTimeInterval.duration);
+      }
     }
 
     return iCandles;

@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class PanelPlotRegion extends PlotRegion {
   final Indicator indicator;
 
-  PanelPlotRegion({required this.indicator, required super.yAxisSettings})
+  PanelPlotRegion({required this.indicator, required super.yAxisSettings, required super.xAxisSettings})
       : super(id: indicator.id);
 
   @override

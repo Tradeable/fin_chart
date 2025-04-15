@@ -11,6 +11,7 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 class Crosshair extends Layer {
+  // Basic properties
   late Offset position;
   Color color = Colors.grey;
   double strokeWidth = 1.5;
@@ -25,7 +26,7 @@ class Crosshair extends Layer {
   Offset? dragStartPosition;
   Offset? initialPosition;
 
-  // Add these properties
+  // Axis position properties
   YAxisPos yAxisPos = YAxisPos.right;
   XAxisPos xAxisPos = XAxisPos.bottom;
 
@@ -93,12 +94,6 @@ class Crosshair extends Layer {
       dashLength,
       gapLength,
     );
-
-    // Draw y-axis value label
-    _drawYAxisLabel(canvas, canvasPosition);
-
-    // Draw x-axis date label
-    _drawXAxisLabel(canvas, canvasPosition);
   }
 
   void _drawDottedLine(
@@ -161,8 +156,10 @@ class Crosshair extends Layer {
     }
   }
 
-  void _drawYAxisLabel(Canvas canvas, Offset canvasPosition) {
-    final yValue = toYInverse(canvasPosition.dy);
+  // Y-axis label rendering - modeled after HorizontalLine implementation
+  @override
+  void drawRightAxisValues({required Canvas canvas}) {
+    final yValue = toYInverse(toCanvas(position).dy);
     final yValueText = yValue.toStringAsFixed(2);
 
     final TextPainter text = TextPainter(
@@ -173,37 +170,49 @@ class Crosshair extends Layer {
       textDirection: ui.TextDirection.ltr,
     )..layout();
 
-    // Position the label on the y-axis
-    if (yAxisPos == YAxisPos.right) {
-      canvas.drawRect(
-          Rect.fromLTWH(
-              rightPos,
-              toY(yValue) - text.height / 2 - yLabelPadding / 2,
-              text.width + 2 * xLabelPadding,
-              text.height + yLabelPadding),
-          Paint()..color = color);
-
-      text.paint(canvas,
-          Offset(rightPos + yLabelPadding / 2, toY(yValue) - text.height / 2));
-      print(yValue);
-    } else {
-      canvas.drawRect(
+    canvas.drawRect(
         Rect.fromLTWH(
-            leftPos - text.width - 8,
-            canvasPosition.dy - text.height / 2 - 4,
-            text.width + 8,
-            text.height + 8),
-        Paint()..color = color.withOpacity(0.8),
-      );
+            rightPos,
+            toY(yValue) - text.height / 2 - yLabelPadding / 2,
+            text.width + 2 * xLabelPadding,
+            text.height + yLabelPadding),
+        Paint()..color = color);
 
-      text.paint(
-        canvas,
-        Offset(leftPos - text.width - 4, canvasPosition.dy - text.height / 2),
-      );
-    }
+    text.paint(canvas,
+        Offset(rightPos + yLabelPadding / 2, toY(yValue) - text.height / 2));
   }
 
-  void _drawXAxisLabel(Canvas canvas, Offset canvasPosition) {
+  @override
+  void drawLeftAxisValues({required Canvas canvas}) {
+    final yValue = toYInverse(toCanvas(position).dy);
+    final yValueText = yValue.toStringAsFixed(2);
+
+    final TextPainter text = TextPainter(
+      text: TextSpan(
+        text: yValueText,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+      ),
+      textDirection: ui.TextDirection.ltr,
+    )..layout();
+
+    canvas.drawRect(
+        Rect.fromLTWH(
+            leftPos - text.width - 2 * xLabelPadding,
+            toY(yValue) - text.height / 2 - yLabelPadding / 2,
+            text.width + 2 * xLabelPadding,
+            text.height + yLabelPadding),
+        Paint()..color = color);
+
+    text.paint(
+        canvas,
+        Offset(leftPos - text.width - xLabelPadding,
+            toY(yValue) - text.height / 2));
+  }
+
+  @override
+  void drawBottomAxisValues({required Canvas canvas}) {
+    if (candles.isEmpty) return;
+
     String xValueText = "";
 
     // Get date from candle if snapped
@@ -232,30 +241,68 @@ class Crosshair extends Layer {
       textDirection: ui.TextDirection.ltr,
     )..layout();
 
-    // Position the label on the x-axis
-    if (xAxisPos == XAxisPos.bottom) {
-      canvas.drawRect(
-        Rect.fromLTWH(canvasPosition.dx - text.width / 2 - 4, bottomPos,
-            text.width + 8, text.height + 8),
-        Paint()..color = color.withOpacity(0.8),
-      );
+    final canvasPosition = toCanvas(position);
 
-      text.paint(
-        canvas,
-        Offset(canvasPosition.dx - text.width / 2, bottomPos + 4),
-      );
+    canvas.drawRect(
+      Rect.fromLTWH(canvasPosition.dx - text.width / 2 - xLabelPadding / 2,
+          bottomPos, text.width + xLabelPadding, text.height + yLabelPadding),
+      Paint()..color = color,
+    );
+
+    text.paint(
+      canvas,
+      Offset(canvasPosition.dx - text.width / 2, bottomPos + yLabelPadding / 2),
+    );
+  }
+
+  @override
+  void drawTopAxisValues({required Canvas canvas}) {
+    if (candles.isEmpty) return;
+
+    String xValueText = "";
+
+    // Get date from candle if snapped
+    if (snappedCandleIndex != null && snappedCandleIndex! < candles.length) {
+      final candle = candles[snappedCandleIndex!];
+      final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+      xValueText = dateFormat.format(candle.date);
     } else {
-      canvas.drawRect(
-        Rect.fromLTWH(canvasPosition.dx - text.width / 2 - 4,
-            topPos - text.height - 8, text.width + 8, text.height + 8),
-        Paint()..color = color.withOpacity(0.8),
-      );
-
-      text.paint(
-        canvas,
-        Offset(canvasPosition.dx - text.width / 2, topPos - text.height - 4),
-      );
+      // If not snapped, show date closest to current position
+      double xPos = position.dx;
+      int index = xPos.round();
+      if (index >= 0 && index < candles.length) {
+        final candle = candles[index];
+        final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+        xValueText = dateFormat.format(candle.date);
+      } else {
+        xValueText = 'N/A';
+      }
     }
+
+    final TextPainter text = TextPainter(
+      text: TextSpan(
+        text: xValueText,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+      ),
+      textDirection: ui.TextDirection.ltr,
+    )..layout();
+
+    final canvasPosition = toCanvas(position);
+
+    canvas.drawRect(
+      Rect.fromLTWH(
+          canvasPosition.dx - text.width / 2 - xLabelPadding / 2,
+          topPos - text.height - yLabelPadding,
+          text.width + xLabelPadding,
+          text.height + yLabelPadding),
+      Paint()..color = color,
+    );
+
+    text.paint(
+      canvas,
+      Offset(canvasPosition.dx - text.width / 2,
+          topPos - text.height - yLabelPadding / 2),
+    );
   }
 
   void updateData(List<ICandle> data) {

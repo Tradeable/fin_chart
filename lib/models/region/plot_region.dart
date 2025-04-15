@@ -2,6 +2,7 @@ import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/layers/layer.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
+import 'package:fin_chart/models/settings/x_axis_settings.dart';
 import 'package:fin_chart/models/settings/y_axis_settings.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 abstract class PlotRegion with RegionProp {
   final String id;
   final YAxisSettings yAxisSettings;
+  final XAxisSettings xAxisSettings;
   final List<Layer> layers;
   late Size yLabelSize;
   late List<double> yValues;
@@ -17,6 +19,7 @@ abstract class PlotRegion with RegionProp {
   PlotRegion(
       {required this.id,
       required this.yAxisSettings,
+      required this.xAxisSettings,
       List<Layer>? layers,
       double yMinValue = 0,
       double yMaxValue = 1})
@@ -83,6 +86,25 @@ abstract class PlotRegion with RegionProp {
         layer.drawLeftAxisValues(canvas: canvas);
       } else if (yAxisSettings.yAxisPos == YAxisPos.right) {
         layer.drawRightAxisValues(canvas: canvas);
+      }
+    }
+  }
+
+  void drawXAxisValue(Canvas canvas) {
+    for (final layer in layers) {
+      layer.updateRegionProp(
+          leftPos: leftPos,
+          topPos: topPos,
+          rightPos: rightPos,
+          bottomPos: bottomPos,
+          xStepWidth: xStepWidth,
+          xOffset: xOffset,
+          yMinValue: yMinValue,
+          yMaxValue: yMaxValue);
+      if (xAxisSettings.xAxisPos == XAxisPos.top) {
+        layer.drawTopAxisValues(canvas: canvas);
+      } else if (xAxisSettings.xAxisPos == XAxisPos.bottom) {
+        layer.drawBottomAxisValues(canvas: canvas);
       }
     }
   }

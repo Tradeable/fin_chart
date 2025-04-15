@@ -21,6 +21,7 @@ class MainPlotRegion extends PlotRegion {
     String? id,
     required this.candles,
     required super.yAxisSettings,
+    required super.xAxisSettings,
     super.yMinValue,
     super.yMaxValue,
   }) : super(id: id ?? generateV4()) {

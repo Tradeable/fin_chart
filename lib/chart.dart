@@ -132,6 +132,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     regions.add(MainPlotRegion(
       candles: currentData,
       yAxisSettings: widget.yAxisSettings!,
+      xAxisSettings: widget.xAxisSettings!,
       // fundamentalEvents: fundamentalEvents,
     ));
   }
@@ -150,6 +151,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         id: recipe.chartSettings.mainPlotRegionId,
         candles: currentData,
         yAxisSettings: widget.yAxisSettings!,
+        xAxisSettings: widget.xAxisSettings!,
         yMinValue: yMinValue,
         yMaxValue: yMaxValue));
 
@@ -188,7 +190,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     setState(() {
       if (indicator.displayMode == DisplayMode.panel) {
         PanelPlotRegion region = PanelPlotRegion(
-            indicator: indicator, yAxisSettings: widget.yAxisSettings!);
+            indicator: indicator, yAxisSettings: widget.yAxisSettings!, xAxisSettings: widget.xAxisSettings!);
 
         double addRegionWeight = 1 / (regions.length + 1);
         double multiplier = 1 - addRegionWeight;

@@ -62,6 +62,10 @@ abstract class Layer with RegionProp {
 
   void drawLeftAxisValues({required Canvas canvas}) {}
 
+  void drawBottomAxisValues({required Canvas canvas}) {}
+
+  void drawTopAxisValues({required Canvas canvas}) {}
+
   Layer? onTapDown({required TapDownDetails details}) {
     return null;
   }

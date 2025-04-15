@@ -20,7 +20,6 @@ class ChartPainter extends CustomPainter {
   final Layer? selectedLayer;
   final double? animationValue;
   final double? eventSelectionPosition;
-  
 
   ChartPainter({
     super.repaint,
@@ -58,6 +57,10 @@ class ChartPainter extends CustomPainter {
 
     for (PlotRegion region in regions) {
       region.drawAxisValue(canvas);
+    }
+
+    for (PlotRegion region in regions) {
+      region.drawXAxisValue(canvas);
     }
 
     final innerBoundries = Rect.fromLTRB(leftPos, topPos, rightPos, bottomPos);

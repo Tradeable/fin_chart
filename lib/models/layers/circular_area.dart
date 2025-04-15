@@ -28,7 +28,7 @@ class CircularArea extends Layer {
         type: (json['type'] as String).toLayerType() ?? LayerType.circularArea,
         isLocked: json['isLocked'] ?? false,
         point: offsetFromJson(json['point']),
-        radius: json['radius'] ?? 20.0,
+        radius: json['radius'].toDouble() ?? 20.0,
         color: colorFromJson(json['color']));
   }
 
@@ -60,14 +60,58 @@ class CircularArea extends Layer {
           ..strokeWidth = 1
           ..style = PaintingStyle.fill
           ..color = color.withAlpha(100));
+
+    if (isSelected) {
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(toX(point.dx), toY(point.dy) + radius),
+              width: 5,
+              height: 5),
+          Paint()
+            ..strokeWidth = 1
+            ..style = PaintingStyle.fill
+            ..color = color);
+
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(toX(point.dx), toY(point.dy) - radius),
+              width: 5,
+              height: 5),
+          Paint()
+            ..strokeWidth = 1
+            ..style = PaintingStyle.fill
+            ..color = color);
+
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(toX(point.dx) + radius, toY(point.dy)),
+              width: 5,
+              height: 5),
+          Paint()
+            ..strokeWidth = 1
+            ..style = PaintingStyle.fill
+            ..color = color);
+
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(toX(point.dx) - radius, toY(point.dy)),
+              width: 5,
+              height: 5),
+          Paint()
+            ..strokeWidth = 1
+            ..style = PaintingStyle.fill
+            ..color = color);
+    }
   }
 
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointInCircularRegion(
         details.localPosition, toCanvas(point), radius)) {
+      isSelected = true;
       return this;
     }
+    isSelected = false;
     return super.onTapDown(details: details);
   }
 

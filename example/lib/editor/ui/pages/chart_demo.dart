@@ -4,7 +4,6 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
-import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/task.dart';
@@ -49,28 +48,42 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.addData:
         AddDataTask task = currentTask as AddDataTask;
         _chartKey.currentState
-            ?.addData(recipe.data.sublist(task.fromPoint, task.tillPoint));
+            ?.addDataWithAnimation(
+                recipe.data.sublist(task.fromPoint, task.tillPoint),
+                const Duration(milliseconds: 10))
+            .then((value) {
+          if (value) {
+            onTaskFinish();
+          }
+        });
         break;
       case TaskType.addIndicator:
         AddIndicatorTask task = currentTask as AddIndicatorTask;
         _chartKey.currentState?.addIndicator(task.indicator);
+        onTaskFinish();
         break;
       case TaskType.addLayer:
         AddLayerTask task = currentTask as AddLayerTask;
         _chartKey.currentState?.addLayerAtRegion(task.regionId, task.layer);
+        onTaskFinish();
         break;
       case TaskType.addPrompt:
         AddPromptTask task = currentTask as AddPromptTask;
         setState(() {
           promptText = task.promptText;
         });
+        onTaskFinish();
         break;
       case TaskType.waitTask:
         setState(() {});
         break;
-    }
-    if (currentTask.actionType == ActionType.empty) {
-      onTaskFinish();
+      case TaskType.addMcq:
+        setState(() {});
+        break;
+      case TaskType.clearTask:
+        _chartKey.currentState?.clearChart();
+        onTaskFinish();
+        break;
     }
   }
 
@@ -114,18 +127,49 @@ class _ChartDemoState extends State<ChartDemo> {
                   // xAxisSettings: const XAxisSettings(xAxisPos: XAxisPos.bottom),
                   // candles: const [],
                   onInteraction: (p0, p1) {})),
-          Flexible(
-            flex: 1,
-            child: currentTask.actionType == ActionType.interupt
-                ? ElevatedButton(
-                    onPressed: () {
-                      onTaskFinish();
-                    },
-                    child: Text((currentTask as WaitTask).btnText))
-                : Container(),
-          )
+          Flexible(flex: 1, child: userActionContainer()
+
+              // currentTask.actionType == ActionType.interupt
+              //     ? ElevatedButton(
+              //         onPressed: () {
+              //           onTaskFinish();
+              //         },
+              //         child: Text((currentTask as WaitTask).btnText))
+              //     : Container(),
+              )
         ],
       )),
     );
+  }
+
+  Widget userActionContainer() {
+    switch (currentTask.taskType) {
+      case TaskType.addData:
+      case TaskType.addIndicator:
+      case TaskType.addLayer:
+      case TaskType.addPrompt:
+      case TaskType.clearTask:
+        return Container();
+      case TaskType.addMcq:
+        Task task = currentTask as AddMcqTask;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ...(task as AddMcqTask).options.map((e) {
+              return ElevatedButton(
+                  onPressed: () {
+                    onTaskFinish();
+                  },
+                  child: Text(e));
+            })
+          ],
+        );
+      case TaskType.waitTask:
+        return ElevatedButton(
+            onPressed: () {
+              onTaskFinish();
+            },
+            child: Text((currentTask as WaitTask).btnText));
+    }
   }
 }

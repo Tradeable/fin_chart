@@ -11,10 +11,10 @@ class Mfi extends Indicator {
   Color lineColor = Colors.purple;
   Color overboughtColor = Colors.red;
   Color oversoldColor = Colors.green;
-  
+
   final List<double> mfiValues = [];
   final List<ICandle> candles = [];
-  
+
   // Standard MFI overbought/oversold thresholds
   double overboughtThreshold = 80;
   double oversoldThreshold = 20;
@@ -73,10 +73,12 @@ class Mfi extends Indicator {
     );
 
     // Draw overbought highlight (above threshold)
-    _drawThresholdHighlight(canvas, overboughtThreshold, overboughtColor, startIndex);
+    _drawThresholdHighlight(
+        canvas, overboughtThreshold, overboughtColor, startIndex);
 
     // Draw oversold highlight (below threshold)
-    _drawThresholdHighlight(canvas, oversoldThreshold, oversoldColor, startIndex);
+    _drawThresholdHighlight(
+        canvas, oversoldThreshold, oversoldColor, startIndex);
 
     // Draw the overbought line
     canvas.drawLine(
@@ -109,7 +111,8 @@ class Mfi extends Indicator {
     );
   }
 
-  void _drawThresholdHighlight(Canvas canvas, double threshold, Color color, int startIndex) {
+  void _drawThresholdHighlight(
+      Canvas canvas, double threshold, Color color, int startIndex) {
     final path = Path();
     bool inThresholdArea = false;
     final thresholdY = toY(threshold);
@@ -127,7 +130,8 @@ class Mfi extends Indicator {
           // Find the exact crossing point with the threshold line
           if (i > 0) {
             final prevX = toX((startIndex + i - 1).toDouble());
-            final t = (threshold - mfiValues[i - 1]) / (mfiValues[i] - mfiValues[i - 1]);
+            final t = (threshold - mfiValues[i - 1]) /
+                (mfiValues[i] - mfiValues[i - 1]);
             final crossX = prevX + t * (x - prevX);
 
             path.moveTo(crossX, thresholdY);
@@ -140,7 +144,8 @@ class Mfi extends Indicator {
       } else if (inThresholdArea) {
         // Find the exact crossing point with the threshold line
         final prevX = toX((startIndex + i - 1).toDouble());
-        final t = (threshold - mfiValues[i]) / (mfiValues[i - 1] - mfiValues[i]);
+        final t =
+            (threshold - mfiValues[i]) / (mfiValues[i - 1] - mfiValues[i]);
         final crossX = x - t * (x - prevX);
 
         path.lineTo(crossX, thresholdY);
@@ -170,7 +175,7 @@ class Mfi extends Indicator {
     if (data.isEmpty) return;
 
     candles.addAll(data.sublist(candles.isEmpty ? 0 : candles.length));
-    
+
     _calculateMFI();
 
     // Set fixed bounds for MFI (0-100)
@@ -180,7 +185,7 @@ class Mfi extends Indicator {
     yValues = generateNiceAxisValues(yMinValue, yMaxValue);
     yMinValue = yValues.first;
     yMaxValue = yValues.last;
-    
+
     yLabelSize = getLargetRnderBoxSizeForList(
         yValues.map((v) => v.toString()).toList(),
         const TextStyle(color: Colors.black, fontSize: 12));
@@ -188,7 +193,7 @@ class Mfi extends Indicator {
 
   void _calculateMFI() {
     mfiValues.clear();
-    
+
     if (candles.length <= period) {
       return; // Not enough data
     }
@@ -201,15 +206,15 @@ class Mfi extends Indicator {
 
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
-      
+
       // Typical price: (High + Low + Close) / 3
       final typicalPrice = (candle.high + candle.low + candle.close) / 3;
       typicalPrices.add(typicalPrice);
-      
+
       // Raw money flow: Typical Price * Volume
       final rawMoneyFlow = typicalPrice * candle.volume;
       moneyFlows.add(rawMoneyFlow);
-      
+
       // Skip first candle for positive/negative flows (need previous for comparison)
       if (i > 0) {
         if (typicalPrice > typicalPrices[i - 1]) {
@@ -231,29 +236,30 @@ class Mfi extends Indicator {
         negativeFlows.add(0);
       }
     }
-    
+
     // Calculate MFI values using a rolling window of the period length
     for (int i = period; i < candles.length; i++) {
       double sumPositiveFlow = 0;
       double sumNegativeFlow = 0;
-      
+
       // Sum the flows over the period
       for (int j = i - period + 1; j <= i; j++) {
         sumPositiveFlow += positiveFlows[j];
         sumNegativeFlow += negativeFlows[j];
       }
-      
+
       // Calculate Money Ratio
-      double moneyRatio = sumNegativeFlow == 0 ? 
-                          100 : // Avoid division by zero
-                          sumPositiveFlow / sumNegativeFlow;
-      
+      double moneyRatio = sumNegativeFlow == 0
+          ? 100
+          : // Avoid division by zero
+          sumPositiveFlow / sumNegativeFlow;
+
       // Calculate MFI: 100 - (100 / (1 + Money Ratio))
       double mfiValue = 100 - (100 / (1 + moneyRatio));
-      
+
       // Sometimes the value can be slightly out of range due to floating-point precision
       mfiValue = math.min(100, math.max(0, mfiValue));
-      
+
       mfiValues.add(mfiValue);
     }
   }
@@ -268,9 +274,7 @@ class Mfi extends Indicator {
         indicator: this,
         onUpdate: onUpdate,
       ),
-    ).then((value) {
-      updateData(candles);
-    });
+    );
   }
 
   @override

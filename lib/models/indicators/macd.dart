@@ -239,9 +239,7 @@ class Macd extends Indicator {
         indicator: this,
         onUpdate: onUpdate,
       ),
-    ).then((value) {
-      updateData(candles);
-    });
+    );
   }
 
   @override

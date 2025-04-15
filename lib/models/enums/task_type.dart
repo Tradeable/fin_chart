@@ -3,8 +3,10 @@ enum TaskType {
   addIndicator,
   addLayer,
   addPrompt,
+  addMcq,
   // addLayerOfType,
-  waitTask
+  waitTask,
+  clearTask,
 }
 
 // extension TaskTypeExtension on TaskType {

@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:fin_chart/models/enums/candle_state.dart';
+import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
@@ -10,21 +13,37 @@ import 'package:flutter/material.dart';
 class MainPlotRegion extends PlotRegion {
   final List<ICandle> candles;
   final List<Indicator> indicators = [];
+  final List<FundamentalEvent> fundamentalEvents = [];
+  FundamentalEvent? get selectedEvent => _selectedEvent;
+  FundamentalEvent? _selectedEvent;
 
-  MainPlotRegion(
-      {String? id, required this.candles, required super.yAxisSettings})
-      : super(id: id ?? generateV4()) {
-    (double, double) range = findMinMaxWithPercentage(candles);
-    yMinValue = range.$1;
-    yMaxValue = range.$2;
+  MainPlotRegion({
+    String? id,
+    required this.candles,
+    required super.yAxisSettings,
+    super.yMinValue,
+    super.yMaxValue,
+  }) : super(id: id ?? generateV4()) {
+    if (candles.isNotEmpty) {
+      (double, double) range = findMinMaxWithPercentage(candles);
 
-    yValues = generateNiceAxisValues(yMinValue, yMaxValue);
+      if (yMinValue == 0 && yMaxValue == 1) {
+        yMinValue = range.$1;
+        yMaxValue = range.$2;
+      } else {
+        yMinValue = min(range.$1, yMinValue);
+        yMaxValue = max(range.$2, yMaxValue);
+      }
 
-    yMinValue = yValues.first;
-    yMaxValue = yValues.last;
+      yValues = generateNiceAxisValues(yMinValue, yMaxValue);
 
-    yLabelSize = getLargetRnderBoxSizeForList(
-        yValues.map((v) => v.toString()).toList(), yAxisSettings.axisTextStyle);
+      yMinValue = yValues.first;
+      yMaxValue = yValues.last;
+
+      yLabelSize = getLargetRnderBoxSizeForList(
+          yValues.map((v) => v.toString()).toList(),
+          yAxisSettings.axisTextStyle);
+    }
   }
 
   @override
@@ -63,8 +82,14 @@ class MainPlotRegion extends PlotRegion {
   void updateData(List<ICandle> data) {
     candles.addAll(data.sublist(candles.isEmpty ? 0 : candles.length));
     (double, double) range = findMinMaxWithPercentage(candles);
-    yMinValue = range.$1;
-    yMaxValue = range.$2;
+
+    if (yMinValue == 0 && yMaxValue == 1) {
+      yMinValue = range.$1;
+      yMaxValue = range.$2;
+    } else {
+      yMinValue = min(range.$1, yMinValue);
+      yMaxValue = max(range.$2, yMaxValue);
+    }
 
     yValues = generateNiceAxisValues(yMinValue, yMaxValue);
 
@@ -106,6 +131,8 @@ class MainPlotRegion extends PlotRegion {
           Rect.fromLTRB(toX(i.toDouble()) - (xStepWidth) / 4, toY(candle.open),
               toX(i.toDouble()) + (xStepWidth) / 4, toY(candle.close)),
           paint);
+
+      drawFundamentalEvents(canvas, i);
 
       // if (toX(i) >= leftPos && toX(i) <= rightPos) {
       //   canvas.drawLine(Offset(toX(i), toY(candle.high)),
@@ -195,5 +222,102 @@ class MainPlotRegion extends PlotRegion {
                 onDelete: onDelete))
           ],
         ));
+  }
+
+  void drawFundamentalEvents(Canvas canvas, int index) {
+    if (fundamentalEvents.isEmpty) return;
+    FundamentalEvent? event;
+
+    for (final e in fundamentalEvents) {
+      if (e.index == index) {
+        event = e;
+        break;
+      }
+    }
+
+    if (event != null) {
+      final xPos = leftPos + xOffset + xStepWidth / 2 + index * xStepWidth;
+
+      // Skip if outside visible area
+      final yPos = bottomPos - 20; // Position below x-axis
+
+      // Set position for later tooltip reference
+      event.position = Offset(xPos, yPos);
+      if (event.index == index) {
+        // Draw event icon with larger size for visibility
+        final paint = Paint()
+          ..color = event.color
+          ..style = PaintingStyle.fill;
+
+        canvas.drawCircle(event.position!, 12, paint); // Increased size
+
+        // Draw event text with white background for contrast
+        final textSpan = TextSpan(
+          text: event.iconText,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15, // Increased size
+            fontWeight: FontWeight.bold,
+          ),
+        );
+
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        )..layout();
+
+        textPainter.paint(
+          canvas,
+          Offset(
+            event.position!.dx - textPainter.width / 2,
+            event.position!.dy - textPainter.height / 2,
+          ),
+        );
+
+        // If selected, draw tooltip and vertical line
+        if (event.isSelected) {
+          event.topPos = topPos; // Add this line
+          event.bottomPos = bottomPos; // Add this line
+        }
+      }
+      // Loop through events
+      // for (final event in fundamentalEvents) {
+      // Find the index of the candle closest to event date
+      // int index = event.index;
+
+      // Skip events that don't have a corresponding candle or fall outside visible range
+      // if (index < 0) continue;
+
+      // Calculate x position
+    }
+  }
+
+  // void _drawEventTooltip(Canvas canvas, FundamentalEvent event) {
+  //   event.drawTooltip(canvas);
+  // }
+
+  void drawEventTooltips(Canvas canvas) {
+    for (final event in fundamentalEvents) {
+      if (event.isSelected && event.position != null) {
+        event.drawTooltip(canvas);
+      }
+    }
+  }
+
+  void handleEventTap(Offset tapPosition) {
+    _selectedEvent = null;
+    for (var event in fundamentalEvents) {
+      if (event.position != null &&
+          (event.position! - tapPosition).distance < 20) {
+        event.isSelected = true;
+        _selectedEvent = event;
+      } else {
+        event.isSelected = false;
+      }
+    }
+  }
+
+  void updateFundamentalEvents(List<FundamentalEvent> newEvents) {
+    fundamentalEvents.addAll(newEvents);
   }
 }

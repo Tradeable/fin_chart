@@ -39,8 +39,8 @@ class TrendLine extends Layer {
         from: offsetFromJson(json['from']),
         to: offsetFromJson(json['to']),
         color: colorFromJson(json['color']),
-        strokeWidth: json['strokeWidth'] ?? 2.0,
-        endPointRadius: json['endPointRadius'] ?? 5.0,
+        strokeWidth: json['strokeWidth'].toDouble() ?? 2.0,
+        endPointRadius: json['endPointRadius'].toDouble() ?? 5.0,
         isLocked: json['isLocked'] ?? false);
   }
 

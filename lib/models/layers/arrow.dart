@@ -45,9 +45,9 @@ class Arrow extends Layer {
         from: offsetFromJson(json['from']),
         to: offsetFromJson(json['to']),
         color: colorFromJson(json['color']),
-        strokeWidth: json['strokeWidth'] ?? 2,
-        endPointRadius: json['endPointRadius'] ?? 5,
-        arrowheadSize: json['arrowheadSize'] ?? 15,
+        strokeWidth: json['strokeWidth'].toDouble() ?? 2,
+        endPointRadius: json['endPointRadius'].toDouble() ?? 5,
+        arrowheadSize: json['arrowheadSize'].toDouble() ?? 15,
         isArrowheadAtTo: json['isArrowheadAtTo'] ?? true);
   }
 

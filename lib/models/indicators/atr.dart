@@ -1,13 +1,13 @@
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
-import 'package:fin_chart/ui/indicator_settings/atr_settings_dialog';
+import 'package:fin_chart/ui/indicator_settings/atr_settings_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
 
 class Atr extends Indicator {
   int period;
   Color lineColor;
-  
+
   final List<double> atrValues = [];
   final List<ICandle> candles = [];
 
@@ -94,44 +94,48 @@ class Atr extends Indicator {
         const TextStyle(color: Colors.black, fontSize: 12));
   }
 
+  @override
+  calculateYValueRange(List<ICandle> data) {}
+
   void _calculateATR() {
     atrValues.clear();
-    
+
     if (candles.length < period + 1) {
       return; // Need at least period+1 candles
     }
 
     List<double> trueRanges = [];
-    
+
     // Calculate first true range
     double tr = candles[0].high - candles[0].low;
     trueRanges.add(tr);
-    
+
     // Calculate subsequent true ranges
     for (int i = 1; i < candles.length; i++) {
       double highLow = candles[i].high - candles[i].low;
-      double highPrevClose = (candles[i].high - candles[i-1].close).abs();
-      double lowPrevClose = (candles[i].low - candles[i-1].close).abs();
-      
-      tr = [highLow, highPrevClose, lowPrevClose].reduce((curr, next) => curr > next ? curr : next);
+      double highPrevClose = (candles[i].high - candles[i - 1].close).abs();
+      double lowPrevClose = (candles[i].low - candles[i - 1].close).abs();
+
+      tr = [highLow, highPrevClose, lowPrevClose]
+          .reduce((curr, next) => curr > next ? curr : next);
       trueRanges.add(tr);
     }
-    
+
     // Calculate first ATR (simple average for first 'period' days)
     double firstATR = 0;
     for (int i = 0; i < period; i++) {
       firstATR += trueRanges[i];
     }
     firstATR /= period;
-    
+
     // Add placeholders for values before the first valid ATR
     for (int i = 0; i < period - 1; i++) {
       atrValues.add(0);
     }
-    
+
     // Add first valid ATR
     atrValues.add(firstATR);
-    
+
     // Calculate subsequent ATRs using smoothing formula: ATR = (Prior ATR * (period-1) + Current TR) / period
     for (int i = period; i < trueRanges.length; i++) {
       double atr = (atrValues.last * (period - 1) + trueRanges[i]) / period;
@@ -143,15 +147,13 @@ class Atr extends Indicator {
   void showIndicatorSettings(
       {required BuildContext context,
       required Function(Indicator p1) onUpdate}) {
-    showDialog(
+    showDialog<Atr>(
       context: context,
       builder: (context) => AtrSettingsDialog(
         indicator: this,
         onUpdate: onUpdate,
       ),
-    ).then((value) {
-      updateData(candles);
-    });
+    );
   }
 
   @override

@@ -31,7 +31,7 @@ class Label extends Layer {
       label: json['label'] ?? '',
       textStyle: TextStyle(
           color: colorFromJson(json['textColor']),
-          fontSize: json['fontSize'] ?? 16.0,
+          fontSize: json['fontSize'].toDouble() ?? 16.0,
           fontWeight: fontWeightFromJson(json[
               'fontWeight']) //json['fontWeight'] == 'bold' ? FontWeight.bold : FontWeight.normal,
           ),
@@ -67,19 +67,32 @@ class Label extends Layer {
     height = text.height;
 
     text.paint(canvas, toCanvas(pos));
+
+    if (isSelected) {
+      canvas.drawRect(
+          Rect.fromLTWH(
+              toX(pos.dx) - 2, toY(pos.dy) - 2, width + 4, height + 4),
+          Paint()
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke
+            ..color = Colors.blue);
+    }
   }
 
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointNearRectFromDiagonalVertices(details.localPosition,
         toCanvas(pos), Offset(toX(pos.dx) + width, toY(pos.dy) + height))) {
+      isSelected = true;
       return this;
     }
+    isSelected = false;
     return super.onTapDown(details: details);
   }
 
   @override
   void onScaleUpdate({required ScaleUpdateDetails details}) {
+    if (isLocked) return;
     pos = Offset(toXInverse(details.localFocalPoint.dx),
         toYInverse(details.localFocalPoint.dy).clamp(yMinValue, yMaxValue));
   }

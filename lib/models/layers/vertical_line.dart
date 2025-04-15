@@ -22,7 +22,7 @@ class VerticalLine extends Layer {
         id: json['id'],
         type: (json['type'] as String).toLayerType() ?? LayerType.verticalLine,
         isLocked: json['isLocked'] ?? false,
-        pos: json['pos'] ?? 0.0);
+        pos: json['pos'].toDouble() ?? 0.0);
   }
 
   @override

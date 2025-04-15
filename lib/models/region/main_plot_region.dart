@@ -128,8 +128,11 @@ class MainPlotRegion extends PlotRegion {
           Offset(toX(i.toDouble()), toY(candle.low)), paint);
 
       canvas.drawRect(
-          Rect.fromLTRB(toX(i.toDouble()) - (xStepWidth) / 4, toY(candle.open),
-              toX(i.toDouble()) + (xStepWidth) / 4, toY(candle.close)),
+          Rect.fromLTRB(
+              toX(i.toDouble()) - (xStepWidth) * 0.35,
+              toY(candle.open),
+              toX(i.toDouble()) + (xStepWidth) * 0.35,
+              toY(candle.close)),
           paint);
 
       drawFundamentalEvents(canvas, i);

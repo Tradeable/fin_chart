@@ -176,7 +176,7 @@ class ChartPainter extends CustomPainter {
     } else if (timePerCandle <= 360) {
       // 1-6 hours
       formatTime = (date) => '${date.hour}:00';
-    } else if (timePerCandle <= 1440) {
+    } else if (timePerCandle <= 1439) {
       // 6-24 hours
       formatTime = (date) => '${date.hour}:00';
     } else if (timePerCandle <= 10080) {

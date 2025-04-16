@@ -308,13 +308,19 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
   }
 
   void _saveAdjustment() {
-    if (selectedCandleIndex == null) return;
-
-    setState(() {
-      candles[selectedCandleIndex!] = candles[selectedCandleIndex!].copyWith(
-        isAdjusted: true,
-      );
-    });
+    if (selectedCandleIndex != null) {
+      setState(() {
+        candles[selectedCandleIndex!] = candles[selectedCandleIndex!].copyWith(
+          isAdjusted: true,
+        );
+      });
+    } else if (selectedVolumeIndex != null) {
+      setState(() {
+        candles[selectedVolumeIndex!] = candles[selectedVolumeIndex!].copyWith(
+          isAdjusted: true,
+        );
+      });
+    }
   }
 
   void _handleVolumeKeyDown(KeyEvent event) {
@@ -546,8 +552,10 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton(
-                      onPressed:
-                          selectedCandleIndex != null ? _saveAdjustment : null,
+                      onPressed: (selectedCandleIndex != null ||
+                              selectedVolumeIndex != null)
+                          ? _saveAdjustment
+                          : null,
                       child: const Text('Save Adjustment'),
                     ),
                     const SizedBox(width: 8),

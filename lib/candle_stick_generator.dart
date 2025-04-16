@@ -359,6 +359,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
       if (newCandle != null) {
         candles[selectedVolumeIndex!] = newCandle;
       }
+      widget.onCandleDataGenerated(_convertToICandles(candles));
     });
   }
 

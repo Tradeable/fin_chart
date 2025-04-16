@@ -105,38 +105,28 @@ class _ChartDemoState extends State<ChartDemo> {
       body: SafeArea(
           child: Column(
         children: [
-          Flexible(
-            flex: 1,
-            child: Container(
-              margin: const EdgeInsets.all(10),
-              padding: const EdgeInsets.all(10),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+          Expanded(
+            flex: 2,
+            child: FittedBox(
+              fit: BoxFit.none,
+              child: Container(
+                width: MediaQuery.of(context).size.width - 20,
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+                child: Text(promptText),
               ),
-              child: Text(promptText),
             ),
           ),
-          Flexible(
-              flex: 8,
+          Expanded(
+              flex: 7,
               child: Chart.from(
-                  key: _chartKey,
-                  recipe: recipe,
-                  // yAxisSettings: const YAxisSettings(yAxisPos: YAxisPos.right),
-                  // xAxisSettings: const XAxisSettings(xAxisPos: XAxisPos.bottom),
-                  // candles: const [],
-                  onInteraction: (p0, p1) {})),
-          Flexible(flex: 1, child: userActionContainer()
-
-              // currentTask.actionType == ActionType.interupt
-              //     ? ElevatedButton(
-              //         onPressed: () {
-              //           onTaskFinish();
-              //         },
-              //         child: Text((currentTask as WaitTask).btnText))
-              //     : Container(),
-              )
+                  key: _chartKey, recipe: recipe, onInteraction: (p0, p1) {})),
+          Expanded(
+              flex: 1,
+              child: FittedBox(fit: BoxFit.none, child: userActionContainer()))
         ],
       )),
     );

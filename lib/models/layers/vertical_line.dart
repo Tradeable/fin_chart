@@ -50,7 +50,8 @@ class VerticalLine extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(toX(pos), topPos),
-        Offset(toX(pos), bottomPos))) {
+        Offset(toX(pos), bottomPos),
+        tolerance: 0)) {
       return this;
     }
     return super.onTapDown(details: details);

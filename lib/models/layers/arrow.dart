@@ -170,14 +170,14 @@ class Arrow extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointInCircularRegion(
-        details.localPosition, toCanvas(from), arrowheadSize * 2)) {
+        details.localPosition, toCanvas(from), arrowheadSize)) {
       isSelected = true;
       startPoint = details.localPosition;
       tempFrom = from;
       tempTo = null;
       return this;
     } else if (isPointInCircularRegion(
-        details.localPosition, toCanvas(to), arrowheadSize * 2)) {
+        details.localPosition, toCanvas(to), arrowheadSize)) {
       isSelected = true;
       startPoint = details.localPosition;
       tempTo = to;
@@ -185,7 +185,7 @@ class Arrow extends Layer {
       return this;
     } else if (isPointOnLine(details.localPosition,
         Offset(toX(from.dx), toY(from.dy)), Offset(toX(to.dx), toY(to.dy)),
-        tolerance: arrowheadSize * 2)) {
+        tolerance: arrowheadSize / 2)) {
       isSelected = true;
       startPoint = details.localPosition;
       tempFrom = from;

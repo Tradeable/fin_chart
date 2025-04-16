@@ -151,7 +151,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
       TextEditingController(text: '10000');
 
   int? selectedVolumeIndex;
-  SelectionType _lastClickedType = SelectionType.candle;
+  SelectionType lastClickedType = SelectionType.candle;
 
   // Add visibility state
   TrendlineVisibility trendlineVisibility = TrendlineVisibility.visible;
@@ -634,7 +634,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
         selectedCandleIndex = null;
       }
 
-      _lastClickedType = SelectionType.candle;
+      lastClickedType = SelectionType.candle;
     });
   }
 
@@ -653,7 +653,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
         selectedVolumeIndex = null;
       }
 
-      _lastClickedType = SelectionType.volume;
+      lastClickedType = SelectionType.volume;
     });
   }
 

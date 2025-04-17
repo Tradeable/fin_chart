@@ -46,6 +46,7 @@ import 'package:fin_chart/models/layers/trend_line.dart';
 import 'package:fin_chart/models/layers/vertical_line.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/ui/add_event_dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -207,10 +208,14 @@ class _EditorPageState extends State<EditorPage> {
       final jsonString = jsonEncode(recipeData.toJson());
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString(_savedRecipeKey, jsonString);
-        print('Chart recipe autosaved successfully.');
+        if (kDebugMode) {
+          print('Chart recipe autosaved successfully.');
+        }
       });
     } catch (e) {
-      print('Error autosaving chart recipe: $e');
+      if (kDebugMode) {
+        print('Error autosaving chart recipe: $e');
+      }
     }
   }
 

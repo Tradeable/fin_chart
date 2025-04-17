@@ -144,7 +144,7 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 if (_hasSavedSession) ...[
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                   MaterialButton(
                     onPressed: _loadSavedSession,
                     color: Theme.of(context)

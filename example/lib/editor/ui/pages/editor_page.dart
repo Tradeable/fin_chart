@@ -244,12 +244,6 @@ class _EditorPageState extends State<EditorPage> {
                     ? Chart(
                         key: _chartKey,
                         candles: candleData,
-                        // fundamentalEvents: fundamentalEvents,
-                        // dataFit: DataFit.fixedWidth,
-                        // yAxisSettings:
-                        //     const YAxisSettings(yAxisPos: YAxisPos.left),
-                        // xAxisSettings:
-                        //     const XAxisSettings(xAxisPos: XAxisPos.bottom),
                         onLayerSelect: _onLayerSelect,
                         onRegionSelect: _onRegionSelect,
                         onIndicatorSelect: _onIndicatorSelect,
@@ -381,7 +375,6 @@ class _EditorPageState extends State<EditorPage> {
           } else {
             layer = null;
           }
-
           break;
       }
       setState(() {

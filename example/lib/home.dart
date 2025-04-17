@@ -94,11 +94,15 @@ class _HomeState extends State<Home> {
                 // Button to go to editor with input text
                 MaterialButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => EditorPage(
-                            recipeStr: _textController.text.isNotEmpty
-                                ? _textController.text
-                                : null)));
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (context) => EditorPage(
+                                recipeStr: _textController.text.isNotEmpty
+                                    ? _textController.text
+                                    : null)))
+                        .then((_) {
+                      _checkForSavedSession();
+                    });
                   },
                   color: Theme.of(context)
                       .buttonTheme
@@ -118,8 +122,12 @@ class _HomeState extends State<Home> {
                 const SizedBox(height: 40),
                 MaterialButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const EditorPage()));
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (context) => const EditorPage()))
+                        .then((_) {
+                      _checkForSavedSession();
+                    });
                   },
                   color: Theme.of(context)
                       .buttonTheme

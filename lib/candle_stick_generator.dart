@@ -81,6 +81,8 @@ enum TimeInterval {
   }
 }
 
+enum SelectionType { candle, volume }
+
 class CandleData {
   final double open;
   final double high;
@@ -147,6 +149,9 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
       TextEditingController(text: '1000');
   final TextEditingController volumeMaxController =
       TextEditingController(text: '10000');
+
+  int? selectedVolumeIndex;
+  SelectionType lastClickedType = SelectionType.candle;
 
   // Add visibility state
   TrendlineVisibility trendlineVisibility = TrendlineVisibility.visible;
@@ -291,19 +296,70 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
 
   void _handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent) {
-      _handleKeyDown(event);
+      // First check if a volume bar is selected
+      if (selectedVolumeIndex != null) {
+        _handleVolumeKeyDown(event);
+      } else {
+        _handleKeyDown(event); // Original handler for candles
+      }
     } else if (event is KeyUpEvent) {
-      _handleKeyUp(event);
+      _handleKeyUp(event); // Original handler
     }
   }
 
   void _saveAdjustment() {
-    if (selectedCandleIndex == null) return;
+    if (selectedCandleIndex != null) {
+      setState(() {
+        candles[selectedCandleIndex!] = candles[selectedCandleIndex!].copyWith(
+          isAdjusted: true,
+        );
+      });
+    } else if (selectedVolumeIndex != null) {
+      setState(() {
+        candles[selectedVolumeIndex!] = candles[selectedVolumeIndex!].copyWith(
+          isAdjusted: true,
+        );
+      });
+    }
+  }
+
+  void _handleVolumeKeyDown(KeyEvent event) {
+    if (selectedVolumeIndex == null) return;
+
+    final adjustmentStep = (double.parse(volumeMaxController.text) -
+            double.parse(volumeMinController.text)) *
+        0.05;
 
     setState(() {
-      candles[selectedCandleIndex!] = candles[selectedCandleIndex!].copyWith(
-        isAdjusted: true,
-      );
+      final oldCandle = candles[selectedVolumeIndex!];
+      CandleData? newCandle;
+
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        newCandle = oldCandle.copyWith(
+          volume: oldCandle.volume + adjustmentStep,
+          isAdjusted: true,
+        );
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        newCandle = oldCandle.copyWith(
+          volume: math.max(0, oldCandle.volume - adjustmentStep),
+          isAdjusted: true,
+        );
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        selectedVolumeIndex = math.max(0, selectedVolumeIndex! - 1);
+        return;
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        selectedVolumeIndex =
+            math.min(candles.length - 1, selectedVolumeIndex! + 1);
+        return;
+      } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+        selectedVolumeIndex = null;
+        return;
+      }
+
+      if (newCandle != null) {
+        candles[selectedVolumeIndex!] = newCandle;
+      }
+      widget.onCandleDataGenerated(_convertToICandles(candles));
     });
   }
 
@@ -463,6 +519,30 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                   },
                 ),
               ),
+              const SizedBox(height: 8),
+              Container(
+                height: 100, // 1/3 of the main chart height
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return GestureDetector(
+                      onTapDown: (details) {
+                        _selectVolume(
+                            details.localPosition, constraints.biggest);
+                      },
+                      child: CustomPaint(
+                        size: Size.infinite,
+                        painter: VolumePainter(
+                          candles: candles,
+                          selectedVolumeIndex: selectedVolumeIndex,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
               const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -475,8 +555,10 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton(
-                      onPressed:
-                          selectedCandleIndex != null ? _saveAdjustment : null,
+                      onPressed: (selectedCandleIndex != null ||
+                              selectedVolumeIndex != null)
+                          ? _saveAdjustment
+                          : null,
                       child: const Text('Save Adjustment'),
                     ),
                     const SizedBox(width: 8),
@@ -555,11 +637,34 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
     final candleIndex = ((x / candleWidth) - 0.5).round() - 1;
 
     setState(() {
+      selectedVolumeIndex = null;
+
       if (candleIndex >= 0 && candleIndex < candles.length) {
         selectedCandleIndex = candleIndex;
       } else {
         selectedCandleIndex = null;
       }
+
+      lastClickedType = SelectionType.candle;
+    });
+  }
+
+  void _selectVolume(Offset position, Size size) {
+    final candleWidth = size.width / (candles.length + 1);
+    final x = position.dx;
+
+    final volumeIndex = ((x / candleWidth) - 0.5).round() - 1;
+
+    setState(() {
+      selectedCandleIndex = null;
+
+      if (volumeIndex >= 0 && volumeIndex < candles.length) {
+        selectedVolumeIndex = volumeIndex;
+      } else {
+        selectedVolumeIndex = null;
+      }
+
+      lastClickedType = SelectionType.volume;
     });
   }
 
@@ -888,4 +993,72 @@ class TrendLinePainter extends CustomPainter {
       candles != oldDelegate.candles ||
       selectedPointIndex != oldDelegate.selectedPointIndex ||
       visibility != oldDelegate.visibility;
+}
+
+class VolumePainter extends CustomPainter {
+  final List<CandleData> candles;
+  final int? selectedVolumeIndex;
+
+  VolumePainter({
+    required this.candles,
+    this.selectedVolumeIndex,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (candles.isEmpty) return;
+
+    // Find max volume for scaling
+    double maxVolume = 0;
+    for (var candle in candles) {
+      if (candle.volume > maxVolume) {
+        maxVolume = candle.volume;
+      }
+    }
+
+    // Add 10% padding to max volume
+    maxVolume *= 1.1;
+
+    final candleWidth = size.width / (candles.length + 1);
+
+    for (var i = 0; i < candles.length; i++) {
+      final candle = candles[i];
+      final x = candleWidth * (i + 1);
+      final isSelected = i == selectedVolumeIndex;
+
+      // Calculate bar height based on volume relative to max
+      final barHeight = (candle.volume / maxVolume) * size.height;
+
+      // Calculate bar position
+      final barLeft = x - candleWidth * 0.3;
+      final barRight = x + candleWidth * 0.3;
+      final barBottom = size.height;
+      final barTop = barBottom - barHeight;
+
+      // Draw volume bar with color based on candle
+      final isGreen = candle.close > candle.open;
+      final barColor = (isGreen ? Colors.green : Colors.red)
+          .withAlpha(isSelected ? 128 : 255);
+
+      final barRect = Rect.fromLTRB(barLeft, barTop, barRight, barBottom);
+
+      canvas.drawRect(barRect, Paint()..color = barColor);
+
+      // Draw border for selected volume bar
+      if (isSelected) {
+        canvas.drawRect(
+          barRect,
+          Paint()
+            ..color = Colors.blue
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant VolumePainter oldDelegate) =>
+      candles != oldDelegate.candles ||
+      selectedVolumeIndex != oldDelegate.selectedVolumeIndex;
 }

@@ -119,6 +119,23 @@ class MainPlotRegion extends PlotRegion {
         candleColor = Colors.red;
       }
 
+            double maxVolume = candles
+          .reduce((currentMax, candle) =>
+              candle.volume > currentMax.volume ? candle : currentMax)
+          .volume;
+
+      Paint volumePaint = Paint()
+        ..strokeWidth = 2
+        ..style = PaintingStyle.fill
+        ..color = candleColor.withAlpha(100);
+      canvas.drawRect(
+          Rect.fromLTWH(
+              toX(i.toDouble()) - (xStepWidth) * 0.45,
+              bottomPos,
+              xStepWidth * 0.9,
+              -((candle.volume / maxVolume) * (bottomPos - topPos) * 0.2)),
+          volumePaint);
+
       Paint paint = Paint()
         ..strokeWidth = 2
         ..style = PaintingStyle.fill

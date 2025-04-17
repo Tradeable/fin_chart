@@ -56,12 +56,12 @@ class EarningsEvent extends FundamentalEvent {
       date: DateTime.parse(json['date']),
       title: json['title'],
       description: json['description'] ?? '',
-      epsActual: json['actual'],
-      epsEstimate: json['estimate'],
-      epsSurprise: json['surprise'],
-      revenueActual: json['revenueActual'],
-      revenueEstimate: json['revenueEstimate'],
-      revenueSurprise: json['revenueSurprise'],
+      epsActual: json['actual'].toDouble(),
+      epsEstimate: json['estimate'].toDouble(),
+      epsSurprise: json['surprise'].toDouble(),
+      revenueActual: json['revenueActual'].toDouble(),
+      revenueEstimate: json['revenueEstimate'].toDouble(),
+      revenueSurprise: json['revenueSurprise'].toDouble(),
     );
   }
 
@@ -124,7 +124,8 @@ class EarningsEvent extends FundamentalEvent {
       final epsSurprise = (epsActual! - epsEstimate!);
       final epsSurprisePer = (epsSurprise / epsEstimate! * 100);
       textSpans.add(TextSpan(
-        text: 'Surprise: $epsSurprise (${epsSurprisePer.toStringAsFixed(2)}%)\n\n',
+        text:
+            'Surprise: $epsSurprise (${epsSurprisePer.toStringAsFixed(2)}%)\n\n',
         style: const TextStyle(color: Colors.black, fontSize: 11),
       ));
     } else {
@@ -158,7 +159,8 @@ class EarningsEvent extends FundamentalEvent {
         final revenueSurprise = (revenueActual! - revenueEstimate!);
         final revenueSurprisePer = (revenueSurprise / revenueEstimate! * 100);
         textSpans.add(TextSpan(
-          text: 'Surprise: ${_formatCurrency(revenueSurprise)} (${revenueSurprisePer.toStringAsFixed(2)}%)\n',
+          text:
+              'Surprise: ${_formatCurrency(revenueSurprise)} (${revenueSurprisePer.toStringAsFixed(2)}%)\n',
           style: const TextStyle(color: Colors.black, fontSize: 11),
         ));
       }

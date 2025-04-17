@@ -43,5 +43,7 @@ compact_indicators.ps1
 compact_indicator_code.txt
 compact_funda_code.txt
 example/pubspec.lock
+
 compact_gen.ps1
 compact_gen_code.txt
+

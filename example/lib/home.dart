@@ -1,5 +1,6 @@
 import 'package:example/editor/ui/pages/editor_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,6 +11,33 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final TextEditingController _textController = TextEditingController();
+  bool _hasSavedSession = false;
+  static const String _savedRecipeKey = 'saved_recipe';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForSavedSession();
+  }
+
+  Future<void> _checkForSavedSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSession = prefs.containsKey(_savedRecipeKey);
+
+    setState(() {
+      _hasSavedSession = hasSession;
+    });
+  }
+
+  Future<void> _loadSavedSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedRecipe = prefs.getString(_savedRecipeKey);
+
+    if (savedRecipe != null) {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => EditorPage(recipeStr: savedRecipe)));
+    }
+  }
 
   @override
   void dispose() {
@@ -107,6 +135,25 @@ class _HomeState extends State<Home> {
                     "Go to Editor",
                   ),
                 ),
+                if (_hasSavedSession) ...[
+                  const SizedBox(height: 20),
+                  MaterialButton(
+                    onPressed: _loadSavedSession,
+                    color: Theme.of(context)
+                        .buttonTheme
+                        .colorScheme
+                        ?.primaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 12.0),
+                    elevation: 2.0,
+                    child: const Text(
+                      "Restore Saved Session",
+                    ),
+                  ),
+                ],
                 const SizedBox(
                   height: 40,
                 ),

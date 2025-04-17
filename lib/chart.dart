@@ -490,6 +490,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   }
 
   _recalculate(BoxConstraints constraints) {
+    double oldHeight = bottomPos - topPos;
     for (PlotRegion region in regions) {
       if (region.yLabelSize.width > yLabelWidth) {
         yLabelWidth = region.yLabelSize.width;
@@ -540,7 +541,14 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
     isInit = false;
 
-    _updateRegionBounds(1);
+    double newHeight = bottomPos - topPos;
+
+    if (oldHeight != 0) {
+      double multiplier = newHeight / oldHeight;
+      _updateRegionBounds(multiplier);
+    } else {
+      _updateRegionBounds(1);
+    }
   }
 
   _handleSwipeEnd(ScaleEndDetails details) {

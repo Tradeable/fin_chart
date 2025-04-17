@@ -15,7 +15,6 @@ class TaskListWidget extends StatefulWidget {
   final Function(Task) onTaskClick;
   final Function(Task) onTaskEdit;
   final Function(Task) onTaskDelete;
-  final Function(int, int) onTaskReorder;
 
   const TaskListWidget({
     super.key,
@@ -24,7 +23,6 @@ class TaskListWidget extends StatefulWidget {
     required this.onTaskClick,
     required this.onTaskEdit,
     required this.onTaskDelete,
-    required this.onTaskReorder,
   });
 
   @override

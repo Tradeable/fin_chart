@@ -7,7 +7,9 @@ enum LayerType {
   rectArea,
   arrow,
   verticalLine,
-  parallelChannel
+  parallelChannel,
+  arrowTextPointer,
+  anchorText
 }
 
 extension LayerTypeExtension on LayerType {

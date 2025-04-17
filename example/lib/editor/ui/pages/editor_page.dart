@@ -3,12 +3,14 @@ import 'dart:convert';
 // import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
+import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/atr.dart';
 import 'package:fin_chart/models/indicators/mfi.dart';
 import 'package:fin_chart/models/indicators/adx.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
+
 // import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
@@ -51,6 +53,7 @@ import 'package:flutter/services.dart';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
+
   const EditorPage({super.key, this.recipeStr});
 
   @override
@@ -389,6 +392,14 @@ class _EditorPageState extends State<EditorPage> {
             layer = null;
           }
 
+          break;
+        case LayerType.arrowTextPointer:
+          layer = ArrowTextPointer.fromTool(
+              pos: drawPoints.first, label: "");
+          break;
+        case LayerType.anchorText:
+          layer =
+              AnchorText.fromTool(pos: drawPoints.first, label: "Text label");
           break;
       }
       setState(() {

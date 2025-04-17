@@ -19,3 +19,5 @@ export 'package:fin_chart/models/indicators/mfi.dart';
 export 'package:fin_chart/models/indicators/adx.dart';
 export 'package:fin_chart/models/tasks/add_mcq.task.dart';
 export 'package:fin_chart/models/tasks/clear.task.dart';
+export 'package:fin_chart/models/layers/arrow_text_pointer.dart';
+export 'package:fin_chart/models/layers/anchor_text.dart';

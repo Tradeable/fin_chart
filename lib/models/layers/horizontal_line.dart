@@ -96,7 +96,8 @@ class HorizontalLine extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(leftPos, toY(value)),
-        Offset(rightPos, toY(value)))) {
+        Offset(rightPos, toY(value)),
+        tolerance: 10)) {
       isSelected = true;
       return this;
     }

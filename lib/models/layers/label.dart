@@ -82,7 +82,8 @@ class Label extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointNearRectFromDiagonalVertices(details.localPosition,
-        toCanvas(pos), Offset(toX(pos.dx) + width, toY(pos.dy) + height))) {
+        toCanvas(pos), Offset(toX(pos.dx) + width, toY(pos.dy) + height),
+        tolerance: 0)) {
       isSelected = true;
       return this;
     }

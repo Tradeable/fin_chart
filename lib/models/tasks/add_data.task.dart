@@ -5,8 +5,8 @@ import 'package:fin_chart/utils/calculations.dart';
 
 class AddDataTask extends Task {
   final String verticleLineId;
-  final int fromPoint;
-  final int tillPoint;
+  int fromPoint;
+  int tillPoint;
 
   AddDataTask(
       {required this.verticleLineId,
@@ -20,6 +20,7 @@ class AddDataTask extends Task {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
+    data['verticleLineId'] = verticleLineId;
     data['fromPoint'] = fromPoint;
     data['tillPoint'] = tillPoint;
     return data;
@@ -27,7 +28,7 @@ class AddDataTask extends Task {
 
   factory AddDataTask.fromJson(Map<String, dynamic> json) {
     return AddDataTask(
-        verticleLineId: "",
+        verticleLineId: json['verticleLineId'] ?? "",
         fromPoint: json['fromPoint'],
         tillPoint: json['tillPoint']);
   }

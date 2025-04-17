@@ -511,6 +511,8 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                           selectedPointIndex: selectedPointIndex,
                           selectedCandleIndex: selectedCandleIndex,
                           visibility: trendlineVisibility,
+                          minPrice: double.parse(minController.text),
+                          maxPrice: double.parse(maxController.text),
                         ),
                       ),
                     );
@@ -676,21 +678,29 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
 
     setState(() {
       final newCandles = <CandleData>[];
-      double lastClose = (max + min) / 2;
+      double lastClose = 0; // Will be set properly for the first candle
 
       for (int i = 0; i < numCandles; i++) {
         // If there's an existing adjusted candle at this index, keep it
         if (i < candles.length && candles[i].isAdjusted) {
           newCandles.add(candles[i]);
+          lastClose = candles[i].close;
           continue;
         }
 
         final x = i / (numCandles - 1);
         final trendValue = 1 - _interpolateTrendValue(x);
         final range = (max - min) * 0.1;
-
-        final open = lastClose + (random.nextDouble() - 0.5) * range * 0.5;
         final targetPrice = min + (max - min) * trendValue;
+
+        // For first candle, set open close to trendline value (with small random variation)
+        double open;
+        if (i == 0 || lastClose == 0) {
+          open = targetPrice + (random.nextDouble() - 0.5) * range * 0.3;
+        } else {
+          open = lastClose + (random.nextDouble() - 0.5) * range * 0.5;
+        }
+
         final close = targetPrice + (random.nextDouble() - 0.5) * range;
 
         final high = math.max(open, close) + random.nextDouble() * range * 0.5;
@@ -865,11 +875,15 @@ class TrendLinePainter extends CustomPainter {
   final int? selectedPointIndex;
   final int? selectedCandleIndex;
   final TrendlineVisibility visibility;
+  final double minPrice;
+  final double maxPrice;
 
   TrendLinePainter({
     required this.points,
     required this.candles,
     required this.visibility,
+    required this.minPrice,
+    required this.maxPrice,
     this.selectedPointIndex,
     this.selectedCandleIndex,
   });
@@ -970,9 +984,7 @@ class TrendLinePainter extends CustomPainter {
   }
 
   double _priceToY(double price, double height) {
-    final min = double.parse(_CandleStickGeneratorState().minController.text);
-    final max = double.parse(_CandleStickGeneratorState().maxController.text);
-    return height * (1 - (price - min) / (max - min));
+    return height * (1 - (price - minPrice) / (maxPrice - minPrice));
   }
 
   @override

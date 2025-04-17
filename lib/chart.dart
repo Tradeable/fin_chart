@@ -190,7 +190,9 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     setState(() {
       if (indicator.displayMode == DisplayMode.panel) {
         PanelPlotRegion region = PanelPlotRegion(
-            indicator: indicator, yAxisSettings: widget.yAxisSettings!, xAxisSettings: widget.xAxisSettings!);
+            indicator: indicator,
+            yAxisSettings: widget.yAxisSettings!,
+            xAxisSettings: widget.xAxisSettings!);
 
         double addRegionWeight = 1 / (regions.length + 1);
         double multiplier = 1 - addRegionWeight;
@@ -244,6 +246,17 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       }
       selectedIndicator = null;
     });
+  }
+
+  bool _isCrosshairActive() {
+    for (PlotRegion region in regions) {
+      for (Layer layer in region.layers) {
+        if (layer.type == LayerType.crosshair) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   void updateLayerGettingAddedState(LayerType layerType) {
@@ -711,6 +724,25 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   _onScaleUpdate(ScaleUpdateDetails details, BoxConstraints constraints) {
     setState(() {
+      if (_isCrosshairActive()) {
+        // Find the active crosshair
+        Layer? crosshair;
+        for (PlotRegion region in regions) {
+          for (Layer layer in region.layers) {
+            if (layer.type == LayerType.crosshair) {
+              crosshair = layer;
+              break;
+            }
+          }
+          if (crosshair != null) break;
+        }
+
+        if (crosshair != null && crosshair is Crosshair) {
+          // Apply the drag delta to the crosshair position
+          crosshair.dragFromAnywhere(details.focalPointDelta);
+        }
+        return; // Skip the rest of the method to prevent chart panning/zooming
+      }
       if (details.pointerCount == 1) {
         if (isLayerGettingAdded && selectedRegion != null) {
           widget.onInteraction?.call(

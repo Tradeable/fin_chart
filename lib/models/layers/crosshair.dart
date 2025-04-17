@@ -25,6 +25,7 @@ class Crosshair extends Layer {
   // Drag handling
   Offset? dragStartPosition;
   Offset? initialPosition;
+  double _accumulatedXDelta = 0.0;
 
   // Axis position properties
   YAxisPos yAxisPos = YAxisPos.right;
@@ -337,21 +338,45 @@ class Crosshair extends Layer {
     }
   }
 
-  @override
-  Layer? onTapDown({required TapDownDetails details}) {
-    // Check if tapping near the crosshair
-    final tapPoint = details.localPosition;
-    final crosshairPoint = toCanvas(position);
+  // @override
+  // Layer? onTapDown({required TapDownDetails details}) {
+  //   // Check if tapping near the crosshair
+  //   final tapPoint = details.localPosition;
+  //   final crosshairPoint = toCanvas(position);
 
-    // Define a hit area around the crosshair intersection
-    if ((tapPoint.dx - crosshairPoint.dx).abs() < 20 &&
-        (tapPoint.dy - crosshairPoint.dy).abs() < 20) {
-      dragStartPosition = tapPoint;
-      initialPosition = position;
-      return this;
+  //   // Define a hit area around the crosshair intersection
+  //   if ((tapPoint.dx - crosshairPoint.dx).abs() < 20 &&
+  //       (tapPoint.dy - crosshairPoint.dy).abs() < 20) {
+  //     dragStartPosition = tapPoint;
+  //     initialPosition = position;
+  //     return this;
+  //   }
+
+  //   return null;
+  // }
+
+  void dragFromAnywhere(Offset dragDelta) {
+    _accumulatedXDelta += dragDelta.dx / xStepWidth;
+    double xChange = 0.0;
+    {
+      xChange = _accumulatedXDelta.sign * _accumulatedXDelta.abs().floor();
+      _accumulatedXDelta -= xChange;
     }
 
-    return null;
+    // Apply the changes to position
+    double newX = position.dx + xChange;
+    double newY =
+        position.dy + (toYInverse(topPos + dragDelta.dy) - toYInverse(topPos));
+
+    // Clamp values to chart ranges
+    newX = newX.clamp(0.0, candles.length - 1.0);
+    newY = newY.clamp(yMinValue, yMaxValue);
+
+    // Update position
+    position = Offset(newX, newY);
+
+    // Update snapped candle for label display
+    _updateSnappedCandle();
   }
 
   @override

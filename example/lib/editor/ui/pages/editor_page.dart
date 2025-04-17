@@ -44,8 +44,11 @@ import 'package:fin_chart/models/layers/trend_line.dart';
 import 'package:fin_chart/models/layers/vertical_line.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/ui/add_event_dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
@@ -76,6 +79,9 @@ class _EditorPageState extends State<EditorPage> {
   List<FundamentalEvent> fundamentalEvents = [];
   bool isWaitingForEventPosition = false;
   FundamentalEvent? selectedEvent;
+
+  Timer? _autosaveTimer;
+  static const String _savedRecipeKey = 'saved_recipe';
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -174,12 +180,41 @@ class _EditorPageState extends State<EditorPage> {
 
   @override
   void initState() {
-    //candleData.addAll(data.map((data) => ICandle.fromJson(data)).toList());
+    super.initState();
     if (widget.recipeStr != null) {
       recipe = Recipe.fromJson(jsonDecode(widget.recipeStr!));
       populateRecipe(recipe!);
     }
-    super.initState();
+
+    // Setup autosave timer
+    _autosaveTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      _saveCurrentRecipe();
+    });
+  }
+
+  void _saveCurrentRecipe() {
+    if (candleData.isEmpty) return; // Don't save empty states
+
+    try {
+      final recipeData = Recipe(
+        data: candleData,
+        chartSettings: _chartKey.currentState!.getChartSettings(),
+        tasks: tasks,
+        fundamentalEvents: fundamentalEvents,
+      );
+
+      final jsonString = jsonEncode(recipeData.toJson());
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setString(_savedRecipeKey, jsonString);
+        if (kDebugMode) {
+          print('Chart recipe autosaved successfully.');
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error autosaving chart recipe: $e');
+      }
+    }
   }
 
   populateRecipe(Recipe recipe) async {
@@ -1215,5 +1250,12 @@ class _EditorPageState extends State<EditorPage> {
         break;
     }
     _chartKey.currentState?.addIndicator(indicator);
+  }
+
+  @override
+  void dispose() {
+    // Cancel timer when widget is disposed
+    _autosaveTimer?.cancel();
+    super.dispose();
   }
 }

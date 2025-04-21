@@ -1,14 +1,14 @@
 enum LayerType {
-  circularArea,
   label,
   horizontalLine,
   horizontalBand,
   trendLine,
-  rectArea,
-  arrow,
-  verticalLine,
   parallelChannel,
+  rectArea,
+  circularArea,
+  arrow,
   arrowTextPointer,
+  verticalLine,
 }
 
 extension LayerTypeExtension on LayerType {

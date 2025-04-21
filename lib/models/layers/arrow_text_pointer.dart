@@ -46,7 +46,7 @@ class ArrowTextPointer extends Layer {
       isLocked: json['isLocked'] ?? false,
       pos: offsetFromJson(json['pos']),
       label: json['label'],
-      color: Color(json['color'] ?? 0xFF2196F3),
+      color: colorFromJson(json['color']),
       isPointingDown: json['isPointingDown'] ?? false,
       textAlignment: TextAlignPosition.values.firstWhere(
         (e) => e.name == json['textAlignment'],
@@ -61,7 +61,7 @@ class ArrowTextPointer extends Layer {
     json.addAll({
       'pos': {'dx': pos.dx, 'dy': pos.dy},
       'label': label,
-      'color': color,
+      'color': colorToJson(color),
       'isPointingDown': isPointingDown,
       'textAlignment': textAlignment.name,
     });

@@ -78,6 +78,9 @@ class Ema extends Indicator {
       }
     }
 
+    candles.clear(); // Clear the list to avoid duplicates
+    candles.addAll(data);
+
     _calculateEMA();
 
     // For DisplayMode.main, we don't need to set yMinValue and yMaxValue

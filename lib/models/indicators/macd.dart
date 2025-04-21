@@ -126,6 +126,9 @@ class Macd extends Indicator {
 
     candles.addAll(data.sublist(candles.isEmpty ? 0 : candles.length));
 
+    candles.clear();
+    candles.addAll(data);
+
     // Calculate indicators and find min/max for y-axis values
     _calculateIndicators();
 

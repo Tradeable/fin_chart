@@ -176,6 +176,9 @@ class Mfi extends Indicator {
 
     candles.addAll(data.sublist(candles.isEmpty ? 0 : candles.length));
 
+    candles.clear();
+    candles.addAll(data);
+
     _calculateMFI();
 
     // Set fixed bounds for MFI (0-100)

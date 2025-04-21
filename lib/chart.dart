@@ -269,6 +269,23 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
+  void replaceData(List<ICandle> newData) {
+    setState(() {
+      // Clear existing data
+      currentData.clear();
+      // Add new data
+      currentData.addAll(newData);
+      // Update all regions
+      for (int i = 0; i < regions.length; i++) {
+        // Need to clear the existing candles in the region first
+        // if (regions[i] is MainPlotRegion) {
+        //   (regions[i] as MainPlotRegion).clearData();
+        // }
+        regions[i].updateData(currentData);
+      }
+    });
+  }
+
   void addData(List<ICandle> newData, {List<FundamentalEvent>? newEvents}) {
     setState(() {
       currentData.addAll(newData);

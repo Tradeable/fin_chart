@@ -124,6 +124,8 @@ class MainPlotRegion extends PlotRegion {
               candle.volume > currentMax.volume ? candle : currentMax)
           .volume;
 
+          maxVolume = maxVolume == 0 ? 1 : maxVolume;
+
       Paint volumePaint = Paint()
         ..strokeWidth = 2
         ..style = PaintingStyle.fill

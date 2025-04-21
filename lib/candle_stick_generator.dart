@@ -159,6 +159,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
   // Add time interval selection
   TimeInterval selectedTimeInterval = TimeInterval.m15;
   DateTime startDate = DateTime.now().subtract(const Duration(days: 7));
+  bool volumeEnabled = true;
 
   List<math.Point> trendPoints = [
     const math.Point(0, 0.5),
@@ -537,6 +538,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                         painter: VolumePainter(
                           candles: candles,
                           selectedVolumeIndex: selectedVolumeIndex,
+                          volumeEnabled: volumeEnabled, // Add this
                         ),
                       ),
                     );
@@ -567,6 +569,32 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                       child: Text('Trendline: ${trendlineVisibility.label}'),
                     ),
                     const SizedBox(width: 8),
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          volumeEnabled = !volumeEnabled;
+
+                          // Update existing candles if needed
+                          if (!volumeEnabled) {
+                            // When disabling volume, set all volumes to 0
+                            for (int i = 0; i < candles.length; i++) {
+                              if (!candles[i].isAdjusted) {
+                                // Don't modify manually adjusted candles
+                                candles[i] = candles[i].copyWith(volume: 0.0);
+                              }
+                            }
+                          } else if (candles.isNotEmpty) {
+                            // When re-enabling, regenerate volumes for non-adjusted candles
+                            _regenerateVolumes();
+                          }
+
+                          // Update the chart
+                          widget.onCandleDataGenerated(
+                              _convertToICandles(candles));
+                        });
+                      },
+                      child: Text('Volume: ${volumeEnabled ? 'ON' : 'OFF'}'),
+                    ),
                     ElevatedButton(
                       onPressed: _generateCandles,
                       child: const Text('Generate'),
@@ -668,6 +696,20 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
     });
   }
 
+  void _regenerateVolumes() {
+    final volumeMin = double.parse(volumeMinController.text);
+    final volumeMax = double.parse(volumeMaxController.text);
+    final random = math.Random();
+
+    for (int i = 0; i < candles.length; i++) {
+      if (!candles[i].isAdjusted) {
+        final volume =
+            volumeMin + random.nextDouble() * (volumeMax - volumeMin);
+        candles[i] = candles[i].copyWith(volume: volume);
+      }
+    }
+  }
+
   void _generateCandles() {
     final min = double.parse(minController.text);
     final max = double.parse(maxController.text);
@@ -707,8 +749,9 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
         final low = math.min(open, close) - random.nextDouble() * range * 0.5;
 
         // Generate random volume
-        final volume =
-            volumeMin + random.nextDouble() * (volumeMax - volumeMin);
+        final volume = volumeEnabled
+            ? volumeMin + random.nextDouble() * (volumeMax - volumeMin)
+            : 0.0;
 
         newCandles.add(CandleData(
           open: open,
@@ -998,10 +1041,12 @@ class TrendLinePainter extends CustomPainter {
 class VolumePainter extends CustomPainter {
   final List<CandleData> candles;
   final int? selectedVolumeIndex;
+  bool volumeEnabled = true;
 
   VolumePainter({
     required this.candles,
     this.selectedVolumeIndex,
+    required this.volumeEnabled,
   });
 
   @override
@@ -1014,6 +1059,11 @@ class VolumePainter extends CustomPainter {
       if (candle.volume > maxVolume) {
         maxVolume = candle.volume;
       }
+    }
+
+    if (maxVolume == 0) {
+      // If all volumes are zero, don't draw anything
+      return;
     }
 
     // Add 10% padding to max volume

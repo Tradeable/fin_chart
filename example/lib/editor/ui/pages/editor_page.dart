@@ -2,46 +2,31 @@ import 'dart:convert';
 
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
+import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
-import 'package:fin_chart/models/indicators/atr.dart';
-import 'package:fin_chart/models/indicators/mfi.dart';
-import 'package:fin_chart/models/indicators/adx.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
-import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
-import 'package:fin_chart/models/tasks/clear.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
 import 'package:example/editor/ui/widget/indicator_type_dropdown.dart';
 import 'package:example/editor/ui/widget/layer_type_dropdown.dart';
 import 'package:example/editor/ui/widget/task_list_widget.dart';
-import 'package:fin_chart/chart.dart';
 import 'package:fin_chart/models/enums/layer_type.dart';
-import 'package:fin_chart/models/i_candle.dart';
-import 'package:fin_chart/models/indicators/bollinger_bands.dart';
-import 'package:fin_chart/models/indicators/ema.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
-import 'package:fin_chart/models/indicators/macd.dart';
-import 'package:fin_chart/models/indicators/rsi.dart';
-import 'package:fin_chart/models/indicators/sma.dart';
-import 'package:fin_chart/models/indicators/stochastic.dart';
 import 'package:fin_chart/models/layers/arrow.dart';
 import 'package:fin_chart/models/layers/circular_area.dart';
-import 'package:fin_chart/models/layers/horizontal_band.dart';
 import 'package:fin_chart/models/layers/horizontal_line.dart';
 import 'package:fin_chart/models/layers/label.dart';
 import 'package:fin_chart/models/layers/layer.dart';
-import 'package:fin_chart/models/layers/parallel_channel.dart';
 import 'package:fin_chart/models/layers/rect_area.dart';
 import 'package:fin_chart/models/layers/trend_line.dart';
-import 'package:fin_chart/models/layers/vertical_line.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/ui/add_event_dialog.dart';
 import 'package:flutter/foundation.dart';
@@ -52,6 +37,7 @@ import 'dart:async';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
+
   const EditorPage({super.key, this.recipeStr});
 
   @override
@@ -410,6 +396,9 @@ class _EditorPageState extends State<EditorPage> {
           } else {
             layer = null;
           }
+          break;
+        case LayerType.arrowTextPointer:
+          layer = ArrowTextPointer.fromTool(pos: drawPoints.first, label: "");
           break;
       }
       setState(() {

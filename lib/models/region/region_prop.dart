@@ -40,11 +40,6 @@ mixin RegionProp {
     return Offset(toXInverse(offset.dx), toYInverse(offset.dy));
   }
 
-  Offset move(Offset point, Offset delta) {
-    return Offset(toReal(point).dx + (toReal(delta).dx - toReal(point).dx),
-        toReal(delta).dy);
-  }
-
   Offset displacementOffset(Offset startPoint, Offset currentPoint) {
     return Offset(toReal(currentPoint).dx - toReal(startPoint).dx,
         toReal(currentPoint).dy - toReal(startPoint).dy);

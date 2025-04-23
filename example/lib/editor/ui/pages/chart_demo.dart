@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:fin_chart/models/tasks/add_data.task.dart';
@@ -35,6 +36,7 @@ class _ChartDemoState extends State<ChartDemo> {
       currentTask = recipe.tasks.first;
       dd();
     }
+
     super.initState();
   }
 
@@ -104,29 +106,22 @@ class _ChartDemoState extends State<ChartDemo> {
       ),
       body: SafeArea(
           child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 2,
-            child: FittedBox(
-              fit: BoxFit.none,
-              child: Container(
-                width: MediaQuery.of(context).size.width - 20,
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                ),
-                child: Text(promptText),
-              ),
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: Colors.grey,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
+            child: Text(promptText),
           ),
           Expanded(
-              flex: 7,
               child: Chart.from(
                   key: _chartKey, recipe: recipe, onInteraction: (p0, p1) {})),
-          Expanded(
-              flex: 1,
-              child: FittedBox(fit: BoxFit.none, child: userActionContainer()))
+          userActionContainer(),
         ],
       )),
     );
@@ -155,11 +150,13 @@ class _ChartDemoState extends State<ChartDemo> {
           ],
         );
       case TaskType.waitTask:
-        return ElevatedButton(
-            onPressed: () {
-              onTaskFinish();
-            },
-            child: Text((currentTask as WaitTask).btnText));
+        return Center(
+          child: ElevatedButton(
+              onPressed: () {
+                onTaskFinish();
+              },
+              child: Text((currentTask as WaitTask).btnText)),
+        );
     }
   }
 }

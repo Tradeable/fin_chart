@@ -318,6 +318,53 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
+  void updateLastCandle(ICandle updatedCandle) {
+    setState(() {
+      if (currentData.isNotEmpty) {
+        // Replace the last candle with the updated one
+        currentData[currentData.length - 1] = updatedCandle;
+
+        // Update all regions with the new data
+        for (int i = 0; i < regions.length; i++) {
+          regions[i].updateData(currentData);
+        }
+      }
+    });
+  }
+
+  void mergeCandles(List<ICandle> newCandles) {
+    setState(() {
+      if (currentData.isEmpty) {
+        // If there's no data yet, just add the first candle
+        if (newCandles.isNotEmpty) {
+          currentData.add(newCandles[0]);
+
+          // Update all regions
+          for (int i = 0; i < regions.length; i++) {
+            regions[i].updateData(currentData);
+          }
+        }
+        return;
+      }
+
+      // Get the last candle in the current data
+      ICandle lastCandle = currentData[currentData.length - 1];
+
+      // Merge all new candles into the last existing candle
+      for (ICandle newCandle in newCandles) {
+        lastCandle = lastCandle.mergeWith(newCandle);
+      }
+
+      // Update the last candle
+      currentData[currentData.length - 1] = lastCandle;
+
+      // Update all regions
+      for (int i = 0; i < regions.length; i++) {
+        regions[i].updateData(currentData);
+      }
+    });
+  }
+
   Future<bool> addDataWithAnimation(
       List<ICandle> newData, Duration durationPerCandle) async {
     for (ICandle iCandle in newData) {

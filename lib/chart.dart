@@ -312,6 +312,12 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
+  void panToLatestCandle() {
+    setState(() {
+      xOffset = _getMaxLeftOffset();
+    });
+  }
+
   Future<bool> addDataWithAnimation(
       List<ICandle> newData, Duration durationPerCandle) async {
     for (ICandle iCandle in newData) {

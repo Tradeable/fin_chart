@@ -472,6 +472,7 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
                       onTapDown: (details) {
                         _selectCandle(
                             details.localPosition, constraints.biggest);
+                        _focusNode.requestFocus();
                       },
                       onDoubleTapDown: (details) {
                         if (trendlineVisibility ==

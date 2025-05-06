@@ -30,7 +30,7 @@ class ICandle {
     high = candle['high'];
     low = candle['low'];
     close = candle['close'];
-    volume = candle['volume'];
+    volume = candle['volume'].toDouble();
     promptText = candle['promptText'];
     state = (candle['state'] as String).toCandleState();
   }

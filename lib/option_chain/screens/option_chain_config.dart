@@ -180,7 +180,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
         ColumnType columnType = _columns[columnIndex].type;
 
         for (int i = 0; i < _optionData.length && i < valueList.length; i++) {
-          String value = valueList[i];
+          String value = valueList[i].replaceAll(",", "");
           OptionData data = _optionData[i];
 
           switch (columnType) {

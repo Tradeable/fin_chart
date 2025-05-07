@@ -26,8 +26,8 @@ class EditColumnDialog extends StatelessWidget {
           TextField(
             controller: valuesController,
             decoration: const InputDecoration(
-              labelText: 'Space separated values',
-              hintText: 'Enter values separated by space',
+              labelText: 'Enter values separated by new line',
+              hintText: 'Enter values separated by new line',
             ),
             maxLines: null,
           ),

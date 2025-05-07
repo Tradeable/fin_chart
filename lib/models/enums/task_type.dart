@@ -7,6 +7,9 @@ enum TaskType {
   // addLayerOfType,
   waitTask,
   clearTask,
+  addOptionChain,
+  chooseCorrectOptionChainValue,
+  highlightCorrectOptionChainValue
 }
 
 // extension TaskTypeExtension on TaskType {

@@ -68,7 +68,7 @@ class Chart extends StatefulWidget {
   State<Chart> createState() => ChartState();
 }
 
-class ChartState extends State<Chart> with TickerProviderStateMixin {
+class ChartState extends State<Chart> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   double leftPos = 0;
   double topPos = 0;
   double rightPos = 0;
@@ -721,4 +721,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         mainPlotRegionId:
             regions.firstWhere((region) => region is MainPlotRegion).id);
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

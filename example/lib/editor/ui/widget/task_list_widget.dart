@@ -2,12 +2,15 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_mcq.task.dart';
+import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
+import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:example/editor/ui/widget/task_type_dropdown.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 
 class TaskListWidget extends StatefulWidget {
   final List<Task> task;
@@ -249,6 +252,55 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         );
       case TaskType.clearTask:
         return const Text("Clear");
+
+      case TaskType.addOptionChain:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (task as AddOptionChainTask).optionChainId,
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+
+      case TaskType.chooseCorrectOptionChainValue:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text((task as ChooseCorrectOptionValueChainTask).taskId.toString()),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+
+      case TaskType.highlightCorrectOptionChainValue:
+        return Text(
+            ((task as HighlightCorrectOptionChainValueTask).optionChainId)
+                .toString());
     }
   }
 }

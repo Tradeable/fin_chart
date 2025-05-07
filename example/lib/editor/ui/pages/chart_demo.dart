@@ -6,13 +6,17 @@ import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
+import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
+
   const ChartDemo({super.key, required this.recipeDataJson});
 
   @override
@@ -21,12 +25,18 @@ class ChartDemo extends StatefulWidget {
 
 class _ChartDemoState extends State<ChartDemo> {
   final GlobalKey<ChartState> _chartKey = GlobalKey();
+  final GlobalKey<PreviewScreenState> _previewScreenKey = GlobalKey();
   late Recipe recipe;
 
   int taskPointer = 0;
   late Task currentTask;
 
   String promptText = "";
+  bool switchToOptionChain = false;
+  Widget? chart;
+  PageController controller = PageController();
+  bool optionChainButtonVisibility = false;
+  AddOptionChainTask? optionChainTask;
 
   @override
   void initState() {
@@ -35,6 +45,9 @@ class _ChartDemoState extends State<ChartDemo> {
       currentTask = recipe.tasks.first;
       dd();
     }
+
+    chart =
+        Chart.from(key: _chartKey, recipe: recipe, onInteraction: (p0, p1) {});
     super.initState();
   }
 
@@ -84,6 +97,22 @@ class _ChartDemoState extends State<ChartDemo> {
         _chartKey.currentState?.clearChart();
         onTaskFinish();
         break;
+      case TaskType.addOptionChain:
+        AddOptionChainTask task = currentTask as AddOptionChainTask;
+
+        setState(() {
+          optionChainButtonVisibility = true;
+          optionChainTask = task;
+        });
+        onTaskFinish();
+        break;
+      case TaskType.chooseCorrectOptionChainValue:
+        setState(() {});
+        onTaskFinish();
+        break;
+      case TaskType.highlightCorrectOptionChainValue:
+        setState(() {});
+        break;
     }
   }
 
@@ -120,10 +149,50 @@ class _ChartDemoState extends State<ChartDemo> {
               ),
             ),
           ),
+          optionChainButtonVisibility
+              ? Flexible(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            switchToOptionChain = !switchToOptionChain;
+                            controller.animateToPage(
+                                switchToOptionChain ? 1 : 0,
+                                duration: Duration(seconds: 1),
+                                curve: Curves.easeIn);
+                          });
+                        },
+                        child: Text(switchToOptionChain
+                            ? "View Chart"
+                            : "View Option Chain")),
+                  ))
+              : Container(),
           Expanded(
-              flex: 7,
-              child: Chart.from(
-                  key: _chartKey, recipe: recipe, onInteraction: (p0, p1) {})),
+            flex: 6,
+            child: PageView.builder(
+                controller: controller,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, i) {
+                  if (i == 0) {
+                    return Chart.from(
+                        key: _chartKey,
+                        recipe: recipe,
+                        onInteraction: (p0, p1) {});
+                  } else {
+                    return PreviewScreen.from(
+                        key: _previewScreenKey, task: optionChainTask!);
+                  }
+                }),
+          ),
+          // Expanded(
+          //     flex: 6,
+          //     child: switchToOptionChain
+          //         ? PreviewScreen.from(
+          //             key: _previewScreenKey,
+          //             task: (currentTask as AddOptionChainTask))
+          //         : chart ?? Container()),
           Expanded(
               flex: 1,
               child: FittedBox(fit: BoxFit.none, child: userActionContainer()))
@@ -160,6 +229,18 @@ class _ChartDemoState extends State<ChartDemo> {
               onTaskFinish();
             },
             child: Text((currentTask as WaitTask).btnText));
+      case TaskType.addOptionChain:
+      case TaskType.chooseCorrectOptionChainValue:
+        return Container();
+      case TaskType.highlightCorrectOptionChainValue:
+        return ElevatedButton(
+            onPressed: () {
+              HighlightCorrectOptionChainValueTask task =
+                  currentTask as HighlightCorrectOptionChainValueTask;
+              _previewScreenKey.currentState?.checkAnswer(task.correctRowIndex);
+              onTaskFinish();
+            },
+            child: Text("Check Answer"));
     }
   }
 }

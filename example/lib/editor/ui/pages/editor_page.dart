@@ -538,7 +538,8 @@ class _EditorPageState extends State<EditorPage> {
         editOptionChain(task as AddOptionChainTask);
         break;
       case TaskType.chooseCorrectOptionChainValue:
-        editHighlightedOptionChainData(task as ChooseCorrectOptionValueChainTask);
+        editHighlightedOptionChainData(
+            task as ChooseCorrectOptionValueChainTask);
         break;
       case TaskType.highlightCorrectOptionChainValue:
         selectOptionChainToHighlight();
@@ -641,51 +642,58 @@ class _EditorPageState extends State<EditorPage> {
   void showOptionChain() async {
     final highlightedDataTask =
         await showOptionChainById(context: context, tasks: tasks);
-
     if (highlightedDataTask != null) {
-      final taskIndex = tasks.indexWhere(
-        (task) =>
-            task is AddOptionChainTask &&
-            task.optionChainId == highlightedDataTask.taskId,
-      );
-
-      if (taskIndex != -1) {
-        final oldTask = tasks[taskIndex] as AddOptionChainTask;
-        final updatedTask = AddOptionChainTask(
-            expiryDate: oldTask.expiryDate,
-            data: oldTask.data,
-            columns: oldTask.columns,
-            visibility: oldTask.visibility,
-            interval: oldTask.interval,
-            correctRowIndex: highlightedDataTask.selectedRowIndex,
-            optionChainId: oldTask.optionChainId);
-        setState(() {
-          tasks[taskIndex] = updatedTask;
-        });
-
-        _updateTaskList(highlightedDataTask);
-      }
+      _updateTaskList(highlightedDataTask);
     }
+
+    // if (highlightedDataTask != null) {
+    //   final taskIndex = tasks.indexWhere(
+    //     (task) =>
+    //         task is AddOptionChainTask &&
+    //         task.optionChainId == highlightedDataTask.taskId,
+    //   );
+    //
+    //   if (taskIndex != -1) {
+    //     final oldTask = tasks[taskIndex] as AddOptionChainTask;
+    //     final updatedTask = AddOptionChainTask(
+    //         expiryDate: oldTask.expiryDate,
+    //         data: oldTask.data,
+    //         columns: oldTask.columns,
+    //         visibility: oldTask.visibility,
+    //         interval: oldTask.interval,
+    //         optionChainId: oldTask.optionChainId);
+    //     setState(() {
+    //       tasks[taskIndex] = updatedTask;
+    //     });
+    //
+    //   }
+    // }
   }
 
   Future<void> editHighlightedOptionChainData(
       ChooseCorrectOptionValueChainTask task) async {
-    final updatedHighlight = await showOptionChainById(
+    await showOptionChainById(
       context: context,
       tasks: tasks,
       initialTask: task,
-    );
-
-    if (updatedHighlight != null) {
-      final index = tasks.indexWhere(
-          (t) => t is AddOptionChainTask && t.optionChainId == task.taskId);
-      if (index != -1) {
-        setState(() {
-          tasks[index] = updatedHighlight;
-        });
-        _updateTaskList(updatedHighlight);
-      }
-    }
+    ).then((data) {
+      setState(() {
+        if (data != null) {
+          task.taskId = data.taskId;
+        }
+      });
+    });
+    //
+    // if (updatedHighlight != null) {
+    //   final index = tasks.indexWhere((t) =>
+    //       t is ChooseCorrectOptionValueChainTask && t.taskId == task.taskId);
+    //   if (index != -1) {
+    //     setState(() {
+    //       tasks[index] = updatedHighlight;
+    //     });
+    //     _updateTaskList(updatedHighlight);
+    //   }
+    // }
   }
 
   Future<void> selectOptionChainToHighlight() async {

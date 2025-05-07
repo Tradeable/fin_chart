@@ -1,7 +1,8 @@
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
-import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
+import 'package:fin_chart/option_chain/models/preview_data.dart';
+import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
 
 Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
@@ -17,69 +18,178 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
     return null;
   }
 
-  final sourceTask = await showDialog<AddOptionChainTask>(
+  // First dialog - Grid selection of option chains
+  final selectedOptionChain = await showDialog<AddOptionChainTask>(
     context: context,
     builder: (BuildContext dialogContext) {
       return Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+        insetPadding: const EdgeInsets.all(20),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Select an Option Chain',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<AddOptionChainTask>(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Select Option Chain',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  hint: const Text('Select an Option Chain Task'),
-                  items: optionChainTasks.map((task) {
-                    return DropdownMenuItem<AddOptionChainTask>(
-                      value: task,
-                      child: Text('Task ID: ${task.optionChainId}'),
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.2,
+                  ),
+                  itemCount: optionChainTasks.length,
+                  itemBuilder: (context, index) {
+                    final task = optionChainTasks[index];
+                    return GestureDetector(
+                      onTap: () => Navigator.pop(dialogContext, task),
+                      child: Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Chain ${index + 1}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'ID: ${task.optionChainId}',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const Spacer(),
+                              const Icon(Icons.table_chart, size: 40),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
-                  }).toList(),
-                  onChanged: (selectedTask) {
-                    if (selectedTask != null) {
-                      Navigator.pop(dialogContext, selectedTask);
-                    }
                   },
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(dialogContext),
-                      child: const Text('Cancel'),
-                    ),
-                  ],
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
     },
   );
 
-  if (sourceTask == null) return null;
-  final highlightTask = tasks
-      .whereType<ChooseCorrectOptionValueChainTask>()
-      .firstWhere((task) => task.taskId == sourceTask.optionChainId);
+  if (selectedOptionChain == null) return null;
 
-  return HighlightCorrectOptionChainValueTask(
-      optionChainId: sourceTask.optionChainId,
-      correctRowIndex: highlightTask.selectedRowIndex);
+  // Second dialog - Row selection
+  final selectedRowIndex = await showDialog<int>(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      final previewKey = GlobalKey<PreviewScreenState>();
+
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Select Row in ${selectedOptionChain.optionChainId}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: PreviewScreen(
+                    key: previewKey,
+                    previewData: PreviewData(
+                      optionData: selectedOptionChain.data,
+                      columns: selectedOptionChain.columns,
+                      visibility: selectedOptionChain.visibility,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        final selectedIndex =
+                            previewKey.currentState?.getCorrectRowIndex();
+                        if (selectedIndex != null) {
+                          Navigator.pop(dialogContext, selectedIndex);
+                        } else {
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            const SnackBar(
+                                content: Text('Please select a row')),
+                          );
+                        }
+                      },
+                      child: const Text('Select'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  if (selectedRowIndex != null) {
+    return HighlightCorrectOptionChainValueTask(
+      optionChainId: selectedOptionChain.optionChainId,
+      correctRowIndex: selectedRowIndex,
+    );
+  }
+  return null;
 }

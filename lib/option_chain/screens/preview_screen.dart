@@ -41,13 +41,6 @@ class PreviewScreenState extends State<PreviewScreen> {
 
   void chooseRow(int rowIndex) {
     setState(() {
-      _selectedRowIndex = rowIndex;
-      _isChecked = false;
-    });
-  }
-
-  void checkAnswer(int rowIndex) {
-    setState(() {
       userSelectedIndex = rowIndex;
       _isChecked = true;
     });

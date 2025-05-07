@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'package:example/dialog/show_all_option_chains_dialog.dart';
+import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -10,8 +11,10 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
+import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
@@ -34,6 +37,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
+import 'package:example/dialog/add_option_chain_dialog.dart';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
@@ -216,6 +220,9 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.waitTask:
           case TaskType.addMcq:
           case TaskType.clearTask:
+          case TaskType.addOptionChain:
+          case TaskType.chooseCorrectOptionChainValue:
+          case TaskType.highlightCorrectOptionChainValue:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -489,6 +496,15 @@ class _EditorPageState extends State<EditorPage> {
           }
           _updateTaskList(ClearTask());
           break;
+        case TaskType.addOptionChain:
+          optionChainPrompt();
+          break;
+        case TaskType.chooseCorrectOptionChainValue:
+          showOptionChain();
+          break;
+        case TaskType.highlightCorrectOptionChainValue:
+          selectOptionChainToHighlight();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -517,6 +533,15 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.addMcq:
         editMcqPrompt(task as AddMcqTask);
+        break;
+      case TaskType.addOptionChain:
+        editOptionChain(task as AddOptionChainTask);
+        break;
+      case TaskType.chooseCorrectOptionChainValue:
+        editHighlightedOptionChainData(task as ChooseCorrectOptionValueChainTask);
+        break;
+      case TaskType.highlightCorrectOptionChainValue:
+        selectOptionChainToHighlight();
         break;
     }
   }
@@ -588,6 +613,87 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
+  }
+
+  void optionChainPrompt() async {
+    await showOptionChainDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  Future<void> editOptionChain(AddOptionChainTask task) async {
+    await showOptionChainDialog(context: context, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.data = data.data;
+          task.visibility = data.visibility;
+          task.columns = data.columns;
+          task.expiryDate = data.expiryDate;
+          task.interval = data.interval;
+        }
+      });
+    });
+  }
+
+  void showOptionChain() async {
+    final highlightedDataTask =
+        await showOptionChainById(context: context, tasks: tasks);
+
+    if (highlightedDataTask != null) {
+      final taskIndex = tasks.indexWhere(
+        (task) =>
+            task is AddOptionChainTask &&
+            task.optionChainId == highlightedDataTask.taskId,
+      );
+
+      if (taskIndex != -1) {
+        final oldTask = tasks[taskIndex] as AddOptionChainTask;
+        final updatedTask = AddOptionChainTask(
+            expiryDate: oldTask.expiryDate,
+            data: oldTask.data,
+            columns: oldTask.columns,
+            visibility: oldTask.visibility,
+            interval: oldTask.interval,
+            correctRowIndex: highlightedDataTask.selectedRowIndex,
+            optionChainId: oldTask.optionChainId);
+        setState(() {
+          tasks[taskIndex] = updatedTask;
+        });
+
+        _updateTaskList(highlightedDataTask);
+      }
+    }
+  }
+
+  Future<void> editHighlightedOptionChainData(
+      ChooseCorrectOptionValueChainTask task) async {
+    final updatedHighlight = await showOptionChainById(
+      context: context,
+      tasks: tasks,
+      initialTask: task,
+    );
+
+    if (updatedHighlight != null) {
+      final index = tasks.indexWhere(
+          (t) => t is AddOptionChainTask && t.optionChainId == task.taskId);
+      if (index != -1) {
+        setState(() {
+          tasks[index] = updatedHighlight;
+        });
+        _updateTaskList(updatedHighlight);
+      }
+    }
+  }
+
+  Future<void> selectOptionChainToHighlight() async {
+    final selectedOptionChain =
+        await showAllOptionChains(context: context, tasks: tasks);
+    if (selectedOptionChain != null) {
+      _updateTaskList(selectedOptionChain);
+    }
   }
 
   Future<AddPromptTask?> showPromptDialog({

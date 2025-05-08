@@ -6,86 +6,125 @@ class OptionChainUtils {
     OptionChainVisibility visibility, {
     List<ColumnConfig> customColumns = const [],
   }) {
-    List<ColumnConfig> leftColumns = [];
-    List<ColumnConfig> rightColumns = [];
-    List<ColumnConfig> greekColumns = [];
+    final leftColumns = <ColumnConfig>[];
+    final rightColumns = <ColumnConfig>[];
 
-    void addGreek(ColumnType type) {
-      if (customColumns.any((c) => c.type == type)) {
-        greekColumns.add(customColumns.firstWhere((c) => c.type == type));
-      } else {
-        greekColumns.add(
+    // Helper function to check and add greek columns
+    void addGreekColumns(List<ColumnConfig> target, ColumnType type) {
+      final column = customColumns.firstWhereOrNull((c) => c.type == type);
+      if (column != null) {
+        target.add(column);
+      }
+    }
+
+    switch (visibility) {
+      case OptionChainVisibility.both:
+        leftColumns.addAll([
           ColumnConfig(
-            type: type,
-            name: type.displayName,
+            type: ColumnType.callOi,
+            name: ColumnType.callOi.displayName,
             visible: true,
           ),
-        );
-      }
+          ColumnConfig(
+            type: ColumnType.callPremium,
+            name: ColumnType.callPremium.displayName,
+            visible: true,
+          ),
+        ]);
+
+        rightColumns.addAll([
+          ColumnConfig(
+            type: ColumnType.putPremium,
+            name: ColumnType.putPremium.displayName,
+            visible: true,
+          ),
+          ColumnConfig(
+            type: ColumnType.putOi,
+            name: ColumnType.putOi.displayName,
+            visible: true,
+          ),
+        ]);
+
+        // Add call Greeks to left
+        for (final type in [
+          ColumnType.callDelta,
+          ColumnType.callGamma,
+          ColumnType.callVega,
+        ]) {
+          addGreekColumns(leftColumns, type);
+        }
+
+        // Add put Greeks to right
+        for (final type in [
+          ColumnType.putDelta,
+          ColumnType.putGamma,
+          ColumnType.putVega,
+        ]) {
+          addGreekColumns(rightColumns, type);
+        }
+        break;
+
+      case OptionChainVisibility.call:
+        leftColumns.addAll([
+          ColumnConfig(
+            type: ColumnType.callOi,
+            name: ColumnType.callOi.displayName,
+            visible: true,
+          ),
+          ColumnConfig(
+            type: ColumnType.callPremium,
+            name: ColumnType.callPremium.displayName,
+            visible: true,
+          ),
+        ]);
+
+        // Add call Greeks to right
+        for (final type in [
+          ColumnType.callDelta,
+          ColumnType.callGamma,
+          ColumnType.callVega,
+        ]) {
+          addGreekColumns(rightColumns, type);
+        }
+        break;
+
+      case OptionChainVisibility.put:
+        leftColumns.addAll([
+          ColumnConfig(
+            type: ColumnType.putOi,
+            name: ColumnType.putOi.displayName,
+            visible: true,
+          ),
+          ColumnConfig(
+            type: ColumnType.putPremium,
+            name: ColumnType.putPremium.displayName,
+            visible: true,
+          ),
+        ]);
+
+        // Add put Greeks to right
+        for (final type in [
+          ColumnType.putDelta,
+          ColumnType.putGamma,
+          ColumnType.putVega,
+        ]) {
+          addGreekColumns(rightColumns, type);
+        }
+        break;
     }
 
-    // Add Greeks (delta, gamma, vega) if visibility is call or put
-    if (visibility == OptionChainVisibility.call ||
-        visibility == OptionChainVisibility.put) {
-      for (var greek in [ColumnType.delta, ColumnType.gamma, ColumnType.vega]) {
-        addGreek(greek);
-      }
-    }
-
-    if (visibility == OptionChainVisibility.both) {
-      leftColumns = [
-        ColumnConfig(
-          type: ColumnType.callOi,
-          name: ColumnType.callOi.displayName,
-          visible: true,
-        ),
-        ColumnConfig(
-          type: ColumnType.callPremium,
-          name: ColumnType.callPremium.displayName,
-          visible: true,
-        ),
-      ];
-      rightColumns = [
-        ColumnConfig(
-          type: ColumnType.putPremium,
-          name: ColumnType.putPremium.displayName,
-          visible: true,
-        ),
-        ColumnConfig(
-          type: ColumnType.putOi,
-          name: ColumnType.putOi.displayName,
-          visible: true,
-        ),
-      ];
-    } else if (visibility == OptionChainVisibility.call) {
-      leftColumns = [
-        ColumnConfig(
-          type: ColumnType.callOi,
-          name: ColumnType.callOi.displayName,
-          visible: true,
-        ),
-        ColumnConfig(
-          type: ColumnType.callPremium,
-          name: ColumnType.callPremium.displayName,
-          visible: true,
-        ),
-        ...greekColumns, // Add Greeks to call side
-      ];
-    } else {
-      leftColumns = [
-        ColumnConfig(
-          type: ColumnType.putOi,
-          name: ColumnType.putOi.displayName,
-          visible: true,
-        ),
-        ColumnConfig(
-          type: ColumnType.putPremium,
-          name: ColumnType.putPremium.displayName,
-          visible: true,
-        ),
-        ...greekColumns, // Add Greeks to put side
-      ];
-    }
+    const excludedTypes = {
+      ColumnType.callOi,
+      ColumnType.callPremium,
+      ColumnType.putOi,
+      ColumnType.putPremium,
+      ColumnType.callDelta,
+      ColumnType.callGamma,
+      ColumnType.callVega,
+      ColumnType.putDelta,
+      ColumnType.putGamma,
+      ColumnType.putVega,
+    };
 
     return [
       ...leftColumns,
@@ -95,12 +134,7 @@ class OptionChainUtils {
         visible: true,
       ),
       ...rightColumns,
-      ...customColumns.where(
-        (c) =>
-            c.type != ColumnType.delta &&
-            c.type != ColumnType.gamma &&
-            c.type != ColumnType.vega,
-      ),
+      ...customColumns.where((c) => !excludedTypes.contains(c.type)),
     ];
   }
 
@@ -109,10 +143,11 @@ class OptionChainUtils {
     required double maxStrike,
     required int interval,
   }) {
-    List<OptionData> newData = [];
-    double currentStrike = minStrike;
-    while (currentStrike <= maxStrike) {
-      int i = newData.length;
+    final newData = <OptionData>[];
+    final strikeCount = ((maxStrike - minStrike) / interval).ceil() + 1;
+
+    for (var i = 0; i < strikeCount; i++) {
+      final currentStrike = minStrike + (i * interval);
       newData.add(
         OptionData(
           strike: currentStrike,
@@ -120,13 +155,29 @@ class OptionChainUtils {
           callPremium: 5.0 + i * 0.5,
           putOi: 800 + i * 400,
           putPremium: 4.0 + i * 0.4,
-          delta: 0.5 + (i * 0.05),
-          gamma: 0.1 + (i * 0.01),
-          vega: 0.3 + (i * 0.03),
+          callDelta: 0.5 + (i * 0.05),
+          callGamma: 0.1 + (i * 0.01),
+          callVega: 0.3 + (i * 0.03),
+          callTheta: -0.2 - (i * 0.02),
+          callIV: 20.0 + (i * 0.5),
+          putDelta: -0.5 - (i * 0.05),
+          putGamma: 0.1 + (i * 0.01),
+          putVega: 0.3 + (i * 0.03),
+          putTheta: -0.2 - (i * 0.02),
+          putIV: 20.0 + (i * 0.5),
         ),
       );
-      currentStrike += interval.toDouble();
     }
+
     return newData;
+  }
+}
+
+extension _FirstWhereOrNull<E> on Iterable<E> {
+  E? firstWhereOrNull(bool Function(E) test) {
+    for (final element in this) {
+      if (test(element)) return element;
+    }
+    return null;
   }
 }

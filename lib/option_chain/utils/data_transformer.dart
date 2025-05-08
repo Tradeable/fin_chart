@@ -16,16 +16,26 @@ class DataTransformer {
           return data.putOi.toString();
         case ColumnType.putPremium:
           return data.putPremium.toString();
-        case ColumnType.delta:
-          return data.delta.toString();
-        case ColumnType.gamma:
-          return data.gamma.toString();
-        case ColumnType.vega:
-          return data.vega.toString();
-        case ColumnType.theta:
-          return data.theta.toString();
-        case ColumnType.iv:
-          return data.iv.toString();
+        case ColumnType.callDelta:
+          return data.callDelta.toString();
+        case ColumnType.callGamma:
+          return data.callGamma.toString();
+        case ColumnType.callVega:
+          return data.callVega.toString();
+        case ColumnType.callTheta:
+          return data.callTheta.toString();
+        case ColumnType.callIV:
+          return data.callIV.toString();
+        case ColumnType.putDelta:
+          return data.putDelta.toString();
+        case ColumnType.putGamma:
+          return data.putGamma.toString();
+        case ColumnType.putVega:
+          return data.putVega.toString();
+        case ColumnType.putTheta:
+          return data.putTheta.toString();
+        case ColumnType.putIV:
+          return data.putIV.toString();
       }
     }).join(' ');
   }
@@ -42,16 +52,26 @@ class DataTransformer {
         return data.putOi.toString();
       case ColumnType.putPremium:
         return data.putPremium.toStringAsFixed(2);
-      case ColumnType.delta:
-        return data.delta.toStringAsFixed(2);
-      case ColumnType.gamma:
-        return data.gamma.toStringAsFixed(2);
-      case ColumnType.vega:
-        return data.vega.toStringAsFixed(2);
-      case ColumnType.theta:
-        return data.theta.toStringAsFixed(2);
-      case ColumnType.iv:
-        return data.iv.toStringAsFixed(2);
+      case ColumnType.callDelta:
+        return data.callDelta.toStringAsFixed(2);
+      case ColumnType.callGamma:
+        return data.callGamma.toStringAsFixed(2);
+      case ColumnType.callVega:
+        return data.callVega.toStringAsFixed(2);
+      case ColumnType.callTheta:
+        return data.callTheta.toStringAsFixed(2);
+      case ColumnType.callIV:
+        return data.callIV.toStringAsFixed(2);
+      case ColumnType.putDelta:
+        return data.putDelta.toStringAsFixed(2);
+      case ColumnType.putGamma:
+        return data.putGamma.toStringAsFixed(2);
+      case ColumnType.putVega:
+        return data.putVega.toStringAsFixed(2);
+      case ColumnType.putTheta:
+        return data.putTheta.toStringAsFixed(2);
+      case ColumnType.putIV:
+        return data.putIV.toStringAsFixed(2);
     }
   }
 

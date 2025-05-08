@@ -115,8 +115,7 @@ class PreviewScreenState extends State<PreviewScreen> {
         return WidgetStateProperty.all(
             Colors.red.withAlpha((0.1 * 255).round()));
       } else if (rowIndex == userSelectedIndex) {
-        return WidgetStateProperty.all(
-            Colors.green..withAlpha((0.1 * 255).round()));
+        return WidgetStateProperty.all(Colors.green.withAlpha((0.1 * 255).round()));
       }
     }
     return null;

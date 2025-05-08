@@ -7,6 +7,7 @@ import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
+import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -36,7 +37,8 @@ class _ChartDemoState extends State<ChartDemo> {
   Widget? chart;
   PageController controller = PageController();
   bool optionChainButtonVisibility = false;
-  AddOptionChainTask? optionChainTask;
+  List<AddOptionChainTask> optionChainTasks = [];
+  AddOptionChainTask? correctOptionChainTask;
 
   @override
   void initState() {
@@ -100,18 +102,27 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.addOptionChain:
         AddOptionChainTask task = currentTask as AddOptionChainTask;
 
-        setState(() {
-          optionChainButtonVisibility = true;
-          optionChainTask = task;
-        });
-        onTaskFinish();
-        break;
-      case TaskType.chooseCorrectOptionChainValue:
+        optionChainButtonVisibility = true;
+        optionChainTasks.add(task);
         setState(() {});
         onTaskFinish();
         break;
+      case TaskType.chooseCorrectOptionChainValue:
+        ChooseCorrectOptionValueChainTask task =
+            currentTask as ChooseCorrectOptionValueChainTask;
+        correctOptionChainTask =
+            optionChainTasks.firstWhere((e) => e.optionChainId == task.taskId);
+        controller
+            .animateToPage(1,
+                duration: Duration(seconds: 1), curve: Curves.easeIn)
+            .then((val) {
+          onTaskFinish();
+        });
+        switchToOptionChain = true;
+        setState(() {});
+        break;
       case TaskType.highlightCorrectOptionChainValue:
-            HighlightCorrectOptionChainValueTask task =
+        HighlightCorrectOptionChainValueTask task =
             currentTask as HighlightCorrectOptionChainValueTask;
         _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
         onTaskFinish();
@@ -186,7 +197,7 @@ class _ChartDemoState extends State<ChartDemo> {
                         onInteraction: (p0, p1) {});
                   } else {
                     return PreviewScreen.from(
-                        key: _previewScreenKey, task: optionChainTask!);
+                        key: _previewScreenKey, task: correctOptionChainTask!);
                   }
                 }),
           ),
@@ -237,14 +248,14 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.chooseCorrectOptionChainValue:
       case TaskType.highlightCorrectOptionChainValue:
         return Container();
-        // return ElevatedButton(
-        //     onPressed: () {
-        //       HighlightCorrectOptionChainValueTask task =
-        //           currentTask as HighlightCorrectOptionChainValueTask;
-        //       _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
-        //       onTaskFinish();
-        //     },
-        //     child: Text("Okay"));
+      // return ElevatedButton(
+      //     onPressed: () {
+      //       HighlightCorrectOptionChainValueTask task =
+      //           currentTask as HighlightCorrectOptionChainValueTask;
+      //       _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
+      //       onTaskFinish();
+      //     },
+      //     child: Text("Okay"));
     }
   }
 }

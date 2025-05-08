@@ -6,130 +6,89 @@ class OptionChainUtils {
     OptionChainVisibility visibility, {
     List<ColumnConfig> customColumns = const [],
   }) {
-    final leftColumns = <ColumnConfig>[];
-    final rightColumns = <ColumnConfig>[];
+    final callColumns = <ColumnConfig>[];
+    final putColumns = <ColumnConfig>[];
 
-    void addGreekColumns(List<ColumnConfig> target, ColumnType type) {
+    void addColumnIfExists(List<ColumnConfig> target, ColumnType type) {
       final column = customColumns.firstWhereOrNull((c) => c.type == type);
       if (column != null) {
         target.add(column);
       }
     }
 
+    void addCallColumns() {
+      callColumns.addAll([
+        ColumnConfig(
+          type: ColumnType.callOi,
+          name: ColumnType.callOi.displayName,
+          visible: true,
+        ),
+        ColumnConfig(
+          type: ColumnType.callPremium,
+          name: ColumnType.callPremium.displayName,
+          visible: true,
+        ),
+      ]);
+
+      for (final type in [
+        ColumnType.callDelta,
+        ColumnType.callGamma,
+        ColumnType.callVega,
+        ColumnType.callTheta,
+        ColumnType.callIV,
+      ]) {
+        addColumnIfExists(callColumns, type);
+      }
+    }
+
+    void addPutColumns() {
+      putColumns.addAll([
+        ColumnConfig(
+          type: ColumnType.putPremium,
+          name: ColumnType.putPremium.displayName,
+          visible: true,
+        ),
+        ColumnConfig(
+          type: ColumnType.putOi,
+          name: ColumnType.putOi.displayName,
+          visible: true,
+        ),
+      ]);
+
+      for (final type in [
+        ColumnType.putDelta,
+        ColumnType.putGamma,
+        ColumnType.putVega,
+        ColumnType.putTheta,
+        ColumnType.putIV,
+      ]) {
+        addColumnIfExists(putColumns, type);
+      }
+    }
+
     switch (visibility) {
       case OptionChainVisibility.both:
-        leftColumns.addAll([
-          ColumnConfig(
-            type: ColumnType.callOi,
-            name: ColumnType.callOi.displayName,
-            visible: true,
-          ),
-          ColumnConfig(
-            type: ColumnType.callPremium,
-            name: ColumnType.callPremium.displayName,
-            visible: true,
-          ),
-        ]);
-
-        rightColumns.addAll([
-          ColumnConfig(
-            type: ColumnType.putPremium,
-            name: ColumnType.putPremium.displayName,
-            visible: true,
-          ),
-          ColumnConfig(
-            type: ColumnType.putOi,
-            name: ColumnType.putOi.displayName,
-            visible: true,
-          ),
-        ]);
-
-        for (final type in [
-          ColumnType.callDelta,
-          ColumnType.callGamma,
-          ColumnType.callVega,
-        ]) {
-          addGreekColumns(leftColumns, type);
-        }
-
-        for (final type in [
-          ColumnType.putDelta,
-          ColumnType.putGamma,
-          ColumnType.putVega,
-        ]) {
-          addGreekColumns(rightColumns, type);
-        }
+        addCallColumns();
+        addPutColumns();
         break;
-
       case OptionChainVisibility.call:
-        leftColumns.addAll([
-          ColumnConfig(
-            type: ColumnType.callOi,
-            name: ColumnType.callOi.displayName,
-            visible: true,
-          ),
-          ColumnConfig(
-            type: ColumnType.callPremium,
-            name: ColumnType.callPremium.displayName,
-            visible: true,
-          ),
-        ]);
-
-        for (final type in [
-          ColumnType.callDelta,
-          ColumnType.callGamma,
-          ColumnType.callVega,
-        ]) {
-          addGreekColumns(rightColumns, type);
-        }
+        addCallColumns();
         break;
-
       case OptionChainVisibility.put:
-        leftColumns.addAll([
-          ColumnConfig(
-            type: ColumnType.putOi,
-            name: ColumnType.putOi.displayName,
-            visible: true,
-          ),
-          ColumnConfig(
-            type: ColumnType.putPremium,
-            name: ColumnType.putPremium.displayName,
-            visible: true,
-          ),
-        ]);
-
-        for (final type in [
-          ColumnType.putDelta,
-          ColumnType.putGamma,
-          ColumnType.putVega,
-        ]) {
-          addGreekColumns(rightColumns, type);
-        }
+        addPutColumns();
         break;
     }
 
-    const excludedTypes = {
-      ColumnType.callOi,
-      ColumnType.callPremium,
-      ColumnType.putOi,
-      ColumnType.putPremium,
-      ColumnType.callDelta,
-      ColumnType.callGamma,
-      ColumnType.callVega,
-      ColumnType.putDelta,
-      ColumnType.putGamma,
-      ColumnType.putVega,
-    };
+    final strikeColumn = ColumnConfig(
+      type: ColumnType.strike,
+      name: ColumnType.strike.displayName,
+      visible: true,
+    );
 
     return [
-      ...leftColumns,
-      ColumnConfig(
-        type: ColumnType.strike,
-        name: ColumnType.strike.displayName,
-        visible: true,
-      ),
-      ...rightColumns,
-      ...customColumns.where((c) => !excludedTypes.contains(c.type)),
+      ...callColumns,
+      strikeColumn,
+      ...putColumns,
     ];
   }
 

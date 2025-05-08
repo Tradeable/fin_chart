@@ -78,9 +78,10 @@ class _OptionChainPageState extends State<OptionChainPage> {
 
   void _updateColumns() {
     setState(() {
-      final currentVisibility = <ColumnType, bool>{
-        for (var col in _columns) col.type: col.visible
-      };
+      final currentVisibility = <ColumnType, bool>{};
+      for (var col in _columns) {
+        currentVisibility[col.type] = col.visible;
+      }
       if (widget.initialTask != null && _columns.isEmpty) {
         _customColumns = widget.initialTask!.columns.where((col) {
           final defaultTypes = OptionChainUtils.getDefaultColumns(_visibility)
@@ -88,27 +89,38 @@ class _OptionChainPageState extends State<OptionChainPage> {
               .toList();
           return !defaultTypes.contains(col.type);
         }).toList();
-
-        for (var col in widget.initialTask!.columns) {
-          if (!currentVisibility.containsKey(col.type)) {
-            currentVisibility[col.type] = col.visible;
-          }
-        }
       }
-
       _columns = OptionChainUtils.getDefaultColumns(
         _visibility,
         customColumns: _customColumns,
-      ).map((newColumn) {
-        final shouldBeVisible =
-            currentVisibility[newColumn.type] ?? newColumn.visible;
+      );
 
-        return ColumnConfig(
-          type: newColumn.type,
-          name: newColumn.name,
-          visible: shouldBeVisible,
-        );
-      }).toList();
+      if (currentVisibility.isNotEmpty) {
+        _columns = _columns.map((column) {
+          return ColumnConfig(
+            type: column.type,
+            name: column.name,
+            visible: currentVisibility[column.type] ?? column.visible,
+          );
+        }).toList();
+      }
+
+      if (widget.initialTask != null) {
+        final taskVisibility = <ColumnType, bool>{};
+        for (var col in widget.initialTask!.columns) {
+          taskVisibility[col.type] = col.visible;
+        }
+
+        if (taskVisibility.isNotEmpty) {
+          _columns = _columns.map((column) {
+            return ColumnConfig(
+              type: column.type,
+              name: column.name,
+              visible: taskVisibility[column.type] ?? column.visible,
+            );
+          }).toList();
+        }
+      }
     });
   }
 
@@ -416,8 +428,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
                 ElevatedButton(
                   onPressed: () {
                     final task = AddOptionChainTask(
-                        columns:
-                            _columns.where((e) => e.visible == true).toList(),
+                        columns: _columns,
                         data: _optionData,
                         visibility: _visibility,
                         expiryDate: _expiryDate,

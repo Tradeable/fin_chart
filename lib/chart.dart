@@ -68,7 +68,8 @@ class Chart extends StatefulWidget {
   State<Chart> createState() => ChartState();
 }
 
-class ChartState extends State<Chart> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+class ChartState extends State<Chart>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   double leftPos = 0;
   double topPos = 0;
   double rightPos = 0;
@@ -334,6 +335,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin, AutomaticKe
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
         padding: widget.padding,
         child: LayoutBuilder(builder: (context, constraints) {

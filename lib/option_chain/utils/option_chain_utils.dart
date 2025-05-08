@@ -13,6 +13,22 @@ class OptionChainUtils {
     void addGreek(ColumnType type) {
       if (customColumns.any((c) => c.type == type)) {
         greekColumns.add(customColumns.firstWhere((c) => c.type == type));
+      } else {
+        greekColumns.add(
+          ColumnConfig(
+            type: type,
+            name: type.displayName,
+            visible: true,
+          ),
+        );
+      }
+    }
+
+    // Add Greeks (delta, gamma, vega) if visibility is call or put
+    if (visibility == OptionChainVisibility.call ||
+        visibility == OptionChainVisibility.put) {
+      for (var greek in [ColumnType.delta, ColumnType.gamma, ColumnType.vega]) {
+        addGreek(greek);
       }
     }
 
@@ -53,6 +69,7 @@ class OptionChainUtils {
           name: ColumnType.callPremium.displayName,
           visible: true,
         ),
+        ...greekColumns, // Add Greeks to call side
       ];
     } else {
       leftColumns = [
@@ -66,11 +83,8 @@ class OptionChainUtils {
           name: ColumnType.putPremium.displayName,
           visible: true,
         ),
+        ...greekColumns, // Add Greeks to put side
       ];
-    }
-
-    for (var greek in [ColumnType.delta, ColumnType.gamma, ColumnType.vega]) {
-      addGreek(greek);
     }
 
     return [
@@ -81,7 +95,6 @@ class OptionChainUtils {
         visible: true,
       ),
       ...rightColumns,
-      ...greekColumns,
       ...customColumns.where(
         (c) =>
             c.type != ColumnType.delta &&
@@ -114,7 +127,6 @@ class OptionChainUtils {
       );
       currentStrike += interval.toDouble();
     }
-    print(interval);
     return newData;
   }
 }

@@ -180,7 +180,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
         ColumnType columnType = _columns[columnIndex].type;
 
         for (int i = 0; i < _optionData.length && i < valueList.length; i++) {
-          String value = valueList[i];
+          String value = valueList[i].replaceAll(",", "");
           OptionData data = _optionData[i];
 
           switch (columnType) {
@@ -654,7 +654,8 @@ class _OptionChainPageState extends State<OptionChainPage> {
       OptionData data = entry.value;
       return DataRow(
         color: rowIndex == _selectedRowIndex
-            ? WidgetStateProperty.all(Colors.blue.withOpacity(0.1))
+            ? WidgetStateProperty.all(
+                Colors.blue..withAlpha((0.1 * 255).round()))
             : null,
         cells: _columns.map((column) {
           return DataCell(

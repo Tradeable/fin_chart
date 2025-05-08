@@ -111,6 +111,10 @@ class _ChartDemoState extends State<ChartDemo> {
         onTaskFinish();
         break;
       case TaskType.highlightCorrectOptionChainValue:
+            HighlightCorrectOptionChainValueTask task =
+            currentTask as HighlightCorrectOptionChainValueTask;
+        _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
+        onTaskFinish();
         setState(() {});
         break;
     }
@@ -231,16 +235,16 @@ class _ChartDemoState extends State<ChartDemo> {
             child: Text((currentTask as WaitTask).btnText));
       case TaskType.addOptionChain:
       case TaskType.chooseCorrectOptionChainValue:
-        return Container();
       case TaskType.highlightCorrectOptionChainValue:
-        return ElevatedButton(
-            onPressed: () {
-              HighlightCorrectOptionChainValueTask task =
-                  currentTask as HighlightCorrectOptionChainValueTask;
-              _previewScreenKey.currentState?.checkAnswer(task.correctRowIndex);
-              onTaskFinish();
-            },
-            child: Text("Check Answer"));
+        return Container();
+        // return ElevatedButton(
+        //     onPressed: () {
+        //       HighlightCorrectOptionChainValueTask task =
+        //           currentTask as HighlightCorrectOptionChainValueTask;
+        //       _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
+        //       onTaskFinish();
+        //     },
+        //     child: Text("Okay"));
     }
   }
 }

@@ -5,11 +5,9 @@ import 'package:fin_chart/utils/calculations.dart';
 
 class ChooseCorrectOptionValueChainTask extends Task {
   String taskId;
-  int selectedRowIndex;
 
   ChooseCorrectOptionValueChainTask({
     required this.taskId,
-    required this.selectedRowIndex,
   }) : super(
           id: generateV4(),
           actionType: ActionType.empty,
@@ -20,14 +18,13 @@ class ChooseCorrectOptionValueChainTask extends Task {
   Map<String, dynamic> toJson() {
     final data = super.toJson();
     data['taskId'] = taskId;
-    data['selectedRowIndex'] = selectedRowIndex;
     return data;
   }
 
-  factory ChooseCorrectOptionValueChainTask.fromJson(Map<String, dynamic> json) {
+  factory ChooseCorrectOptionValueChainTask.fromJson(
+      Map<String, dynamic> json) {
     return ChooseCorrectOptionValueChainTask(
       taskId: json['taskId'],
-      selectedRowIndex: json['selectedRowIndex'],
     );
   }
 }

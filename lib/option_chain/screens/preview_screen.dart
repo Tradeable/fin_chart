@@ -41,13 +41,6 @@ class PreviewScreenState extends State<PreviewScreen> {
 
   void chooseRow(int rowIndex) {
     setState(() {
-      _selectedRowIndex = rowIndex;
-      _isChecked = false;
-    });
-  }
-
-  void checkAnswer(int rowIndex) {
-    setState(() {
       userSelectedIndex = rowIndex;
       _isChecked = true;
     });
@@ -110,18 +103,20 @@ class PreviewScreenState extends State<PreviewScreen> {
   WidgetStateProperty<Color>? _getRowColor(int rowIndex) {
     if (!_isChecked) {
       return rowIndex == _selectedRowIndex
-          ? WidgetStateProperty.all(Colors.blue.withOpacity(0.1))
+          ? WidgetStateProperty.all(Colors.blue.withAlpha((0.1 * 255).round()))
           : null;
     }
     if (userSelectedIndex == _selectedRowIndex) {
       return rowIndex == userSelectedIndex
-          ? WidgetStateProperty.all(Colors.green.withOpacity(0.1))
+          ? WidgetStateProperty.all(Colors.green.withAlpha((0.1 * 255).round()))
           : null;
     } else {
       if (rowIndex == _selectedRowIndex) {
-        return WidgetStateProperty.all(Colors.red.withOpacity(0.1));
+        return WidgetStateProperty.all(
+            Colors.red.withAlpha((0.1 * 255).round()));
       } else if (rowIndex == userSelectedIndex) {
-        return WidgetStateProperty.all(Colors.green.withOpacity(0.1));
+        return WidgetStateProperty.all(
+            Colors.green..withAlpha((0.1 * 255).round()));
       }
     }
     return null;

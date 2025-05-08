@@ -654,7 +654,8 @@ class _OptionChainPageState extends State<OptionChainPage> {
       OptionData data = entry.value;
       return DataRow(
         color: rowIndex == _selectedRowIndex
-            ? WidgetStateProperty.all(Colors.blue.withOpacity(0.1))
+            ? WidgetStateProperty.all(
+                Colors.blue..withAlpha((0.1 * 255).round()))
             : null,
         cells: _columns.map((column) {
           return DataCell(

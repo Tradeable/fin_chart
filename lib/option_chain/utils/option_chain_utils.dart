@@ -9,7 +9,6 @@ class OptionChainUtils {
     final leftColumns = <ColumnConfig>[];
     final rightColumns = <ColumnConfig>[];
 
-    // Helper function to check and add greek columns
     void addGreekColumns(List<ColumnConfig> target, ColumnType type) {
       final column = customColumns.firstWhereOrNull((c) => c.type == type);
       if (column != null) {
@@ -45,7 +44,6 @@ class OptionChainUtils {
           ),
         ]);
 
-        // Add call Greeks to left
         for (final type in [
           ColumnType.callDelta,
           ColumnType.callGamma,
@@ -54,7 +52,6 @@ class OptionChainUtils {
           addGreekColumns(leftColumns, type);
         }
 
-        // Add put Greeks to right
         for (final type in [
           ColumnType.putDelta,
           ColumnType.putGamma,
@@ -78,7 +75,6 @@ class OptionChainUtils {
           ),
         ]);
 
-        // Add call Greeks to right
         for (final type in [
           ColumnType.callDelta,
           ColumnType.callGamma,
@@ -102,7 +98,6 @@ class OptionChainUtils {
           ),
         ]);
 
-        // Add put Greeks to right
         for (final type in [
           ColumnType.putDelta,
           ColumnType.putGamma,

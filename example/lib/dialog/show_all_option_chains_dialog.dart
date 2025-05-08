@@ -18,7 +18,6 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
     return null;
   }
 
-  // First dialog - Grid selection of option chains
   final selectedOptionChain = await showDialog<AddOptionChainTask>(
     context: context,
     builder: (BuildContext dialogContext) {
@@ -83,8 +82,15 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                                   color: Colors.grey,
                                 ),
                               ),
-                              const Spacer(),
-                              const Icon(Icons.table_chart, size: 40),
+                              Expanded(
+                                child: PreviewScreen(
+                                  previewData: PreviewData(
+                                    optionData: task.data,
+                                    columns: task.columns,
+                                    visibility: task.visibility,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -109,7 +115,6 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
 
   if (selectedOptionChain == null) return null;
 
-  // Second dialog - Row selection
   final selectedRowIndex = await showDialog<int>(
     context: context,
     builder: (BuildContext dialogContext) {

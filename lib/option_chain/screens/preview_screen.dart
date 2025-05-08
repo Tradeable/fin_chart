@@ -39,6 +39,13 @@ class PreviewScreenState extends State<PreviewScreen> {
   bool _isChecked = false;
   int? userSelectedIndex;
 
+  @override
+  void initState() {
+    print(widget.previewData.toJson());
+
+    super.initState();
+  }
+
   void chooseRow(int rowIndex) {
     setState(() {
       userSelectedIndex = rowIndex;
@@ -115,7 +122,8 @@ class PreviewScreenState extends State<PreviewScreen> {
         return WidgetStateProperty.all(
             Colors.red.withAlpha((0.1 * 255).round()));
       } else if (rowIndex == userSelectedIndex) {
-        return WidgetStateProperty.all(Colors.green.withAlpha((0.1 * 255).round()));
+        return WidgetStateProperty.all(
+            Colors.green.withAlpha((0.1 * 255).round()));
       }
     }
     return null;

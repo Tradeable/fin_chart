@@ -182,7 +182,6 @@ class _OptionChainPageState extends State<OptionChainPage> {
         for (int i = 0; i < _optionData.length && i < valueList.length; i++) {
           String value = valueList[i].replaceAll(",", "");
           OptionData data = _optionData[i];
-
           switch (columnType) {
             case ColumnType.strike:
               data.strike = double.tryParse(value) ?? data.strike;
@@ -199,20 +198,35 @@ class _OptionChainPageState extends State<OptionChainPage> {
             case ColumnType.putPremium:
               data.putPremium = double.tryParse(value) ?? data.putPremium;
               break;
-            case ColumnType.delta:
-              data.delta = double.tryParse(value) ?? data.delta;
+            case ColumnType.callDelta:
+              data.callDelta = double.tryParse(value) ?? data.callDelta;
               break;
-            case ColumnType.gamma:
-              data.gamma = double.tryParse(value) ?? data.gamma;
+            case ColumnType.callGamma:
+              data.callGamma = double.tryParse(value) ?? data.callGamma;
               break;
-            case ColumnType.vega:
-              data.vega = double.tryParse(value) ?? data.vega;
+            case ColumnType.callVega:
+              data.callVega = double.tryParse(value) ?? data.callVega;
               break;
-            case ColumnType.theta:
-              data.theta = double.tryParse(value) ?? data.theta;
+            case ColumnType.callTheta:
+              data.callTheta = double.tryParse(value) ?? data.callTheta;
               break;
-            case ColumnType.iv:
-              data.theta = double.tryParse(value) ?? data.theta;
+            case ColumnType.callIV:
+              data.callIV = double.tryParse(value) ?? data.callIV;
+              break;
+            case ColumnType.putDelta:
+              data.putDelta = double.tryParse(value) ?? data.putDelta;
+              break;
+            case ColumnType.putGamma:
+              data.putGamma = double.tryParse(value) ?? data.putGamma;
+              break;
+            case ColumnType.putVega:
+              data.putVega = double.tryParse(value) ?? data.putVega;
+              break;
+            case ColumnType.putTheta:
+              data.putTheta = double.tryParse(value) ?? data.putTheta;
+              break;
+            case ColumnType.putIV:
+              data.putIV = double.tryParse(value) ?? data.putIV;
               break;
           }
         }
@@ -241,20 +255,35 @@ class _OptionChainPageState extends State<OptionChainPage> {
       case ColumnType.putPremium:
         initialValue = data.putPremium.toString();
         break;
-      case ColumnType.delta:
-        initialValue = data.delta.toString();
+      case ColumnType.callDelta:
+        initialValue = data.callDelta.toString();
         break;
-      case ColumnType.gamma:
-        initialValue = data.gamma.toString();
+      case ColumnType.callGamma:
+        initialValue = data.callGamma.toString();
         break;
-      case ColumnType.vega:
-        initialValue = data.vega.toString();
+      case ColumnType.callVega:
+        initialValue = data.callVega.toString();
         break;
-      case ColumnType.theta:
-        initialValue = data.theta.toString();
+      case ColumnType.callTheta:
+        initialValue = data.callTheta.toString();
         break;
-      case ColumnType.iv:
-        initialValue = data.iv.toString();
+      case ColumnType.callIV:
+        initialValue = data.callIV.toString();
+        break;
+      case ColumnType.putDelta:
+        initialValue = data.putDelta.toString();
+        break;
+      case ColumnType.putGamma:
+        initialValue = data.putGamma.toString();
+        break;
+      case ColumnType.putVega:
+        initialValue = data.putVega.toString();
+        break;
+      case ColumnType.putTheta:
+        initialValue = data.putTheta.toString();
+        break;
+      case ColumnType.putIV:
+        initialValue = data.putIV.toString();
         break;
     }
 
@@ -288,20 +317,35 @@ class _OptionChainPageState extends State<OptionChainPage> {
         case ColumnType.putPremium:
           data.putPremium = double.tryParse(value) ?? data.putPremium;
           break;
-        case ColumnType.delta:
-          data.delta = double.tryParse(value) ?? data.delta;
+        case ColumnType.callDelta:
+          data.callDelta = double.tryParse(value) ?? data.callDelta;
           break;
-        case ColumnType.gamma:
-          data.gamma = double.tryParse(value) ?? data.gamma;
+        case ColumnType.callGamma:
+          data.callGamma = double.tryParse(value) ?? data.callGamma;
           break;
-        case ColumnType.vega:
-          data.vega = double.tryParse(value) ?? data.vega;
+        case ColumnType.callVega:
+          data.callVega = double.tryParse(value) ?? data.callVega;
           break;
-        case ColumnType.theta:
-          data.theta = double.tryParse(value) ?? data.theta;
+        case ColumnType.callTheta:
+          data.callTheta = double.tryParse(value) ?? data.callTheta;
           break;
-        case ColumnType.iv:
-          data.iv = double.tryParse(value) ?? data.iv;
+        case ColumnType.callIV:
+          data.callIV = double.tryParse(value) ?? data.callIV;
+          break;
+        case ColumnType.putDelta:
+          data.putDelta = double.tryParse(value) ?? data.putDelta;
+          break;
+        case ColumnType.putGamma:
+          data.putGamma = double.tryParse(value) ?? data.putGamma;
+          break;
+        case ColumnType.putVega:
+          data.putVega = double.tryParse(value) ?? data.putVega;
+          break;
+        case ColumnType.putTheta:
+          data.putTheta = double.tryParse(value) ?? data.putTheta;
+          break;
+        case ColumnType.putIV:
+          data.putIV = double.tryParse(value) ?? data.putIV;
           break;
       }
     });

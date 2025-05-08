@@ -4,11 +4,16 @@ enum ColumnType {
   callPremium('Call Premium'),
   putOi('Put OI'),
   putPremium('Put Premium'),
-  delta('Delta'),
-  gamma('Gamma'),
-  vega('Vega'),
-  theta('Theta'),
-  iv('IV');
+  callDelta('Call Delta'),
+  callGamma('Call Gamma'),
+  callVega('Call Vega'),
+  callTheta('Call Theta'),
+  callIV('Call IV'),
+  putDelta('Put Delta'),
+  putGamma('Put Gamma'),
+  putTheta('Put Theta'),
+  putVega('Put Vega'),
+  putIV('Put IV');
 
   final String displayName;
 

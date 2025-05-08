@@ -20,7 +20,8 @@ class PanelPlotRegion extends PlotRegion {
       required double xStepWidth,
       required double xOffset,
       required double yMinValue,
-      required double yMaxValue}) {
+      required double yMaxValue,
+      bool invertYAxis = false}) {
     indicator.updateRegionProp(
         leftPos: leftPos,
         topPos: topPos,
@@ -29,7 +30,8 @@ class PanelPlotRegion extends PlotRegion {
         xStepWidth: xStepWidth,
         xOffset: xOffset,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue);
+        yMaxValue: yMaxValue,
+        invertYAxis: invertYAxis);
     super.updateRegionProp(
         leftPos: leftPos,
         topPos: topPos,
@@ -38,7 +40,8 @@ class PanelPlotRegion extends PlotRegion {
         xStepWidth: xStepWidth,
         xOffset: xOffset,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue);
+        yMaxValue: yMaxValue,
+        invertYAxis: invertYAxis);
   }
 
   @override

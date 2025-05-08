@@ -27,6 +27,7 @@ class Chart extends StatefulWidget {
   final Function(PlotRegion region)? onRegionSelect;
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
+  final bool invertYAxis;
 
   const Chart({
     super.key,
@@ -40,6 +41,7 @@ class Chart extends StatefulWidget {
     this.yAxisSettings = const YAxisSettings(),
     this.xAxisSettings = const XAxisSettings(),
     this.recipe,
+    this.invertYAxis = false,
   });
 
   factory Chart.from(
@@ -61,6 +63,7 @@ class Chart extends StatefulWidget {
       yAxisSettings: recipe.chartSettings.yAxisSettings,
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
+      invertYAxis: recipe.chartSettings.invertYaxis,
     );
   }
 
@@ -554,7 +557,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
           xStepWidth: xStepWidth,
           xOffset: xOffset,
           yMinValue: regions[i].yMinValue,
-          yMaxValue: regions[i].yMaxValue);
+          yMaxValue: regions[i].yMaxValue,
+          invertYAxis: widget.invertYAxis);
       tempTopPos = tempTopPos + height;
     }
   }
@@ -606,7 +610,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
           xStepWidth: xStepWidth,
           xOffset: xOffset,
           yMinValue: regions[0].yMinValue,
-          yMaxValue: regions[0].yMaxValue);
+          yMaxValue: regions[0].yMaxValue,
+          invertYAxis: widget.invertYAxis);
     }
 
     isInit = false;

@@ -55,7 +55,8 @@ class MainPlotRegion extends PlotRegion {
       required double xStepWidth,
       required double xOffset,
       required double yMinValue,
-      required double yMaxValue}) {
+      required double yMaxValue,
+      bool invertYAxis = false}) {
     for (Indicator indicator in indicators) {
       indicator.updateRegionProp(
           leftPos: leftPos,
@@ -65,7 +66,8 @@ class MainPlotRegion extends PlotRegion {
           xStepWidth: xStepWidth,
           xOffset: xOffset,
           yMinValue: yMinValue,
-          yMaxValue: yMaxValue);
+          yMaxValue: yMaxValue,
+          invertYAxis: invertYAxis);
     }
     super.updateRegionProp(
         leftPos: leftPos,
@@ -75,7 +77,8 @@ class MainPlotRegion extends PlotRegion {
         xStepWidth: xStepWidth,
         xOffset: xOffset,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue);
+        yMaxValue: yMaxValue,
+        invertYAxis: invertYAxis);
   }
 
   @override

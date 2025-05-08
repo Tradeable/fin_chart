@@ -11,6 +11,7 @@ mixin RegionProp {
   late double xOffset;
   late double yMinValue;
   late double yMaxValue;
+  late bool invertYAxis;
 
   void updateRegionProp({
     required double leftPos,
@@ -21,6 +22,7 @@ mixin RegionProp {
     required double xOffset,
     required double yMinValue,
     required double yMaxValue,
+    bool invertYAxis = false,
   }) {
     this.leftPos = leftPos;
     this.topPos = topPos;
@@ -30,6 +32,7 @@ mixin RegionProp {
     this.xOffset = xOffset;
     this.yMinValue = yMinValue;
     this.yMaxValue = yMaxValue;
+    this.invertYAxis = invertYAxis;
   }
 
   Offset toCanvas(Offset offset) {
@@ -51,15 +54,31 @@ mixin RegionProp {
   }
 
   double toY(double value) {
-    return bottomPos -
-        (value - yMinValue) * (bottomPos - topPos) / (yMaxValue - yMinValue);
+    if (invertYAxis) {
+      // When inverted, higher values are at the bottom
+      return topPos +
+          (value - yMinValue) * (bottomPos - topPos) / (yMaxValue - yMinValue);
+    } else {
+      // Normal behavior, higher values at the top
+      return bottomPos -
+          (value - yMinValue) * (bottomPos - topPos) / (yMaxValue - yMinValue);
+    }
   }
 
   double toYInverse(double value) {
-    return (bottomPos - value) *
-            (yMaxValue - yMinValue) /
-            (bottomPos - topPos) +
-        yMinValue;
+    if (invertYAxis) {
+      // When inverted, higher values are at the bottom
+      return (value - topPos) *
+              (yMaxValue - yMinValue) /
+              (bottomPos - topPos) +
+          yMinValue;
+    } else {
+      // Normal behavior, higher values at the top
+      return (bottomPos - value) *
+              (yMaxValue - yMinValue) /
+              (bottomPos - topPos) +
+          yMinValue;
+    }
   }
 
   double toX(double value) {

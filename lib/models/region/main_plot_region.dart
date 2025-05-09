@@ -181,11 +181,13 @@ class MainPlotRegion extends PlotRegion {
 
   @override
   void drawYAxis(Canvas canvas) {
-    double valuseDiff = yValues.last - yValues.first;
-    double posDiff = bottomPos - topPos;
+    // Choose direction to iterate through values based on inversion setting
+    Iterable<double> valuesToDraw = invertYAxis
+        ? yValues.reversed // From highest to lowest when inverted
+        : yValues; // From lowest to highest normally
 
-    for (double value in yValues) {
-      double pos = bottomPos - (value - yValues.first) * posDiff / valuseDiff;
+    for (double value in valuesToDraw) {
+      double pos = toY(value);
 
       if (!(value == yValues.first || value == yValues.last)) {
         canvas.drawLine(Offset(leftPos, pos), (Offset(rightPos, pos)), Paint());

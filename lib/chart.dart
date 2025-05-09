@@ -1,3 +1,4 @@
+import 'package:fin_chart/chart_controller.dart';
 import 'package:fin_chart/chart_painter.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/chart_settings.dart';
@@ -15,6 +16,7 @@ import 'package:fin_chart/utils/calculations.dart';
 import 'package:fin_chart/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'models/settings/y_axis_settings.dart';
+import 'dart:async';
 
 class Chart extends StatefulWidget {
   final EdgeInsets? padding;
@@ -28,6 +30,9 @@ class Chart extends StatefulWidget {
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
   final bool invertYAxis;
+  final String? chartId;
+  final ChartController? controller;
+  final bool autoActivateOnInteraction;
 
   const Chart({
     super.key,
@@ -42,15 +47,22 @@ class Chart extends StatefulWidget {
     this.xAxisSettings = const XAxisSettings(),
     this.recipe,
     this.invertYAxis = false,
+    this.chartId,
+    this.controller,
+    this.autoActivateOnInteraction = true,
   });
 
-  factory Chart.from(
-      {required GlobalKey key,
-      required Recipe recipe,
-      Function(Offset, Offset)? onInteraction,
-      Function(PlotRegion region, Layer layer)? onLayerSelect,
-      final Function(PlotRegion region)? onRegionSelect,
-      final Function(Indicator indicator)? onIndicatorSelect}) {
+  factory Chart.from({
+    required GlobalKey key,
+    required Recipe recipe,
+    Function(Offset, Offset)? onInteraction,
+    Function(PlotRegion region, Layer layer)? onLayerSelect,
+    final Function(PlotRegion region)? onRegionSelect,
+    final Function(Indicator indicator)? onIndicatorSelect,
+    String? chartId,
+    ChartController? controller,
+    bool autoActivateOnInteraction = true,
+  }) {
     return Chart(
       key: key,
       candles: recipe.data,
@@ -64,6 +76,9 @@ class Chart extends StatefulWidget {
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
       invertYAxis: recipe.chartSettings.invertYaxis,
+      chartId: chartId,
+      controller: controller,
+      autoActivateOnInteraction: autoActivateOnInteraction,
     );
   }
 
@@ -118,15 +133,37 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   bool isWaitingForEventPosition = false;
   double? eventSelectionPosition;
 
+  bool _isActive = false;
+  StreamSubscription? _controllerSubscription;
+
+  bool get isActive => _isActive;
+
   @override
   void initState() {
     super.initState();
+    if (widget.controller != null && widget.chartId != null) {
+      _isActive = widget.controller!.activatedChartId == widget.chartId;
+      _controllerSubscription =
+          widget.controller!.eventStream.listen(_handleControllerEvent);
+    }
     if (widget.recipe != null) {
       _initializeFromFactory();
     } else {
       _initializeDefault();
     }
     _initializeControllers();
+  }
+
+  void _handleControllerEvent(ChartEvent event) {
+    if (event is ChartActivatedEvent) {
+      setState(() {
+        _isActive = event.chartId == widget.chartId;
+      });
+    } else if (event is ChartDeactivatedEvent) {
+      setState(() {
+        _isActive = false;
+      });
+    }
   }
 
   void _initializeDefault() {
@@ -183,6 +220,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   void dispose() {
     _swipeAnimationController.dispose();
     _controller.dispose();
+    _controllerSubscription?.cancel();
     super.dispose();
   }
 
@@ -650,6 +688,11 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   }
 
   _onTapDown(TapDownDetails details) {
+    if (widget.autoActivateOnInteraction &&
+        widget.controller != null &&
+        widget.chartId != null) {
+      widget.controller!.setActiveChart(widget.chartId!);
+    }
     setState(() {
       isUserInteracting = true;
       for (PlotRegion region in regions) {

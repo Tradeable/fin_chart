@@ -58,11 +58,12 @@ class PanelPlotRegion extends PlotRegion {
 
   @override
   void drawYAxis(Canvas canvas) {
-    // double valuseDiff = indicator.yValues.last - indicator.yValues.first;
-    // double posDiff = bottomPos - topPos;
+    // Choose direction based on inversion setting
+    Iterable<double> valuesToDraw = invertYAxis
+        ? indicator.yValues.reversed // From highest to lowest when inverted
+        : indicator.yValues; // From lowest to highest normally
 
-    for (double value in indicator.yValues) {
-      // Use toY which already accounts for inversion
+    for (double value in valuesToDraw) {
       double pos = toY(value);
 
       if (!(value == indicator.yValues.first ||

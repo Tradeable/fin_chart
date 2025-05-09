@@ -58,12 +58,12 @@ class PanelPlotRegion extends PlotRegion {
 
   @override
   void drawYAxis(Canvas canvas) {
-    double valuseDiff = indicator.yValues.last - indicator.yValues.first;
-    double posDiff = bottomPos - topPos;
+    // double valuseDiff = indicator.yValues.last - indicator.yValues.first;
+    // double posDiff = bottomPos - topPos;
 
     for (double value in indicator.yValues) {
-      double pos =
-          bottomPos - (value - indicator.yValues.first) * posDiff / valuseDiff;
+      // Use toY which already accounts for inversion
+      double pos = toY(value);
 
       if (!(value == indicator.yValues.first ||
           value == indicator.yValues.last)) {

@@ -22,7 +22,7 @@ class PreviewScreen extends StatefulWidget {
       key: key,
       previewData: PreviewData(
         optionData: task.data,
-        columns: task.columns,
+        columns: task.columns.where((c) => c.visible).toList(),
         visibility: task.visibility,
         selectedRowIndex: selectedRowIndex,
         correctRowIndex: correctRowIndex,
@@ -83,6 +83,7 @@ class PreviewScreenState extends State<PreviewScreen> {
 
   List<DataColumn> _buildDataColumns() {
     return widget.previewData.columns
+        .where((column) => column.visible)
         .map(
           (column) => DataColumn(
             label: ConstrainedBox(
@@ -131,6 +132,7 @@ class PreviewScreenState extends State<PreviewScreen> {
 
   List<DataCell> _buildRowCells(int rowIndex, dynamic data) {
     return widget.previewData.columns
+        .where((column) => column.visible)
         .map(
           (column) => DataCell(
             ConstrainedBox(

@@ -41,8 +41,6 @@ class PreviewScreenState extends State<PreviewScreen> {
 
   @override
   void initState() {
-    print(widget.previewData.toJson());
-
     super.initState();
   }
 

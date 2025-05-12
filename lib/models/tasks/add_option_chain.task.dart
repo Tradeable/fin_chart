@@ -13,6 +13,7 @@ class AddOptionChainTask extends Task {
   int interval;
   int? correctRowIndex;
   String optionChainId;
+  double? strikePrice;
 
   AddOptionChainTask(
       {required this.columns,
@@ -21,7 +22,8 @@ class AddOptionChainTask extends Task {
       required this.expiryDate,
       required this.interval,
       this.correctRowIndex,
-      required this.optionChainId})
+      required this.optionChainId,
+      this.strikePrice})
       : super(
             id: generateV4(),
             actionType: ActionType.empty,
@@ -29,29 +31,32 @@ class AddOptionChainTask extends Task {
 
   @override
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['columns'] = columns.map((c) => c.toJson()).toList();
-    data['data'] = this.data.map((d) => d.toJson()).toList();
-    data['visibility'] = visibility.name;
-    data['expiryDate'] = expiryDate.toIso8601String();
-    data['interval'] = interval;
-    data['correctRowIndex'] = correctRowIndex;
-    data['optionChainId'] = optionChainId;
-    return data;
+    final Map<String, dynamic> json = super.toJson();
+    json['columns'] = columns.map((e) => e.toJson()).toList();
+    json['data'] = data.map((e) => e.toJson()).toList();
+    json['visibility'] = visibility.name;
+    json['expiryDate'] = expiryDate.toIso8601String();
+    json['interval'] = interval;
+    json['correctRowIndex'] = correctRowIndex;
+    json['optionChainId'] = optionChainId;
+    json['strikePrice'] = strikePrice;
+    return json;
   }
 
   factory AddOptionChainTask.fromJson(Map<String, dynamic> json) {
     return AddOptionChainTask(
-      columns: (json['columns'] as List)
-          .map((c) => ColumnConfig.fromJson(c))
-          .toList(),
-      data: (json['data'] as List).map((d) => OptionData.fromJson(d)).toList(),
-      visibility: OptionChainVisibility.values.firstWhere(
-          (v) => v.name == json['visibility'],
-          orElse: () => OptionChainVisibility.both),
-      expiryDate: DateTime.parse(json['expiryDate']),
-      interval: json['interval'] as int,
-      optionChainId: json['optionChainId'] as String,
-    );
+        columns: (json['columns'] as List)
+            .map((e) => ColumnConfig.fromJson(e))
+            .toList(),
+        data:
+            (json['data'] as List).map((e) => OptionData.fromJson(e)).toList(),
+        visibility: OptionChainVisibility.values.firstWhere(
+            (v) => v.name == json['visibility'],
+            orElse: () => OptionChainVisibility.both),
+        expiryDate: DateTime.parse(json['expiryDate']),
+        interval: json['interval'] as int,
+        correctRowIndex: json['correctRowIndex'] as int?,
+        optionChainId: json['optionChainId'] as String,
+        strikePrice: (json['strikePrice'] as num?)?.toDouble());
   }
 }

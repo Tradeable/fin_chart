@@ -54,7 +54,8 @@ class _OptionChainPageState extends State<OptionChainPage> {
     _selectedRowIndex = widget.initialTask?.correctRowIndex;
     if (widget.initialTask?.data.isNotEmpty ?? false) {
       final strikes = widget.initialTask!.data.map((d) => d.strike).toList();
-      _strikePrice = strikes.reduce((a, b) => a > b ? a : b);
+      _strikePrice = widget.initialTask!.strikePrice ??
+          strikes.reduce((a, b) => a > b ? a : b);
       _minStrike = strikes.reduce((a, b) => a < b ? a : b);
       _maxStrike = _strikePrice;
     } else {
@@ -428,6 +429,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
                 ElevatedButton(
                   onPressed: () {
                     final task = AddOptionChainTask(
+                        strikePrice: _strikePrice,
                         columns: _columns,
                         data: _optionData,
                         visibility: _visibility,
@@ -659,6 +661,8 @@ class _OptionChainPageState extends State<OptionChainPage> {
                       return PreviewScreen(
                         key: _previewKey,
                         previewData: PreviewData(
+                          strikePrice: _strikePrice,
+                          expiryDate: _expiryDate,
                           optionData: _optionData,
                           columns: _columns.where((c) => c.visible).toList(),
                           visibility: _visibility,

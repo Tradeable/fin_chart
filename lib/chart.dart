@@ -312,12 +312,6 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
-  void panToLatestCandle() {
-    setState(() {
-      xOffset = _getMaxLeftOffset();
-    });
-  }
-
   void updateLastCandle(ICandle updatedCandle) {
     setState(() {
       if (currentData.isNotEmpty) {

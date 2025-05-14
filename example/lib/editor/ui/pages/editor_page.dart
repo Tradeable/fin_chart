@@ -83,7 +83,7 @@ class _EditorPageState extends State<EditorPage> {
                   text: "RECORDING",
                   style: TextStyle(color: Colors.red, fontSize: 24),
                 )
-              : const Text("Finance Charts"),
+              : const Text("Trade:able Charts"),
       actions: [
         // ElevatedButton(
         //     onPressed: () {

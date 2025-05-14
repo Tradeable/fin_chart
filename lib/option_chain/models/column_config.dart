@@ -45,7 +45,7 @@ class ColumnConfig {
         columnTitle: json['columnTitle'] as String,
         isColumnVisible: json['isColumnVisible'] as bool,
         selectionMode: SelectionMode.values[
-            json['selectionMode'] as int? ?? SelectionMode.entireRow as int],
+            json['selectionMode'] as int? ?? SelectionMode.entireRow.index],
       );
 
   Map<String, dynamic> toJson() => {

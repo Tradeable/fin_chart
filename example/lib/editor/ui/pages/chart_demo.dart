@@ -124,7 +124,9 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.highlightCorrectOptionChainValue:
         HighlightCorrectOptionChainValueTask task =
             currentTask as HighlightCorrectOptionChainValueTask;
-        _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
+        for (int i in task.correctRowIndex) {
+          _previewScreenKey.currentState?.chooseRow(i);
+        }
         onTaskFinish();
         setState(() {});
         break;
@@ -197,7 +199,9 @@ class _ChartDemoState extends State<ChartDemo> {
                         onInteraction: (p0, p1) {});
                   } else {
                     return PreviewScreen.from(
-                        key: _previewScreenKey, task: correctOptionChainTask!);
+                        key: _previewScreenKey,
+                        task: correctOptionChainTask!,
+                        isEditorMode: false);
                   }
                 }),
           ),

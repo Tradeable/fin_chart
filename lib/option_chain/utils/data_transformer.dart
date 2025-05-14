@@ -5,7 +5,7 @@ class DataTransformer {
   static String getColumnValuesAsString(
       List<OptionData> optionData, ColumnConfig column) {
     return optionData.map((data) {
-      switch (column.type) {
+      switch (column.columnType) {
         case ColumnType.strike:
           return data.strike.toString();
         case ColumnType.callOi:
@@ -36,6 +36,10 @@ class DataTransformer {
           return data.putTheta.toString();
         case ColumnType.putIV:
           return data.putIV.toString();
+        case ColumnType.callVolume:
+          return data.callVolume.toString();
+        case ColumnType.putVolume:
+          return data.putVolume.toString();
       }
     }).join(' ');
   }
@@ -72,6 +76,10 @@ class DataTransformer {
         return data.putTheta.toStringAsFixed(2);
       case ColumnType.putIV:
         return data.putIV.toStringAsFixed(2);
+      case ColumnType.callVolume:
+        return data.callVolume.toStringAsFixed(2);
+      case ColumnType.putVolume:
+        return data.putVolume.toStringAsFixed(2);
     }
   }
 
@@ -80,7 +88,7 @@ class DataTransformer {
     return ColumnType.values
         .where(
           (type) =>
-              !existingColumns.any((col) => col.type == type) &&
+              !existingColumns.any((col) => col.columnType == type) &&
               type != ColumnType.strike,
         )
         .toList();

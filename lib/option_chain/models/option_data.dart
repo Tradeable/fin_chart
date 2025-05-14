@@ -14,6 +14,8 @@ class OptionData {
   double putVega;
   double putTheta;
   double putIV;
+  double callVolume;
+  double putVolume;
 
   OptionData(
       {required this.strike,
@@ -30,7 +32,9 @@ class OptionData {
       this.putGamma = 0.0,
       this.putVega = 0.0,
       this.putTheta = 0.0,
-      this.putIV = 0.0});
+      this.putIV = 0.0,
+      this.callVolume = 0.0,
+      this.putVolume = 0.0});
 
   factory OptionData.fromJson(Map<String, dynamic> json) => OptionData(
       strike: (json['strike'] as num).toDouble(),
@@ -47,7 +51,9 @@ class OptionData {
       putGamma: (json['putGamma'] as num?)?.toDouble() ?? 0.0,
       putVega: (json['putVega'] as num?)?.toDouble() ?? 0.0,
       putTheta: (json['putTheta'] as num?)?.toDouble() ?? 0.0,
-      putIV: (json['putIV'] as num?)?.toDouble() ?? 0.0);
+      putIV: (json['putIV'] as num?)?.toDouble() ?? 0.0,
+      callVolume: (json['putIV'] as num?)?.toDouble() ?? 0.0,
+      putVolume: (json['putIV'] as num?)?.toDouble() ?? 0.0);
 
   Map<String, dynamic> toJson() => {
         'strike': strike,
@@ -64,7 +70,9 @@ class OptionData {
         'putGamma': putGamma,
         'putVega': putVega,
         'putTheta': putTheta,
-        'putIV': putIV
+        'putIV': putIV,
+        'callVolume': callVolume,
+        'putVolume': putVolume,
       };
 }
 

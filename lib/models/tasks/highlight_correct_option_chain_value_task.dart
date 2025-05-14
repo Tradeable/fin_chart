@@ -5,7 +5,7 @@ import 'package:fin_chart/utils/calculations.dart';
 
 class HighlightCorrectOptionChainValueTask extends Task {
   String optionChainId;
-  int correctRowIndex;
+  List<int> correctRowIndex;
 
   HighlightCorrectOptionChainValueTask(
       {required this.optionChainId, required this.correctRowIndex})
@@ -27,7 +27,7 @@ class HighlightCorrectOptionChainValueTask extends Task {
       Map<String, dynamic> json) {
     return HighlightCorrectOptionChainValueTask(
       optionChainId: json['optionChainId'],
-      correctRowIndex: json['correctRowIndex'],
+      correctRowIndex: (json['correctRowIndex'] as List?)?.cast<int>() ?? [],
     );
   }
 }

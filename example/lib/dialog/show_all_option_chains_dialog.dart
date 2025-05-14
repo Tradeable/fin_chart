@@ -88,6 +88,8 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                                     optionData: task.data,
                                     columns: task.columns,
                                     visibility: task.visibility,
+                                    settings: task.settings,
+                                    isEditorMode: true
                                   ),
                                 ),
                               ),
@@ -115,7 +117,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
 
   if (selectedOptionChain == null) return null;
 
-  final selectedRowIndex = await showDialog<int>(
+  final selectedRowIndex = await showDialog<List<int>>(
     context: context,
     builder: (BuildContext dialogContext) {
       final previewKey = GlobalKey<PreviewScreenState>();
@@ -151,6 +153,8 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                       optionData: selectedOptionChain.data,
                       columns: selectedOptionChain.columns,
                       visibility: selectedOptionChain.visibility,
+                      settings: selectedOptionChain.settings,
+                      isEditorMode: true
                     ),
                   ),
                 ),

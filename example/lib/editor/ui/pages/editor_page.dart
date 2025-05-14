@@ -629,11 +629,13 @@ class _EditorPageState extends State<EditorPage> {
         .then((data) {
       setState(() {
         if (data != null) {
+          task.strikePrice = data.strikePrice;
           task.data = data.data;
           task.visibility = data.visibility;
           task.columns = data.columns;
           task.expiryDate = data.expiryDate;
           task.interval = data.interval;
+          task.settings = data.settings;
         }
       });
     });

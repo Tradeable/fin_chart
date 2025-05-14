@@ -10,7 +10,8 @@ class OptionChainUtils {
     final putColumns = <ColumnConfig>[];
 
     void addColumnIfExists(List<ColumnConfig> target, ColumnType type) {
-      final column = customColumns.firstWhereOrNull((c) => c.type == type);
+      final column =
+          customColumns.firstWhereOrNull((c) => c.columnType == type);
       if (column != null) {
         target.add(column);
       }
@@ -19,14 +20,14 @@ class OptionChainUtils {
     void addCallColumns() {
       callColumns.addAll([
         ColumnConfig(
-          type: ColumnType.callOi,
-          name: ColumnType.callOi.displayName,
-          visible: true,
+          columnType: ColumnType.callOi,
+          columnTitle: ColumnType.callOi.displayName,
+          isColumnVisible: true,
         ),
         ColumnConfig(
-          type: ColumnType.callPremium,
-          name: ColumnType.callPremium.displayName,
-          visible: true,
+          columnType: ColumnType.callPremium,
+          columnTitle: ColumnType.callPremium.displayName,
+          isColumnVisible: true,
         ),
       ]);
 
@@ -36,6 +37,7 @@ class OptionChainUtils {
         ColumnType.callVega,
         ColumnType.callTheta,
         ColumnType.callIV,
+        ColumnType.callVolume
       ]) {
         addColumnIfExists(callColumns, type);
       }
@@ -44,14 +46,14 @@ class OptionChainUtils {
     void addPutColumns() {
       putColumns.addAll([
         ColumnConfig(
-          type: ColumnType.putPremium,
-          name: ColumnType.putPremium.displayName,
-          visible: true,
+          columnType: ColumnType.putPremium,
+          columnTitle: ColumnType.putPremium.displayName,
+          isColumnVisible: true,
         ),
         ColumnConfig(
-          type: ColumnType.putOi,
-          name: ColumnType.putOi.displayName,
-          visible: true,
+          columnType: ColumnType.putOi,
+          columnTitle: ColumnType.putOi.displayName,
+          isColumnVisible: true,
         ),
       ]);
 
@@ -61,6 +63,7 @@ class OptionChainUtils {
         ColumnType.putVega,
         ColumnType.putTheta,
         ColumnType.putIV,
+        ColumnType.putVolume
       ]) {
         addColumnIfExists(putColumns, type);
       }
@@ -80,9 +83,9 @@ class OptionChainUtils {
     }
 
     final strikeColumn = ColumnConfig(
-      type: ColumnType.strike,
-      name: ColumnType.strike.displayName,
-      visible: true,
+      columnType: ColumnType.strike,
+      columnTitle: ColumnType.strike.displayName,
+      isColumnVisible: true,
     );
 
     return [
@@ -119,6 +122,8 @@ class OptionChainUtils {
           putVega: 0.3 + (i * 0.03),
           putTheta: -0.2 - (i * 0.02),
           putIV: 20.0 + (i * 0.5),
+          callVolume: 20.0 + (i * 0.2),
+          putVolume: 20.0 + (i * 0.1),
         ),
       );
     }

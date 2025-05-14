@@ -1,5 +1,6 @@
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
+import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
@@ -35,13 +36,16 @@ class _OptionChainPageState extends State<OptionChainPage> {
   late double _minStrike;
   late double _maxStrike;
   late int _interval;
-  int? _selectedRowIndex;
+  List<int> selectedRowIndices = [];
+  List<int> _correctRowIndices = [];
+  int? _maxSelectableRows;
   final GlobalKey<PreviewScreenState> _previewKey =
       GlobalKey<PreviewScreenState>();
-
   late List<ColumnConfig> _columns = [];
   late List<OptionData> _optionData;
   late List<ColumnConfig> _customColumns;
+  late OptionChainSettings? settings;
+  TextEditingController controller = TextEditingController();
 
   @override
   void initState() {
@@ -50,11 +54,15 @@ class _OptionChainPageState extends State<OptionChainPage> {
         DateTime.now().add(const Duration(days: 30));
     _visibility = widget.initialTask?.visibility ?? OptionChainVisibility.both;
     _interval = widget.initialTask?.interval ?? 5;
+    settings = widget.initialTask?.settings ?? OptionChainSettings();
+    _correctRowIndices = widget.initialTask?.correctRowIndices ?? [];
+    _maxSelectableRows = widget.initialTask?.settings?.maxSelectableRows ?? 0;
+    controller.text = _maxSelectableRows.toString();
 
-    _selectedRowIndex = widget.initialTask?.correctRowIndex;
     if (widget.initialTask?.data.isNotEmpty ?? false) {
       final strikes = widget.initialTask!.data.map((d) => d.strike).toList();
-      _strikePrice = strikes.reduce((a, b) => a > b ? a : b);
+      _strikePrice = widget.initialTask!.strikePrice ??
+          strikes.reduce((a, b) => a > b ? a : b);
       _minStrike = strikes.reduce((a, b) => a < b ? a : b);
       _maxStrike = _strikePrice;
     } else {
@@ -80,14 +88,14 @@ class _OptionChainPageState extends State<OptionChainPage> {
     setState(() {
       final currentVisibility = <ColumnType, bool>{};
       for (var col in _columns) {
-        currentVisibility[col.type] = col.visible;
+        currentVisibility[col.columnType] = col.isColumnVisible;
       }
       if (widget.initialTask != null && _columns.isEmpty) {
         _customColumns = widget.initialTask!.columns.where((col) {
           final defaultTypes = OptionChainUtils.getDefaultColumns(_visibility)
-              .map((c) => c.type)
+              .map((c) => c.columnType)
               .toList();
-          return !defaultTypes.contains(col.type);
+          return !defaultTypes.contains(col.columnType);
         }).toList();
       }
       _columns = OptionChainUtils.getDefaultColumns(
@@ -98,9 +106,10 @@ class _OptionChainPageState extends State<OptionChainPage> {
       if (currentVisibility.isNotEmpty) {
         _columns = _columns.map((column) {
           return ColumnConfig(
-            type: column.type,
-            name: column.name,
-            visible: currentVisibility[column.type] ?? column.visible,
+            columnType: column.columnType,
+            columnTitle: column.columnTitle,
+            isColumnVisible:
+                currentVisibility[column.columnType] ?? column.isColumnVisible,
           );
         }).toList();
       }
@@ -108,15 +117,16 @@ class _OptionChainPageState extends State<OptionChainPage> {
       if (widget.initialTask != null) {
         final taskVisibility = <ColumnType, bool>{};
         for (var col in widget.initialTask!.columns) {
-          taskVisibility[col.type] = col.visible;
+          taskVisibility[col.columnType] = col.isColumnVisible;
         }
 
         if (taskVisibility.isNotEmpty) {
           _columns = _columns.map((column) {
             return ColumnConfig(
-              type: column.type,
-              name: column.name,
-              visible: taskVisibility[column.type] ?? column.visible,
+              columnType: column.columnType,
+              columnTitle: column.columnTitle,
+              isColumnVisible:
+                  taskVisibility[column.columnType] ?? column.isColumnVisible,
             );
           }).toList();
         }
@@ -154,9 +164,9 @@ class _OptionChainPageState extends State<OptionChainPage> {
           setState(() {
             _customColumns.add(
               ColumnConfig(
-                type: type,
-                name: type.displayName,
-                visible: true,
+                columnType: type,
+                columnTitle: type.displayName,
+                isColumnVisible: true,
               ),
             );
             _updateColumns();
@@ -181,7 +191,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
 
   void _updateColumn(int columnIndex, String newName, String values) {
     setState(() {
-      _columns[columnIndex].name = newName;
+      _columns[columnIndex].columnTitle = newName;
 
       List<String> valueList = values.trim().isEmpty ? [] : values.split('\n');
       int newRowCount = valueList.length;
@@ -191,7 +201,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
           _optionData = _optionData.sublist(0, newRowCount);
         }
 
-        ColumnType columnType = _columns[columnIndex].type;
+        ColumnType columnType = _columns[columnIndex].columnType;
 
         for (int i = 0; i < _optionData.length && i < valueList.length; i++) {
           String value = valueList[i].replaceAll(",", "");
@@ -242,6 +252,12 @@ class _OptionChainPageState extends State<OptionChainPage> {
             case ColumnType.putIV:
               data.putIV = double.tryParse(value) ?? data.putIV;
               break;
+            case ColumnType.callVolume:
+              data.callVolume = double.tryParse(value) ?? data.callVolume;
+              break;
+            case ColumnType.putVolume:
+              data.putVolume = double.tryParse(value) ?? data.putVolume;
+              break;
           }
         }
       }
@@ -253,7 +269,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
     OptionData data = _optionData[rowIndex];
     String initialValue;
 
-    switch (column.type) {
+    switch (column.columnType) {
       case ColumnType.strike:
         initialValue = data.strike.toString();
         break;
@@ -299,6 +315,12 @@ class _OptionChainPageState extends State<OptionChainPage> {
       case ColumnType.putIV:
         initialValue = data.putIV.toString();
         break;
+      case ColumnType.callVolume:
+        initialValue = data.callVolume.toString();
+        break;
+      case ColumnType.putVolume:
+        initialValue = data.putVolume.toString();
+        break;
     }
 
     showDialog(
@@ -312,7 +334,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
 
   void _updateCell(int columnIndex, int rowIndex, String value) {
     setState(() {
-      ColumnType columnType = _columns[columnIndex].type;
+      ColumnType columnType = _columns[columnIndex].columnType;
       OptionData data = _optionData[rowIndex];
 
       switch (columnType) {
@@ -360,6 +382,12 @@ class _OptionChainPageState extends State<OptionChainPage> {
           break;
         case ColumnType.putIV:
           data.putIV = double.tryParse(value) ?? data.putIV;
+          break;
+        case ColumnType.callVolume:
+          data.callVolume = double.tryParse(value) ?? data.callVolume;
+          break;
+        case ColumnType.putVolume:
+          data.putVolume = double.tryParse(value) ?? data.putVolume;
           break;
       }
     });
@@ -428,12 +456,15 @@ class _OptionChainPageState extends State<OptionChainPage> {
                 ElevatedButton(
                   onPressed: () {
                     final task = AddOptionChainTask(
+                        strikePrice: _strikePrice,
                         columns: _columns,
                         data: _optionData,
                         visibility: _visibility,
                         expiryDate: _expiryDate,
                         interval: _interval,
-                        optionChainId: generateV4());
+                        correctRowIndices: _correctRowIndices,
+                        optionChainId: generateV4(),
+                        settings: settings);
                     if (widget.onSave != null) {
                       widget.onSave!(task);
                     }
@@ -466,11 +497,28 @@ class _OptionChainPageState extends State<OptionChainPage> {
             const SizedBox(height: 16),
             _buildExpiryDateRow(),
             const SizedBox(height: 8),
-            _buildVisibilityRow(),
+            Row(
+              children: [
+                _buildSelectionModeRow(),
+                const Spacer(),
+                _buildVisibilityRow(),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _buildExpiryDateRow(),
             const SizedBox(height: 8),
             _buildStrikePriceRow(),
             const SizedBox(height: 8),
             _buildIntervalRow(),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _buildMultiRowSelectableSwitch(),
+                const Spacer(),
+                _buildBuySellVisibleSwitch(),
+              ],
+            ),
+            _buildMaxRowsField(),
             const SizedBox(height: 16),
             _buildColumnsRow(),
             const SizedBox(height: 16),
@@ -583,6 +631,23 @@ class _OptionChainPageState extends State<OptionChainPage> {
     );
   }
 
+  Widget _buildMaxRowsField() {
+    return TextFormField(
+      controller: controller,
+      decoration: const InputDecoration(
+        labelText: 'Max Selectable Rows',
+      ),
+      keyboardType: TextInputType.number,
+      enabled: settings?.isMultiRowSelectable ?? false,
+      onChanged: (value) {
+        setState(() {
+          _maxSelectableRows = value.isEmpty ? null : int.tryParse(value);
+          settings?.maxSelectableRows = _maxSelectableRows;
+        });
+      },
+    );
+  }
+
   Widget _buildColumnsRow() {
     return Wrap(
       spacing: 8,
@@ -590,16 +655,16 @@ class _OptionChainPageState extends State<OptionChainPage> {
         const Text('Columns: '),
         ..._columns.map((column) {
           return FilterChip(
-            label: Text(column.name),
-            selected: column.visible,
+            label: Text(column.columnTitle),
+            selected: column.isColumnVisible,
             onSelected: (bool selected) {
-              setState(() => column.visible = selected);
+              setState(() => column.isColumnVisible = selected);
             },
             onDeleted: () {
               setState(() {
                 _columns.remove(column);
                 _customColumns.removeWhere(
-                  (c) => c.type == column.type,
+                  (c) => c.columnType == column.columnType,
                 );
               });
             },
@@ -645,10 +710,10 @@ class _OptionChainPageState extends State<OptionChainPage> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  if (_selectedRowIndex == null) {
+                  if (selectedRowIndices.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please select a row first'),
+                        content: Text('Please select at least one row'),
                       ),
                     );
                     return;
@@ -659,11 +724,17 @@ class _OptionChainPageState extends State<OptionChainPage> {
                       return PreviewScreen(
                         key: _previewKey,
                         previewData: PreviewData(
-                          optionData: _optionData,
-                          columns: _columns.where((c) => c.visible).toList(),
-                          visibility: _visibility,
-                          correctRowIndex: _selectedRowIndex,
-                        ),
+                            strikePrice: _strikePrice,
+                            expiryDate: _expiryDate,
+                            optionData: _optionData,
+                            columns: _columns
+                                .where((c) => c.isColumnVisible)
+                                .toList(),
+                            visibility: _visibility,
+                            selectedRowIndices: selectedRowIndices,
+                            correctRowIndices: _correctRowIndices,
+                            settings: settings,
+                            isEditorMode: false),
                       );
                     }),
                   );
@@ -692,7 +763,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
       return DataColumn(
         label: Row(
           children: [
-            Text(column.name),
+            Text(column.columnTitle),
             IconButton(
               icon: const Icon(Icons.edit, size: 18),
               onPressed: () {
@@ -711,23 +782,88 @@ class _OptionChainPageState extends State<OptionChainPage> {
       int rowIndex = entry.key;
       OptionData data = entry.value;
       return DataRow(
-        color: rowIndex == _selectedRowIndex
+        color: selectedRowIndices.contains(rowIndex)
             ? WidgetStateProperty.all(
-                Colors.blue..withAlpha((0.1 * 255).round()))
+                Colors.blue.withAlpha((0.1 * 255).round()))
             : null,
         cells: _columns.map((column) {
           return DataCell(
             InkWell(
-              onTap: () => setState(() => _selectedRowIndex = rowIndex),
-              onDoubleTap: () {
+              onTap: () {
                 int columnIndex = _columns.indexOf(column);
                 _showEditCellDialog(columnIndex, rowIndex);
               },
-              child: Text(DataTransformer.getCellText(data, column.type)),
+              child: Text(DataTransformer.getCellText(data, column.columnType)),
             ),
           );
         }).toList(),
       );
     }).toList();
+  }
+
+  Widget _buildSelectionModeRow() {
+    final currentSelectionMode =
+        settings?.selectionMode ?? SelectionMode.entireRow;
+
+    return Row(
+      children: [
+        const Text('Selection Mode: '),
+        DropdownButton<SelectionMode>(
+          value: currentSelectionMode,
+          onChanged: (SelectionMode? newValue) {
+            if (newValue != null) {
+              setState(() {
+                settings?.selectionMode = newValue;
+              });
+            }
+          },
+          items: SelectionMode.values.map((value) {
+            return DropdownMenuItem<SelectionMode>(
+              value: value,
+              child: Text(value.name),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMultiRowSelectableSwitch() {
+    return Row(
+      children: [
+        const Text('Enable Multi-row Selection: '),
+        Switch(
+          value: settings?.isMultiRowSelectable ?? false,
+          onChanged: (value) {
+            setState(() {
+              settings ??= OptionChainSettings();
+              settings!.isMultiRowSelectable = value;
+              if (!value) {
+                settings!.maxSelectableRows = 1;
+                _maxSelectableRows = 1;
+                controller.text = 1.toString();
+              }
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBuySellVisibleSwitch() {
+    return Row(
+      children: [
+        const Text('Show Buy/Sell Buttons: '),
+        Switch(
+          value: settings?.isBuySellVisible ?? false,
+          onChanged: (value) {
+            setState(() {
+              settings ??= OptionChainSettings();
+              settings!.isBuySellVisible = value;
+            });
+          },
+        ),
+      ],
+    );
   }
 }

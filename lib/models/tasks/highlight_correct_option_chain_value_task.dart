@@ -27,7 +27,11 @@ class HighlightCorrectOptionChainValueTask extends Task {
       Map<String, dynamic> json) {
     return HighlightCorrectOptionChainValueTask(
       optionChainId: json['optionChainId'],
-      correctRowIndex: (json['correctRowIndex'] as List?)?.cast<int>() ?? [],
+      correctRowIndex: json['correctRowIndex'] is List
+          ? List<int>.from(json['correctRowIndex'])
+          : json['correctRowIndex'] is int
+              ? [json['correctRowIndex']]
+              : [],
     );
   }
 }

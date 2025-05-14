@@ -252,6 +252,12 @@ class _OptionChainPageState extends State<OptionChainPage> {
             case ColumnType.putIV:
               data.putIV = double.tryParse(value) ?? data.putIV;
               break;
+            case ColumnType.callVolume:
+              data.callVolume = double.tryParse(value) ?? data.callVolume;
+              break;
+            case ColumnType.putVolume:
+              data.putVolume = double.tryParse(value) ?? data.putVolume;
+              break;
           }
         }
       }
@@ -308,6 +314,12 @@ class _OptionChainPageState extends State<OptionChainPage> {
         break;
       case ColumnType.putIV:
         initialValue = data.putIV.toString();
+        break;
+      case ColumnType.callVolume:
+        initialValue = data.callVolume.toString();
+        break;
+      case ColumnType.putVolume:
+        initialValue = data.putVolume.toString();
         break;
     }
 
@@ -370,6 +382,12 @@ class _OptionChainPageState extends State<OptionChainPage> {
           break;
         case ColumnType.putIV:
           data.putIV = double.tryParse(value) ?? data.putIV;
+          break;
+        case ColumnType.callVolume:
+          data.callVolume = double.tryParse(value) ?? data.callVolume;
+          break;
+        case ColumnType.putVolume:
+          data.putVolume = double.tryParse(value) ?? data.putVolume;
           break;
       }
     });

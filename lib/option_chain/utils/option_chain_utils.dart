@@ -10,7 +10,8 @@ class OptionChainUtils {
     final putColumns = <ColumnConfig>[];
 
     void addColumnIfExists(List<ColumnConfig> target, ColumnType type) {
-      final column = customColumns.firstWhereOrNull((c) => c.columnType == type);
+      final column =
+          customColumns.firstWhereOrNull((c) => c.columnType == type);
       if (column != null) {
         target.add(column);
       }
@@ -36,6 +37,7 @@ class OptionChainUtils {
         ColumnType.callVega,
         ColumnType.callTheta,
         ColumnType.callIV,
+        ColumnType.callVolume
       ]) {
         addColumnIfExists(callColumns, type);
       }
@@ -61,6 +63,7 @@ class OptionChainUtils {
         ColumnType.putVega,
         ColumnType.putTheta,
         ColumnType.putIV,
+        ColumnType.putVolume
       ]) {
         addColumnIfExists(putColumns, type);
       }
@@ -119,6 +122,8 @@ class OptionChainUtils {
           putVega: 0.3 + (i * 0.03),
           putTheta: -0.2 - (i * 0.02),
           putIV: 20.0 + (i * 0.5),
+          callVolume: 20.0 + (i * 0.2),
+          putVolume: 20.0 + (i * 0.1),
         ),
       );
     }

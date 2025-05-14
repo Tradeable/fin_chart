@@ -15,7 +15,9 @@ enum ColumnType {
   putGamma('Put Gamma'),
   putTheta('Put Theta'),
   putVega('Put Vega'),
-  putIV('Put IV');
+  putIV('Put IV'),
+  callVolume('Call Volume'),
+  putVolume('Put Volume');
 
   final String displayName;
 

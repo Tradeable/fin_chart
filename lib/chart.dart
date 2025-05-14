@@ -286,6 +286,32 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
+  Future<bool> replaceDataWithAnimation(
+      List<ICandle> newData, Duration animationDuration) async {
+    // First, clear the existing data
+    setState(() {
+      // Clear existing data
+      currentData.clear();
+      // Add new data
+      currentData.addAll(newData);
+      // Update all regions
+      for (int i = 0; i < regions.length; i++) {
+        regions[i].updateData(currentData);
+      }
+    });
+
+    // Then, after a short delay, update the chart position if user is not interacting
+    await Future.delayed(animationDuration);
+
+    if (!isUserInteracting) {
+      setState(() {
+        xOffset = _getMaxLeftOffset();
+      });
+    }
+
+    return true;
+  }
+
   void addData(List<ICandle> newData, {List<FundamentalEvent>? newEvents}) {
     setState(() {
       currentData.addAll(newData);

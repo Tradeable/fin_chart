@@ -635,6 +635,7 @@ class _EditorPageState extends State<EditorPage> {
           task.columns = data.columns;
           task.expiryDate = data.expiryDate;
           task.interval = data.interval;
+          task.settings = data.settings;
         }
       });
     });

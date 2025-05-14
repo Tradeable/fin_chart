@@ -5,7 +5,7 @@ class DataTransformer {
   static String getColumnValuesAsString(
       List<OptionData> optionData, ColumnConfig column) {
     return optionData.map((data) {
-      switch (column.type) {
+      switch (column.columnType) {
         case ColumnType.strike:
           return data.strike.toString();
         case ColumnType.callOi:
@@ -80,7 +80,7 @@ class DataTransformer {
     return ColumnType.values
         .where(
           (type) =>
-              !existingColumns.any((col) => col.type == type) &&
+              !existingColumns.any((col) => col.columnType == type) &&
               type != ColumnType.strike,
         )
         .toList();

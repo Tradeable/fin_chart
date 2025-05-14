@@ -1,3 +1,5 @@
+enum SelectionMode { entireRow, callOnly, putOnly }
+
 enum ColumnType {
   strike('Strike Price'),
   callOi('Call OI'),
@@ -24,25 +26,30 @@ enum ColumnType {
 }
 
 class ColumnConfig {
-  ColumnType type;
-  String name;
-  bool visible;
+  ColumnType columnType;
+  String columnTitle;
+  bool isColumnVisible;
+  SelectionMode selectionMode;
 
   ColumnConfig({
-    required this.type,
-    required this.name,
-    required this.visible,
+    required this.columnType,
+    required this.columnTitle,
+    this.isColumnVisible = true,
+    this.selectionMode = SelectionMode.entireRow,
   });
 
   factory ColumnConfig.fromJson(Map<String, dynamic> json) => ColumnConfig(
-        type: ColumnType.values[json['type'] as int],
-        name: json['name'] as String,
-        visible: json['visible'] as bool,
+        columnType: ColumnType.values[json['columnType'] as int],
+        columnTitle: json['columnTitle'] as String,
+        isColumnVisible: json['isColumnVisible'] as bool,
+        selectionMode: SelectionMode.values[
+            json['selectionMode'] as int? ?? SelectionMode.entireRow as int],
       );
 
   Map<String, dynamic> toJson() => {
-        'type': type.index,
-        'name': name,
-        'visible': visible,
+        'columnType': columnType.index,
+        'columnTitle': columnTitle,
+        'isColumnVisible': isColumnVisible,
+        'selectionMode': selectionMode.index,
       };
 }

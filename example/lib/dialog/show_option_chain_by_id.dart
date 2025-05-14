@@ -33,6 +33,7 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
     builder: (BuildContext dialogContext) {
       final pageController = PageController(initialPage: currentPage);
       final totalPages = (optionChainTasks.length / 2).ceil();
+      final previewKey = GlobalKey<PreviewScreenState>();
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -115,11 +116,13 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
                                         const SizedBox(height: 8),
                                         Expanded(
                                           child: PreviewScreen(
+                                            key: previewKey,
                                             previewData: PreviewData(
-                                              optionData: task.data,
-                                              columns: task.columns,
-                                              visibility: task.visibility,
-                                            ),
+                                                optionData: task.data,
+                                                columns: task.columns,
+                                                visibility: task.visibility,
+                                                settings: task.settings,
+                                            isEditorMode: true),
                                           ),
                                         ),
                                       ],

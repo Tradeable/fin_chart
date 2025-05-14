@@ -10,7 +10,7 @@ class OptionChainUtils {
     final putColumns = <ColumnConfig>[];
 
     void addColumnIfExists(List<ColumnConfig> target, ColumnType type) {
-      final column = customColumns.firstWhereOrNull((c) => c.type == type);
+      final column = customColumns.firstWhereOrNull((c) => c.columnType == type);
       if (column != null) {
         target.add(column);
       }
@@ -19,14 +19,14 @@ class OptionChainUtils {
     void addCallColumns() {
       callColumns.addAll([
         ColumnConfig(
-          type: ColumnType.callOi,
-          name: ColumnType.callOi.displayName,
-          visible: true,
+          columnType: ColumnType.callOi,
+          columnTitle: ColumnType.callOi.displayName,
+          isColumnVisible: true,
         ),
         ColumnConfig(
-          type: ColumnType.callPremium,
-          name: ColumnType.callPremium.displayName,
-          visible: true,
+          columnType: ColumnType.callPremium,
+          columnTitle: ColumnType.callPremium.displayName,
+          isColumnVisible: true,
         ),
       ]);
 
@@ -44,14 +44,14 @@ class OptionChainUtils {
     void addPutColumns() {
       putColumns.addAll([
         ColumnConfig(
-          type: ColumnType.putPremium,
-          name: ColumnType.putPremium.displayName,
-          visible: true,
+          columnType: ColumnType.putPremium,
+          columnTitle: ColumnType.putPremium.displayName,
+          isColumnVisible: true,
         ),
         ColumnConfig(
-          type: ColumnType.putOi,
-          name: ColumnType.putOi.displayName,
-          visible: true,
+          columnType: ColumnType.putOi,
+          columnTitle: ColumnType.putOi.displayName,
+          isColumnVisible: true,
         ),
       ]);
 
@@ -80,9 +80,9 @@ class OptionChainUtils {
     }
 
     final strikeColumn = ColumnConfig(
-      type: ColumnType.strike,
-      name: ColumnType.strike.displayName,
-      visible: true,
+      columnType: ColumnType.strike,
+      columnTitle: ColumnType.strike.displayName,
+      isColumnVisible: true,
     );
 
     return [

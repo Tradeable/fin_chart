@@ -2,6 +2,7 @@ import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
+import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
 import 'package:fin_chart/utils/calculations.dart';
 
@@ -11,9 +12,10 @@ class AddOptionChainTask extends Task {
   OptionChainVisibility visibility;
   DateTime expiryDate;
   int interval;
-  int? correctRowIndex;
+  List<int> correctRowIndices;
   String optionChainId;
   double? strikePrice;
+  OptionChainSettings? settings;
 
   AddOptionChainTask(
       {required this.columns,
@@ -21,9 +23,10 @@ class AddOptionChainTask extends Task {
       required this.visibility,
       required this.expiryDate,
       required this.interval,
-      this.correctRowIndex,
+      this.correctRowIndices = const [],
       required this.optionChainId,
-      this.strikePrice})
+      this.strikePrice,
+      this.settings})
       : super(
             id: generateV4(),
             actionType: ActionType.empty,
@@ -37,9 +40,10 @@ class AddOptionChainTask extends Task {
     json['visibility'] = visibility.name;
     json['expiryDate'] = expiryDate.toIso8601String();
     json['interval'] = interval;
-    json['correctRowIndex'] = correctRowIndex;
+    json['correctRowIndices'] = correctRowIndices;
     json['optionChainId'] = optionChainId;
     json['strikePrice'] = strikePrice;
+    json['settings'] = settings;
     return json;
   }
 
@@ -55,8 +59,12 @@ class AddOptionChainTask extends Task {
             orElse: () => OptionChainVisibility.both),
         expiryDate: DateTime.parse(json['expiryDate']),
         interval: json['interval'] as int,
-        correctRowIndex: json['correctRowIndex'] as int?,
+        correctRowIndices:
+            (json['correctRowIndices'] as List?)?.cast<int>() ?? [],
         optionChainId: json['optionChainId'] as String,
-        strikePrice: (json['strikePrice'] as num?)?.toDouble());
+        strikePrice: (json['strikePrice'] as num?)?.toDouble(),
+        settings: json['settings'] != null
+            ? OptionChainSettings.fromJson(json['settings'])
+            : null);
   }
 }

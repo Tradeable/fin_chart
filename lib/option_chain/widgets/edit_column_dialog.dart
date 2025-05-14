@@ -15,11 +15,11 @@ class EditColumnDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nameController = TextEditingController(text: column.name);
+    final nameController = TextEditingController(text: column.columnTitle);
     final valuesController = TextEditingController(text: initialValues);
 
     return AlertDialog(
-      title: Text('Edit Column ${column.name}'),
+      title: Text('Edit Column ${column.columnTitle}'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

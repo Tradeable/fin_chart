@@ -12,58 +12,50 @@ class OptionChainUtils {
     void addColumnIfExists(List<ColumnConfig> target, ColumnType type) {
       final column =
           customColumns.firstWhereOrNull((c) => c.columnType == type);
-      if (column != null) {
-        target.add(column);
-      }
+      if (column != null) target.add(column);
     }
 
     void addCallColumns() {
-      callColumns.addAll([
-        ColumnConfig(
-          columnType: ColumnType.callOi,
-          columnTitle: ColumnType.callOi.displayName,
-          isColumnVisible: true,
-        ),
-        ColumnConfig(
-          columnType: ColumnType.callPremium,
-          columnTitle: ColumnType.callPremium.displayName,
-          isColumnVisible: true,
-        ),
-      ]);
-
       for (final type in [
+        ColumnType.callVega,
         ColumnType.callDelta,
         ColumnType.callGamma,
-        ColumnType.callVega,
         ColumnType.callTheta,
         ColumnType.callIV,
         ColumnType.callVolume
       ]) {
         addColumnIfExists(callColumns, type);
       }
+      for (final type in [
+        ColumnType.callOi,
+        ColumnType.callPremium,
+      ]) {
+        callColumns.add(ColumnConfig(
+          columnType: type,
+          columnTitle: type.displayName,
+          isColumnVisible: true,
+        ));
+      }
     }
 
     void addPutColumns() {
-      putColumns.addAll([
-        ColumnConfig(
-          columnType: ColumnType.putPremium,
-          columnTitle: ColumnType.putPremium.displayName,
-          isColumnVisible: true,
-        ),
-        ColumnConfig(
-          columnType: ColumnType.putOi,
-          columnTitle: ColumnType.putOi.displayName,
-          isColumnVisible: true,
-        ),
-      ]);
-
       for (final type in [
-        ColumnType.putDelta,
-        ColumnType.putGamma,
-        ColumnType.putVega,
-        ColumnType.putTheta,
+        ColumnType.putPremium,
+        ColumnType.putOi,
+      ]) {
+        putColumns.add(ColumnConfig(
+          columnType: type,
+          columnTitle: type.displayName,
+          isColumnVisible: true,
+        ));
+      }
+      for (final type in [
+        ColumnType.putVolume,
         ColumnType.putIV,
-        ColumnType.putVolume
+        ColumnType.putTheta,
+        ColumnType.putGamma,
+        ColumnType.putDelta,
+        ColumnType.putVega,
       ]) {
         addColumnIfExists(putColumns, type);
       }

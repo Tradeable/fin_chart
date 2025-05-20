@@ -2,22 +2,22 @@ enum SelectionMode { entireRow, callOnly, putOnly }
 
 enum ColumnType {
   strike('Strike Price'),
-  callOi('Call OI'),
-  callPremium('Call Premium'),
-  putOi('Put OI'),
-  putPremium('Put Premium'),
-  callDelta('Call Delta'),
-  callGamma('Call Gamma'),
-  callVega('Call Vega'),
-  callTheta('Call Theta'),
-  callIV('Call IV'),
-  putDelta('Put Delta'),
-  putGamma('Put Gamma'),
-  putTheta('Put Theta'),
-  putVega('Put Vega'),
-  putIV('Put IV'),
-  callVolume('Call Volume'),
-  putVolume('Put Volume');
+  callOi('OI'),
+  callPremium('LTP'),
+  putOi('OI'),
+  putPremium('LTP'),
+  callDelta('Delta'),
+  callGamma('Gamma'),
+  callVega('Vega'),
+  callTheta('Theta'),
+  callIV('IV'),
+  putDelta('Delta'),
+  putGamma('Gamma'),
+  putTheta('Theta'),
+  putVega('Vega'),
+  putIV('IV'),
+  callVolume('Volume'),
+  putVolume('Volume');
 
   final String displayName;
 

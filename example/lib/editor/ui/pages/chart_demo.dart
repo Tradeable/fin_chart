@@ -7,7 +7,7 @@ import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
-import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -124,8 +124,12 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.highlightCorrectOptionChainValue:
         HighlightCorrectOptionChainValueTask task =
             currentTask as HighlightCorrectOptionChainValueTask;
-        for (int i in task.correctRowIndex) {
-          _previewScreenKey.currentState?.chooseRow(i);
+        if ((task.bucketRows ?? []).isNotEmpty) {
+          _previewScreenKey.currentState?.chooseBucketRows(task.bucketRows!);
+        } else {
+          for (int i in task.correctRowIndex) {
+            _previewScreenKey.currentState?.chooseRow(i);
+          }
         }
         onTaskFinish();
         setState(() {});

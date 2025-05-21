@@ -6,8 +6,8 @@ import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/clear.task.dart';
-import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
 

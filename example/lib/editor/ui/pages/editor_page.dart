@@ -14,7 +14,7 @@ import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
-import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';

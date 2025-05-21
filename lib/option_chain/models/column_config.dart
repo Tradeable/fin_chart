@@ -1,4 +1,4 @@
-enum SelectionMode { entireRow, callOnly, putOnly }
+enum SelectionMode { entireRow, callOnly, putOnly, bucketRow }
 
 enum ColumnType {
   strike('Strike Price'),

@@ -46,6 +46,10 @@ class PreviewScreenState extends State<PreviewScreen> {
   List<int> _selectedRowIndex = [];
   bool _isChecked = false;
   List<int> userSelectedIndex = [];
+  List<Map<int, int>> correctBucketIndexes = [];
+  Map<int, bool> bucketSelections = {};
+  Map<int, bool> bucketCallSelections = {};
+  Map<int, bool> bucketPutSelections = {};
 
   @override
   void initState() {
@@ -74,7 +78,55 @@ class PreviewScreenState extends State<PreviewScreen> {
     });
   }
 
-  List<int>? getCorrectRowIndex() => _selectedRowIndex;
+  void chooseBucketRows(List<Map<int, int>> bucketRows) {
+    setState(() {
+      correctBucketIndexes = bucketRows;
+      for (var bucketRow in bucketRows) {
+        final rowIndex = bucketRow.keys.first;
+        final side = bucketRow.values.first;
+
+        if (side == 0) {
+          bucketCallSelections[rowIndex] = true;
+        } else {
+          bucketPutSelections[rowIndex] = true;
+        }
+        bucketSelections[rowIndex] = true;
+      }
+      _isChecked = true;
+    });
+  }
+
+  List<int>? getCorrectRowIndex() {
+    final selectionMode =
+        widget.previewData.settings?.selectionMode ?? SelectionMode.entireRow;
+    if (selectionMode == SelectionMode.bucketRow) {
+      return bucketSelections.entries
+          .where((entry) => entry.value)
+          .map((entry) => entry.key)
+          .toList();
+    }
+    return _selectedRowIndex;
+  }
+
+  List<Map<int, int>>? getBucketRows() {
+    final selectionMode =
+        widget.previewData.settings?.selectionMode ?? SelectionMode.entireRow;
+    if (selectionMode == SelectionMode.bucketRow) {
+      List<Map<int, int>> bucketRows = [];
+      bucketCallSelections.forEach((rowIndex, isSelected) {
+        if (isSelected) {
+          bucketRows.add({rowIndex: 0});
+        }
+      });
+      bucketPutSelections.forEach((rowIndex, isSelected) {
+        if (isSelected) {
+          bucketRows.add({rowIndex: 1});
+        }
+      });
+      return bucketRows;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,33 +184,32 @@ class PreviewScreenState extends State<PreviewScreen> {
       int rowIndex, int? strikeColumnIndex) {
     final selectionMode =
         widget.previewData.settings?.selectionMode ?? SelectionMode.entireRow;
+
+    if (selectionMode == SelectionMode.bucketRow) {
+      if (!_isChecked &&
+          widget.previewData.selectedRowIndices.contains(rowIndex)) {
+        return WidgetStateProperty.all(
+            Colors.blue.withAlpha((0.1 * 255).round()));
+      }
+      return null;
+    }
+
     if (widget.previewData.visibility == OptionChainVisibility.both) {
-      if (!_isChecked) {
-        if (_selectedRowIndex.contains(rowIndex)) {
-          if (selectionMode == SelectionMode.entireRow) {
-            return WidgetStateProperty.all(
-                Colors.blue.withAlpha((0.1 * 255).round()));
-          }
-        }
-        return null;
+      if (!_isChecked && _selectedRowIndex.contains(rowIndex)) {
+        return WidgetStateProperty.all(
+            Colors.blue.withAlpha((0.1 * 255).round()));
       }
       if (userSelectedIndex.contains(rowIndex)) {
-        if (selectionMode == SelectionMode.entireRow) {
-          return WidgetStateProperty.all(
-              Colors.green.withAlpha((0.1 * 255).round()));
-        }
-      } else {
-        if (_selectedRowIndex.contains(rowIndex)) {
-          if (selectionMode == SelectionMode.entireRow) {
-            return WidgetStateProperty.all(
-                Colors.red.withAlpha((0.4 * 255).round()));
-          }
-        } else if (userSelectedIndex.contains(rowIndex)) {
-          if (selectionMode == SelectionMode.entireRow) {
-            return WidgetStateProperty.all(
-                Colors.green.withAlpha((0.4 * 255).round()));
-          }
-        }
+        return WidgetStateProperty.all(
+            Colors.green.withAlpha((0.1 * 255).round()));
+      }
+      if (_selectedRowIndex.contains(rowIndex)) {
+        return WidgetStateProperty.all(
+            Colors.red.withAlpha((0.4 * 255).round()));
+      }
+      if (userSelectedIndex.contains(rowIndex)) {
+        return WidgetStateProperty.all(
+            Colors.green.withAlpha((0.4 * 255).round()));
       }
     }
     return null;
@@ -192,7 +243,53 @@ class PreviewScreenState extends State<PreviewScreen> {
         }
       }
 
-      if (_selectedRowIndex.contains(rowIndex) ||
+      if (selectionMode == SelectionMode.bucketRow) {
+        if (!_isChecked) {
+          if (bucketSelections.containsKey(rowIndex) &&
+              strikeColumnIndex != null) {
+            if (columnIndex < strikeColumnIndex &&
+                bucketCallSelections.containsKey(rowIndex)) {
+              cellColor = Colors.blue.withAlpha((0.4 * 255).round());
+            } else if (columnIndex > strikeColumnIndex &&
+                bucketPutSelections.containsKey(rowIndex)) {
+              cellColor = Colors.blue.withAlpha((0.4 * 255).round());
+            }
+          }
+        } else {
+          bool isCorrect = false;
+          for (var correct in correctBucketIndexes) {
+            if (correct.containsKey(rowIndex)) {
+              final correctSide = correct[rowIndex];
+              if (strikeColumnIndex != null) {
+                if (columnIndex < strikeColumnIndex &&
+                    correctSide == 0 &&
+                    bucketCallSelections.containsKey(rowIndex)) {
+                  isCorrect = true;
+                } else if (columnIndex > strikeColumnIndex &&
+                    correctSide == 1 &&
+                    bucketPutSelections.containsKey(rowIndex)) {
+                  isCorrect = true;
+                }
+              }
+              break;
+            }
+          }
+
+          if (strikeColumnIndex != null) {
+            if (columnIndex < strikeColumnIndex &&
+                bucketCallSelections.containsKey(rowIndex)) {
+              cellColor = isCorrect
+                  ? Colors.green.withAlpha((0.4 * 255).round())
+                  : Colors.red.withAlpha((0.4 * 255).round());
+            } else if (columnIndex > strikeColumnIndex &&
+                bucketPutSelections.containsKey(rowIndex)) {
+              cellColor = isCorrect
+                  ? Colors.green.withAlpha((0.4 * 255).round())
+                  : Colors.red.withAlpha((0.4 * 255).round());
+            }
+          }
+        }
+      } else if (_selectedRowIndex.contains(rowIndex) ||
           userSelectedIndex.contains(rowIndex)) {
         bool shouldHighlight = false;
         if (selectionMode == SelectionMode.callOnly) {
@@ -204,16 +301,15 @@ class PreviewScreenState extends State<PreviewScreen> {
         } else {
           shouldHighlight = true;
         }
+
         if (shouldHighlight) {
           if (userSelectedIndex.contains(rowIndex)) {
             cellColor = Colors.green.withAlpha((0.1 * 255).round());
           } else if (_selectedRowIndex.contains(rowIndex)) {
-            if (_isChecked &&
-                !widget.previewData.correctRowIndices.contains(rowIndex)) {
-              cellColor = Colors.red.withAlpha((0.4 * 255).round());
-            } else {
-              cellColor = Colors.blue.withAlpha((0.4 * 255).round());
-            }
+            cellColor = _isChecked &&
+                    !widget.previewData.correctRowIndices.contains(rowIndex)
+                ? Colors.red.withAlpha((0.4 * 255).round())
+                : Colors.blue.withAlpha((0.4 * 255).round());
           }
         }
       }
@@ -221,14 +317,19 @@ class PreviewScreenState extends State<PreviewScreen> {
       switch (selectionMode) {
         case SelectionMode.callOnly:
           isSelectable =
-              strikeColumnIndex != null && columnIndex <= strikeColumnIndex;
+              strikeColumnIndex != null && columnIndex < strikeColumnIndex;
           break;
         case SelectionMode.putOnly:
           isSelectable =
-              strikeColumnIndex != null && columnIndex >= strikeColumnIndex;
+              strikeColumnIndex != null && columnIndex > strikeColumnIndex;
+          break;
+        case SelectionMode.bucketRow:
+          isSelectable =
+              strikeColumnIndex != null && columnIndex != strikeColumnIndex;
           break;
         case SelectionMode.entireRow:
-          isSelectable = true;
+          isSelectable =
+              strikeColumnIndex != null && columnIndex != strikeColumnIndex;
           break;
       }
 
@@ -238,12 +339,80 @@ class PreviewScreenState extends State<PreviewScreen> {
           width: 100,
           alignment: Alignment.center,
           child: InkWell(
-            onTap: isSelectable ? () => _handleCellTap(rowIndex) : null,
+            onTap: isSelectable
+                ? () {
+                    if (selectionMode == SelectionMode.bucketRow) {
+                      _handleBucketCellTap(
+                          rowIndex, columnIndex, strikeColumnIndex);
+                    } else {
+                      _handleCellTap(rowIndex);
+                    }
+                  }
+                : null,
             child: _buildCellContent(rowIndex, data, column.columnType),
           ),
         ),
       );
     }).toList();
+  }
+
+  void _handleBucketCellTap(
+      int rowIndex, int columnIndex, int? strikeColumnIndex) {
+    if (strikeColumnIndex == null) return;
+
+    setState(() {
+      final maxSelectedRows =
+          widget.previewData.settings?.maxSelectableRows ?? 0;
+
+      if (columnIndex < strikeColumnIndex) {
+        if (bucketCallSelections.containsKey(rowIndex)) {
+          bucketCallSelections.remove(rowIndex);
+          if (!bucketPutSelections.containsKey(rowIndex)) {
+            bucketSelections.remove(rowIndex);
+          }
+        } else {
+          if (maxSelectedRows == 1) {
+            bucketCallSelections.clear();
+            bucketPutSelections.clear();
+            bucketSelections.clear();
+            bucketCallSelections[rowIndex] = true;
+            bucketSelections[rowIndex] = true;
+          } else if (maxSelectedRows > 1) {
+            if (bucketSelections.length < maxSelectedRows) {
+              bucketCallSelections[rowIndex] = true;
+              bucketSelections[rowIndex] = true;
+            }
+          } else {
+            bucketCallSelections[rowIndex] = true;
+            bucketSelections[rowIndex] = true;
+          }
+        }
+      } else if (columnIndex > strikeColumnIndex) {
+        if (bucketPutSelections.containsKey(rowIndex)) {
+          bucketPutSelections.remove(rowIndex);
+          if (!bucketCallSelections.containsKey(rowIndex)) {
+            bucketSelections.remove(rowIndex);
+          }
+        } else {
+          if (maxSelectedRows == 1) {
+            bucketCallSelections.clear();
+            bucketPutSelections.clear();
+            bucketSelections.clear();
+            bucketPutSelections[rowIndex] = true;
+            bucketSelections[rowIndex] = true;
+          } else if (maxSelectedRows > 1) {
+            if (bucketSelections.length < maxSelectedRows) {
+              bucketPutSelections[rowIndex] = true;
+              bucketSelections[rowIndex] = true;
+            }
+          } else {
+            bucketPutSelections[rowIndex] = true;
+            bucketSelections[rowIndex] = true;
+          }
+        }
+      }
+      _isChecked = false;
+    });
   }
 
   Widget _buildCellContent(
@@ -262,15 +431,15 @@ class PreviewScreenState extends State<PreviewScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               InkWell(
-                onTap: () => widget.onBuySellSelected?.call(rowIndex, true),
-                child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
-                    decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Text('Buy', style: TextStyle(fontSize: 10))),
-              ),
+                  onTap: () => widget.onBuySellSelected?.call(rowIndex, true),
+                  child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 2, horizontal: 12),
+                      decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12)),
+                      child:
+                          const Text('Buy', style: TextStyle(fontSize: 10)))),
               const SizedBox(height: 6),
               InkWell(
                 onTap: () => widget.onBuySellSelected?.call(rowIndex, false),
@@ -293,8 +462,15 @@ class PreviewScreenState extends State<PreviewScreen> {
 
   void _handleCellTap(int rowIndex) {
     setState(() {
+      final selectionMode =
+          widget.previewData.settings?.selectionMode ?? SelectionMode.entireRow;
       final maxSelectedRows =
           widget.previewData.settings?.maxSelectableRows ?? 0;
+
+      if (selectionMode == SelectionMode.bucketRow) {
+        return;
+      }
+
       if (maxSelectedRows == 1) {
         if (_selectedRowIndex.contains(rowIndex)) {
           _selectedRowIndex.remove(rowIndex);

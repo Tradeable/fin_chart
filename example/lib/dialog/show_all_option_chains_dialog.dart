@@ -1,6 +1,7 @@
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
+import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
@@ -85,12 +86,11 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                               Expanded(
                                 child: PreviewScreen(
                                   previewData: PreviewData(
-                                    optionData: task.data,
-                                    columns: task.columns,
-                                    visibility: task.visibility,
-                                    settings: task.settings,
-                                    isEditorMode: true
-                                  ),
+                                      optionData: task.data,
+                                      columns: task.columns,
+                                      visibility: task.visibility,
+                                      settings: task.settings,
+                                      isEditorMode: true),
                                 ),
                               ),
                             ],
@@ -117,7 +117,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
 
   if (selectedOptionChain == null) return null;
 
-  final selectedRowIndex = await showDialog<List<int>>(
+  final selectedRowIndex = await showDialog<dynamic>(
     context: context,
     builder: (BuildContext dialogContext) {
       final previewKey = GlobalKey<PreviewScreenState>();
@@ -150,12 +150,11 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                   child: PreviewScreen(
                     key: previewKey,
                     previewData: PreviewData(
-                      optionData: selectedOptionChain.data,
-                      columns: selectedOptionChain.columns,
-                      visibility: selectedOptionChain.visibility,
-                      settings: selectedOptionChain.settings,
-                      isEditorMode: true
-                    ),
+                        optionData: selectedOptionChain.data,
+                        columns: selectedOptionChain.columns,
+                        visibility: selectedOptionChain.visibility,
+                        settings: selectedOptionChain.settings,
+                        isEditorMode: true),
                   ),
                 ),
               ),
@@ -171,15 +170,33 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                     const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
-                        final selectedIndex =
-                            previewKey.currentState?.getCorrectRowIndex();
-                        if (selectedIndex != null) {
-                          Navigator.pop(dialogContext, selectedIndex);
+                        final selectionMode =
+                            selectedOptionChain.settings?.selectionMode ??
+                                SelectionMode.entireRow;
+                        if (selectionMode == SelectionMode.bucketRow) {
+                          final bucketRows =
+                              previewKey.currentState?.getBucketRows();
+                          if (bucketRows != null && bucketRows.isNotEmpty) {
+                            Navigator.pop(dialogContext, bucketRows);
+                          } else {
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Please select at least one row')),
+                            );
+                          }
                         } else {
-                          ScaffoldMessenger.of(dialogContext).showSnackBar(
-                            const SnackBar(
-                                content: Text('Please select a row')),
-                          );
+                          final selectedIndex =
+                              previewKey.currentState?.getCorrectRowIndex();
+                          if (selectedIndex != null &&
+                              selectedIndex.isNotEmpty) {
+                            Navigator.pop(dialogContext, selectedIndex);
+                          } else {
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Please select a row')),
+                            );
+                          }
                         }
                       },
                       child: const Text('Select'),
@@ -195,10 +212,21 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
   );
 
   if (selectedRowIndex != null) {
-    return HighlightCorrectOptionChainValueTask(
-      optionChainId: selectedOptionChain.optionChainId,
-      correctRowIndex: selectedRowIndex,
-    );
+    final selectionMode =
+        selectedOptionChain.settings?.selectionMode ?? SelectionMode.entireRow;
+    print(selectedRowIndex);
+    if (selectionMode == SelectionMode.bucketRow) {
+      return HighlightCorrectOptionChainValueTask(
+        optionChainId: selectedOptionChain.optionChainId,
+        correctRowIndex: [],
+        bucketRows: selectedRowIndex as List<Map<int, int>>,
+      );
+    } else {
+      return HighlightCorrectOptionChainValueTask(
+        optionChainId: selectedOptionChain.optionChainId,
+        correctRowIndex: selectedRowIndex as List<int>,
+      );
+    }
   }
   return null;
 }

@@ -84,19 +84,92 @@ class DataTransformer {
   }
 
   static List<ColumnType> getAvailableColumnTypes(
-      List<ColumnConfig> existingColumns) {
-    return ColumnType.values
-        .where(
-          (type) =>
-              !existingColumns.any((col) => col.columnType == type) &&
-              type != ColumnType.strike,
-        )
-        .toList();
+      List<ColumnConfig> existingColumns, OptionChainVisibility visibility) {
+    var allTypes =
+        ColumnType.values.where((type) => type != ColumnType.strike).toList();
+    var availableTypes = allTypes.where((type) {
+      bool exists = existingColumns.any((col) {
+        var colType = col.columnType;
+        if (visibility == OptionChainVisibility.both) {
+          return type == colType ||
+              (isCallColumn(type.name) &&
+                  isPutColumn(colType.name) &&
+                  type.displayName == colType.displayName) ||
+              (isPutColumn(type.name) &&
+                  isCallColumn(colType.name) &&
+                  type.displayName == colType.displayName);
+        }
+        return type == colType;
+      });
+      return !exists;
+    }).toList();
+    if (visibility == OptionChainVisibility.both) {
+      var finalTypes = availableTypes.where((type) {
+        bool hasOpposite = availableTypes.any((otherType) =>
+            otherType != type &&
+            ((isCallColumn(type.name) &&
+                    isPutColumn(otherType.name) &&
+                    type.displayName == otherType.displayName) ||
+                (isPutColumn(type.name) &&
+                    isCallColumn(otherType.name) &&
+                    type.displayName == otherType.displayName)));
+
+        if (hasOpposite) {
+          return isCallColumn(type.name);
+        }
+        if (isCallColumn(type.name)) {
+          return !existingColumns.any((col) =>
+              isPutColumn(col.columnType.name) &&
+              col.columnType.displayName == type.displayName);
+        } else if (isPutColumn(type.name)) {
+          return !existingColumns.any((col) =>
+              isCallColumn(col.columnType.name) &&
+              col.columnType.displayName == type.displayName);
+        }
+
+        return true;
+      }).toList();
+      return finalTypes;
+    }
+
+    var visibilityFilteredTypes = availableTypes.where((type) {
+      bool matchesVisibility = true;
+      if (visibility == OptionChainVisibility.call) {
+        matchesVisibility = isCallColumn(type.name);
+      } else if (visibility == OptionChainVisibility.put) {
+        matchesVisibility = isPutColumn(type.name);
+      }
+      return matchesVisibility;
+    }).toList();
+    return visibilityFilteredTypes;
   }
 
   static bool isCallColumn(String columnName) =>
-      columnName.toLowerCase().contains('call');
+      columnName.toLowerCase().startsWith('call');
 
   static bool isPutColumn(String columnName) =>
-      columnName.toLowerCase().contains('put');
+      columnName.toLowerCase().startsWith('put');
+
+  static ColumnType getOppositeColumnType(ColumnType type) {
+    final typeName = type.name;
+    if (isCallColumn(typeName)) {
+      final putName = typeName.replaceFirst('call', 'put');
+      return ColumnType.values.firstWhere(
+        (t) => t.name == putName,
+        orElse: () => type,
+      );
+    } else if (isPutColumn(typeName)) {
+      final callName = typeName.replaceFirst('put', 'call');
+      return ColumnType.values.firstWhere(
+        (t) => t.name == callName,
+        orElse: () => type,
+      );
+    }
+    return type;
+  }
+
+  static bool isOppositeColumn(ColumnType type1, ColumnType type2) {
+    return (isCallColumn(type1.name) && isPutColumn(type2.name)) ||
+        (isPutColumn(type1.name) && isCallColumn(type2.name));
+  }
 }

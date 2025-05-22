@@ -16,6 +16,19 @@ class OptionChainUtils {
     }
 
     void addCallColumns() {
+      // Only add basic columns by default
+      callColumns.add(ColumnConfig(
+        columnType: ColumnType.callOi,
+        columnTitle: ColumnType.callOi.displayName,
+        isColumnVisible: true,
+      ));
+      callColumns.add(ColumnConfig(
+        columnType: ColumnType.callPremium,
+        columnTitle: ColumnType.callPremium.displayName,
+        isColumnVisible: true,
+      ));
+
+      // Add other call columns if they exist in customColumns
       for (final type in [
         ColumnType.callVega,
         ColumnType.callDelta,
@@ -26,29 +39,22 @@ class OptionChainUtils {
       ]) {
         addColumnIfExists(callColumns, type);
       }
-      for (final type in [
-        ColumnType.callOi,
-        ColumnType.callPremium,
-      ]) {
-        callColumns.add(ColumnConfig(
-          columnType: type,
-          columnTitle: type.displayName,
-          isColumnVisible: true,
-        ));
-      }
     }
 
     void addPutColumns() {
-      for (final type in [
-        ColumnType.putPremium,
-        ColumnType.putOi,
-      ]) {
-        putColumns.add(ColumnConfig(
-          columnType: type,
-          columnTitle: type.displayName,
-          isColumnVisible: true,
-        ));
-      }
+      // Only add basic columns by default
+      putColumns.add(ColumnConfig(
+        columnType: ColumnType.putOi,
+        columnTitle: ColumnType.putOi.displayName,
+        isColumnVisible: true,
+      ));
+      putColumns.add(ColumnConfig(
+        columnType: ColumnType.putPremium,
+        columnTitle: ColumnType.putPremium.displayName,
+        isColumnVisible: true,
+      ));
+
+      // Add other put columns if they exist in customColumns
       for (final type in [
         ColumnType.putVolume,
         ColumnType.putIV,

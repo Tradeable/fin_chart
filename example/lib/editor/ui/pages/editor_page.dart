@@ -1,6 +1,12 @@
 import 'dart:convert';
+import 'package:example/dialog/add_tab_dialog.dart';
+import 'package:example/dialog/edit_added_tab_dialog.dart';
+import 'package:example/dialog/edit_move_tab_dialog.dart';
+import 'package:example/dialog/edit_payoff_graph_dialog.dart';
+import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
+import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -223,6 +229,10 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.addOptionChain:
           case TaskType.chooseCorrectOptionChainValue:
           case TaskType.highlightCorrectOptionChainValue:
+          case TaskType.showPayOffGraph:
+          case TaskType.addTab:
+          case TaskType.removeTab:
+          case TaskType.moveTab:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -505,6 +515,18 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.highlightCorrectOptionChainValue:
           selectOptionChainToHighlight();
           break;
+        case TaskType.showPayOffGraph:
+          showPayoffGraphTemplate();
+          break;
+        case TaskType.addTab:
+          showAddTab();
+          break;
+        case TaskType.removeTab:
+          showAllAddedTabs();
+          break;
+        case TaskType.moveTab:
+          moveToTab();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -543,6 +565,17 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.highlightCorrectOptionChainValue:
         selectOptionChainToHighlight();
+        break;
+      case TaskType.showPayOffGraph:
+        editPayoffGraph(task as ShowPayOffGraphTask);
+        break;
+      case TaskType.addTab:
+        editAddedTab(task as AddTabTask);
+        break;
+      case TaskType.removeTab:
+        break;
+      case TaskType.moveTab:
+        editMoveToTab(task as MoveTabTask);
         break;
     }
   }
@@ -647,29 +680,37 @@ class _EditorPageState extends State<EditorPage> {
     if (highlightedDataTask != null) {
       _updateTaskList(highlightedDataTask);
     }
+  }
 
-    // if (highlightedDataTask != null) {
-    //   final taskIndex = tasks.indexWhere(
-    //     (task) =>
-    //         task is AddOptionChainTask &&
-    //         task.optionChainId == highlightedDataTask.taskId,
-    //   );
-    //
-    //   if (taskIndex != -1) {
-    //     final oldTask = tasks[taskIndex] as AddOptionChainTask;
-    //     final updatedTask = AddOptionChainTask(
-    //         expiryDate: oldTask.expiryDate,
-    //         data: oldTask.data,
-    //         columns: oldTask.columns,
-    //         visibility: oldTask.visibility,
-    //         interval: oldTask.interval,
-    //         optionChainId: oldTask.optionChainId);
-    //     setState(() {
-    //       tasks[taskIndex] = updatedTask;
-    //     });
-    //
-    //   }
-    // }
+  void showAddTab() async {
+    final chooseTab = await addTabDialog(context: context, tasks: tasks);
+    if (chooseTab != null) {
+      _updateTaskList(chooseTab);
+    }
+  }
+
+  void editAddedTab(AddTabTask task) async {
+    await editTabDialog(context: context, task: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.tabTitle = data.tabTitle;
+        }
+      });
+    });
+  }
+
+  void showAllAddedTabs() async {
+    final removeTab = await removeAddedTab(context: context, tasks: tasks);
+    if (removeTab != null) {
+      _updateTaskList(removeTab);
+    }
+  }
+
+  void showPayoffGraphTemplate() async {
+    final payOffData = await showPayOffGraphDialog(context: context);
+    if (payOffData != null) {
+      _updateTaskList(payOffData);
+    }
   }
 
   Future<void> editHighlightedOptionChainData(
@@ -685,17 +726,6 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
-    //
-    // if (updatedHighlight != null) {
-    //   final index = tasks.indexWhere((t) =>
-    //       t is ChooseCorrectOptionValueChainTask && t.taskId == task.taskId);
-    //   if (index != -1) {
-    //     setState(() {
-    //       tasks[index] = updatedHighlight;
-    //     });
-    //     _updateTaskList(updatedHighlight);
-    //   }
-    // }
   }
 
   Future<void> selectOptionChainToHighlight() async {
@@ -1252,6 +1282,41 @@ class _EditorPageState extends State<EditorPage> {
         );
       },
     );
+  }
+
+  void editPayoffGraph(ShowPayOffGraphTask task) async {
+    await editPayoffGraphDialog(context: context, task: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.quantity = data.quantity;
+          task.spotPrice = data.spotPrice;
+          task.spotPriceDayDelta = data.spotPriceDayDelta;
+          task.spotPriceDayDeltaPer = data.spotPriceDayDeltaPer;
+        }
+      });
+    });
+  }
+
+  void editMoveToTab(MoveTabTask task) async {
+    await editMoveTabDialog(context: context, task: task, tasks: tasks)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.tabTaskID = data.tabTaskID;
+        }
+      });
+    });
+  }
+
+  void moveToTab() async {
+    final moveTab = await editMoveTabDialog(
+      context: context,
+      task: MoveTabTask(tabTaskID: ''),
+      tasks: tasks,
+    );
+    if (moveTab != null) {
+      _updateTaskList(moveTab);
+    }
   }
 
   Widget _buildToolBox() {

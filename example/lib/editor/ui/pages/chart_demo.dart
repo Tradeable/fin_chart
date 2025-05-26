@@ -33,12 +33,12 @@ class _ChartDemoState extends State<ChartDemo> {
   late Task currentTask;
 
   String promptText = "";
-  bool switchToOptionChain = false;
   Widget? chart;
   PageController controller = PageController();
-  bool optionChainButtonVisibility = false;
   List<AddOptionChainTask> optionChainTasks = [];
   AddOptionChainTask? correctOptionChainTask;
+  List<String> tabs = [];
+  int currentPageIndex = 0; // 0: chart, 1: option chain, 2: payoff graph
 
   @override
   void initState() {
@@ -47,6 +47,9 @@ class _ChartDemoState extends State<ChartDemo> {
       currentTask = recipe.tasks.first;
       dd();
     }
+
+    // Add default Chart tab
+    tabs.add("Chart");
 
     chart =
         Chart.from(key: _chartKey, recipe: recipe, onInteraction: (p0, p1) {});
@@ -101,8 +104,6 @@ class _ChartDemoState extends State<ChartDemo> {
         break;
       case TaskType.addOptionChain:
         AddOptionChainTask task = currentTask as AddOptionChainTask;
-
-        optionChainButtonVisibility = true;
         optionChainTasks.add(task);
         setState(() {});
         onTaskFinish();
@@ -112,14 +113,7 @@ class _ChartDemoState extends State<ChartDemo> {
             currentTask as ChooseCorrectOptionValueChainTask;
         correctOptionChainTask =
             optionChainTasks.firstWhere((e) => e.optionChainId == task.taskId);
-        controller
-            .animateToPage(1,
-                duration: Duration(seconds: 1), curve: Curves.easeIn)
-            .then((val) {
-          onTaskFinish();
-        });
-        switchToOptionChain = true;
-        setState(() {});
+        onTaskFinish();
         break;
       case TaskType.highlightCorrectOptionChainValue:
         HighlightCorrectOptionChainValueTask task =
@@ -134,7 +128,58 @@ class _ChartDemoState extends State<ChartDemo> {
         onTaskFinish();
         setState(() {});
         break;
+      case TaskType.showPayOffGraph:
+        onTaskFinish();
+        break;
+      case TaskType.addTab:
+        setState(() {
+          tabs.add((currentTask as AddTabTask).tabTitle);
+        });
+        onTaskFinish();
+        break;
+      case TaskType.removeTab:
+        setState(() {
+          tabs.remove((currentTask as RemoveTabTask).tabTitle);
+        });
+        onTaskFinish();
+        break;
+      case TaskType.moveTab:
+        MoveTabTask task = currentTask as MoveTabTask;
+        if (task.tabTaskID == "chart") {
+          navigateToPage(0).then((_) {
+            onTaskFinish();
+          });
+          return;
+        }
+        final addTabTasks = recipe.tasks.whereType<AddTabTask>().toList();
+        if (addTabTasks.isEmpty) {
+          onTaskFinish();
+          return;
+        }
+        final targetTabTask = addTabTasks.firstWhere(
+          (t) => t.taskId == task.tabTaskID,
+          orElse: () => addTabTasks.first,
+        );
+        final targetTab = tabs.firstWhere(
+          (tab) => tab == targetTabTask.tabTitle,
+          orElse: () => tabs.first,
+        );
+        navigateToPage(tabs.indexOf(targetTab)).then((_) {
+          onTaskFinish();
+        });
+        break;
     }
+  }
+
+  Future<void> navigateToPage(int pageIndex) async {
+    setState(() {
+      currentPageIndex = pageIndex;
+    });
+    await controller.animateToPage(
+      pageIndex,
+      duration: const Duration(seconds: 1),
+      curve: Curves.easeIn,
+    );
   }
 
   void onTaskFinish() {
@@ -170,52 +215,54 @@ class _ChartDemoState extends State<ChartDemo> {
               ),
             ),
           ),
-          optionChainButtonVisibility
-              ? Flexible(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            switchToOptionChain = !switchToOptionChain;
-                            controller.animateToPage(
-                                switchToOptionChain ? 1 : 0,
-                                duration: Duration(seconds: 1),
-                                curve: Curves.easeIn);
-                          });
-                        },
-                        child: Text(switchToOptionChain
-                            ? "View Chart"
-                            : "View Option Chain")),
-                  ))
-              : Container(),
+          Text(tabs.toString()),
+          // optionChainButtonVisibility
+          //     ? Flexible(
+          //         flex: 1,
+          //         child: Align(
+          //           alignment: Alignment.topRight,
+          //           child: ElevatedButton(
+          //               onPressed: () {
+          //                 setState(() {
+          //                   currentPageIndex = currentPageIndex == 1 ? 0 : 1;
+          //                   navigateToPage(currentPageIndex);
+          //                 });
+          //               },
+          //               child: Text(currentPageIndex == 1
+          //                   ? "View Chart"
+          //                   : "View Option Chain")),
+          //         ))
+          //     : Container(),
           Expanded(
             flex: 6,
             child: PageView.builder(
                 controller: controller,
-                physics: NeverScrollableScrollPhysics(),
-                itemBuilder: (context, i) {
-                  if (i == 0) {
-                    return Chart.from(
-                        key: _chartKey,
-                        recipe: recipe,
-                        onInteraction: (p0, p1) {});
-                  } else {
-                    return PreviewScreen.from(
-                        key: _previewScreenKey,
-                        task: correctOptionChainTask!,
-                        isEditorMode: false);
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  switch (index) {
+                    case 0:
+                      return Chart.from(
+                          key: _chartKey,
+                          recipe: recipe,
+                          onInteraction: (p0, p1) {});
+                    case 1:
+                      return PreviewScreen.from(
+                          key: _previewScreenKey,
+                          task: correctOptionChainTask!,
+                          isEditorMode: false);
+                    case 2:
+                      return Container(
+                        color: Colors.blue,
+                        child: const Center(
+                          child: Text("Payoff Graph View"),
+                        ),
+                      );
+                    default:
+                      return Container();
                   }
                 }),
           ),
-          // Expanded(
-          //     flex: 6,
-          //     child: switchToOptionChain
-          //         ? PreviewScreen.from(
-          //             key: _previewScreenKey,
-          //             task: (currentTask as AddOptionChainTask))
-          //         : chart ?? Container()),
           Expanded(
               flex: 1,
               child: FittedBox(fit: BoxFit.none, child: userActionContainer()))
@@ -255,15 +302,11 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.addOptionChain:
       case TaskType.chooseCorrectOptionChainValue:
       case TaskType.highlightCorrectOptionChainValue:
+      case TaskType.showPayOffGraph:
+      case TaskType.addTab:
+      case TaskType.removeTab:
+      case TaskType.moveTab:
         return Container();
-      // return ElevatedButton(
-      //     onPressed: () {
-      //       HighlightCorrectOptionChainValueTask task =
-      //           currentTask as HighlightCorrectOptionChainValueTask;
-      //       _previewScreenKey.currentState?.chooseRow(task.correctRowIndex);
-      //       onTaskFinish();
-      //     },
-      //     child: Text("Okay"));
     }
   }
 }

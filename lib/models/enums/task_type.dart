@@ -9,7 +9,11 @@ enum TaskType {
   clearTask,
   addOptionChain,
   chooseCorrectOptionChainValue,
-  highlightCorrectOptionChainValue
+  highlightCorrectOptionChainValue,
+  showPayOffGraph,
+  addTab,
+  removeTab,
+  moveTab
 }
 
 // extension TaskTypeExtension on TaskType {

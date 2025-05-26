@@ -112,11 +112,13 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.highlightCorrectOptionChainValue:
         HighlightCorrectOptionChainValueTask task =
             currentTask as HighlightCorrectOptionChainValueTask;
+        final previewKey =
+            previewScreenKeys[task.optionChainId] ?? _previewScreenKey;
         if ((task.bucketRows ?? []).isNotEmpty) {
-          _previewScreenKey.currentState?.chooseBucketRows(task.bucketRows!);
+          previewKey.currentState?.chooseBucketRows(task.bucketRows!);
         } else {
           for (int i in task.correctRowIndex) {
-            _previewScreenKey.currentState?.chooseRow(i);
+            previewKey.currentState?.chooseRow(i);
           }
         }
         onTaskFinish();

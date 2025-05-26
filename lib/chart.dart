@@ -27,6 +27,7 @@ class Chart extends StatefulWidget {
   final Function(PlotRegion region)? onRegionSelect;
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
+  final bool invertYAxis;
 
   const Chart({
     super.key,
@@ -40,6 +41,7 @@ class Chart extends StatefulWidget {
     this.yAxisSettings = const YAxisSettings(),
     this.xAxisSettings = const XAxisSettings(),
     this.recipe,
+    this.invertYAxis = false,
   });
 
   factory Chart.from(
@@ -61,6 +63,7 @@ class Chart extends StatefulWidget {
       yAxisSettings: recipe.chartSettings.yAxisSettings,
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
+      invertYAxis: recipe.chartSettings.invertYaxis,
     );
   }
 
@@ -270,6 +273,23 @@ class ChartState extends State<Chart>
     });
   }
 
+  void replaceData(List<ICandle> newData) {
+    setState(() {
+      // Clear existing data
+      currentData.clear();
+      // Add new data
+      currentData.addAll(newData);
+      // Update all regions
+      for (int i = 0; i < regions.length; i++) {
+        // Need to clear the existing candles in the region first
+        // if (regions[i] is MainPlotRegion) {
+        //   (regions[i] as MainPlotRegion).clearData();
+        // }
+        regions[i].updateData(currentData);
+      }
+    });
+  }
+
   void addData(List<ICandle> newData, {List<FundamentalEvent>? newEvents}) {
     setState(() {
       currentData.addAll(newData);
@@ -293,6 +313,59 @@ class ChartState extends State<Chart>
         }
       }
       isWaitingForEventPosition = false;
+    });
+  }
+
+  void panToLatestCandle() {
+    setState(() {
+      xOffset = _getMaxLeftOffset();
+    });
+  }
+
+  void updateLastCandle(ICandle updatedCandle) {
+    setState(() {
+      if (currentData.isNotEmpty) {
+        // Replace the last candle with the updated one
+        currentData[currentData.length - 1] = updatedCandle;
+
+        // Update all regions with the new data
+        for (int i = 0; i < regions.length; i++) {
+          regions[i].updateData(currentData);
+        }
+      }
+    });
+  }
+
+  void mergeCandles(List<ICandle> newCandles) {
+    setState(() {
+      if (currentData.isEmpty) {
+        // If there's no data yet, just add the first candle
+        if (newCandles.isNotEmpty) {
+          currentData.add(newCandles[0]);
+
+          // Update all regions
+          for (int i = 0; i < regions.length; i++) {
+            regions[i].updateData(currentData);
+          }
+        }
+        return;
+      }
+
+      // Get the last candle in the current data
+      ICandle lastCandle = currentData[currentData.length - 1];
+
+      // Merge all new candles into the last existing candle
+      for (ICandle newCandle in newCandles) {
+        lastCandle = lastCandle.mergeWith(newCandle);
+      }
+
+      // Update the last candle
+      currentData[currentData.length - 1] = lastCandle;
+
+      // Update all regions
+      for (int i = 0; i < regions.length; i++) {
+        regions[i].updateData(currentData);
+      }
     });
   }
 
@@ -486,7 +559,8 @@ class ChartState extends State<Chart>
           xStepWidth: xStepWidth,
           xOffset: xOffset,
           yMinValue: regions[i].yMinValue,
-          yMaxValue: regions[i].yMaxValue);
+          yMaxValue: regions[i].yMaxValue,
+          invertYAxis: widget.invertYAxis);
       tempTopPos = tempTopPos + height;
     }
   }
@@ -538,7 +612,8 @@ class ChartState extends State<Chart>
           xStepWidth: xStepWidth,
           xOffset: xOffset,
           yMinValue: regions[0].yMinValue,
-          yMaxValue: regions[0].yMaxValue);
+          yMaxValue: regions[0].yMaxValue,
+          invertYAxis: widget.invertYAxis);
     }
 
     isInit = false;

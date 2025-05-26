@@ -20,7 +20,8 @@ class PanelPlotRegion extends PlotRegion {
       required double xStepWidth,
       required double xOffset,
       required double yMinValue,
-      required double yMaxValue}) {
+      required double yMaxValue,
+      bool invertYAxis = false}) {
     indicator.updateRegionProp(
         leftPos: leftPos,
         topPos: topPos,
@@ -29,7 +30,8 @@ class PanelPlotRegion extends PlotRegion {
         xStepWidth: xStepWidth,
         xOffset: xOffset,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue);
+        yMaxValue: yMaxValue,
+        invertYAxis: invertYAxis);
     super.updateRegionProp(
         leftPos: leftPos,
         topPos: topPos,
@@ -38,7 +40,8 @@ class PanelPlotRegion extends PlotRegion {
         xStepWidth: xStepWidth,
         xOffset: xOffset,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue);
+        yMaxValue: yMaxValue,
+        invertYAxis: invertYAxis);
   }
 
   @override
@@ -55,12 +58,13 @@ class PanelPlotRegion extends PlotRegion {
 
   @override
   void drawYAxis(Canvas canvas) {
-    double valuseDiff = indicator.yValues.last - indicator.yValues.first;
-    double posDiff = bottomPos - topPos;
+    // Choose direction based on inversion setting
+    Iterable<double> valuesToDraw = invertYAxis
+        ? indicator.yValues.reversed // From highest to lowest when inverted
+        : indicator.yValues; // From lowest to highest normally
 
-    for (double value in indicator.yValues) {
-      double pos =
-          bottomPos - (value - indicator.yValues.first) * posDiff / valuseDiff;
+    for (double value in valuesToDraw) {
+      double pos = toY(value);
 
       if (!(value == indicator.yValues.first ||
           value == indicator.yValues.last)) {

@@ -55,7 +55,8 @@ class MainPlotRegion extends PlotRegion {
       required double xStepWidth,
       required double xOffset,
       required double yMinValue,
-      required double yMaxValue}) {
+      required double yMaxValue,
+      bool invertYAxis = false}) {
     for (Indicator indicator in indicators) {
       indicator.updateRegionProp(
           leftPos: leftPos,
@@ -65,7 +66,8 @@ class MainPlotRegion extends PlotRegion {
           xStepWidth: xStepWidth,
           xOffset: xOffset,
           yMinValue: yMinValue,
-          yMaxValue: yMaxValue);
+          yMaxValue: yMaxValue,
+          invertYAxis: invertYAxis);
     }
     super.updateRegionProp(
         leftPos: leftPos,
@@ -75,7 +77,8 @@ class MainPlotRegion extends PlotRegion {
         xStepWidth: xStepWidth,
         xOffset: xOffset,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue);
+        yMaxValue: yMaxValue,
+        invertYAxis: invertYAxis);
   }
 
   @override
@@ -83,13 +86,16 @@ class MainPlotRegion extends PlotRegion {
     candles.addAll(data.sublist(candles.isEmpty ? 0 : candles.length));
     (double, double) range = findMinMaxWithPercentage(candles);
 
-    if (yMinValue == 0 && yMaxValue == 1) {
-      yMinValue = range.$1;
-      yMaxValue = range.$2;
-    } else {
-      yMinValue = min(range.$1, yMinValue);
-      yMaxValue = max(range.$2, yMaxValue);
-    }
+    // if (yMinValue == 0 && yMaxValue == 1) {
+    //   yMinValue = range.$1;
+    //   yMaxValue = range.$2;
+    // } else {
+    //   yMinValue = min(range.$1, yMinValue);
+    //   yMaxValue = max(range.$2, yMaxValue);
+    // }
+
+    yMinValue = range.$1; //min(range.$1, yMinValue);
+    yMaxValue = range.$2; //max(range.$2, yMaxValue);
 
     yValues = generateNiceAxisValues(yMinValue, yMaxValue);
 
@@ -119,7 +125,7 @@ class MainPlotRegion extends PlotRegion {
         candleColor = Colors.red;
       }
 
-            double maxVolume = candles
+      double maxVolume = candles
           .reduce((currentMax, candle) =>
               candle.volume > currentMax.volume ? candle : currentMax)
           .volume;

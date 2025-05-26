@@ -150,6 +150,12 @@ class BollingerBands extends Indicator {
 
     // print(candles.length);
 
+    candles.clear();
+    candles.addAll(data);
+    smaValues.clear();
+    upperBandValues.clear();
+    lowerBandValues.clear();
+
     _calculateBollingerBands();
 
     // For DisplayMode.main, we don't need to set yMinValue and yMaxValue

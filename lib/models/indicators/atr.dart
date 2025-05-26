@@ -70,6 +70,9 @@ class Atr extends Indicator {
       }
     }
 
+    candles.clear();
+    candles.addAll(data);
+
     _calculateATR();
 
     // Find min and max values for y-axis

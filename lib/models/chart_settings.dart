@@ -7,12 +7,14 @@ class ChartSettings {
   final YAxisSettings yAxisSettings;
   final XAxisSettings xAxisSettings;
   final String mainPlotRegionId;
+  final bool invertYaxis;
 
   ChartSettings(
       {required this.dataFit,
       required this.yAxisSettings,
       required this.xAxisSettings,
-      required this.mainPlotRegionId});
+      required this.mainPlotRegionId,
+      this.invertYaxis = false});
 
   Map<String, dynamic> toJson() {
     return {
@@ -20,6 +22,7 @@ class ChartSettings {
       'yAxisSettings': yAxisSettings.toJson(),
       'xAxisSettings': xAxisSettings.toJson(),
       'mainPlotRegionId': mainPlotRegionId,
+      'invertYaxis': invertYaxis,
     };
   }
 
@@ -29,6 +32,7 @@ class ChartSettings {
       yAxisSettings: YAxisSettings.fromJson(json['yAxisSettings']),
       xAxisSettings: XAxisSettings.fromJson(json['xAxisSettings']),
       mainPlotRegionId: json['mainPlotRegionId'],
+      invertYaxis: json['invertYaxis'] ?? false,
     );
   }
 }

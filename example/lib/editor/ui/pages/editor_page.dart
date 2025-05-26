@@ -1281,6 +1281,10 @@ class _EditorPageState extends State<EditorPage> {
             ElevatedButton(
                 onPressed: _showAddDataDialog, child: const Text("Add Data")),
             const SizedBox(width: 20),
+            ElevatedButton(
+                onPressed: _showReplaceDataDialog,
+                child: const Text("Replace Data")),
+            const SizedBox(width: 20),
             IndicatorTypeDropdown(
                 selectedType: _selectedIndicatorType,
                 onChanged: (indicatorType) {
@@ -1313,6 +1317,33 @@ class _EditorPageState extends State<EditorPage> {
             _chartKey.currentState?.addData(data);
           });
         });
+  }
+
+  void _showReplaceDataDialog() {
+    if (candleData.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("No data to update")));
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddDataDialog(
+          initialData: candleData,
+          onDataUpdate: (data) {
+            setState(() {
+              // Clear and replace local data array
+              candleData.clear();
+              candleData.addAll(data);
+
+              // Use the new replaceData method
+              _chartKey.currentState?.replaceData(data);
+            });
+          },
+        );
+      },
+    );
   }
 
   void _showAddEventDialog() {

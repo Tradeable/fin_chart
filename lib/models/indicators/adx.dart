@@ -188,6 +188,9 @@ class Adx extends Indicator {
       }
     }
 
+    candles.clear();
+    candles.addAll(data);
+
     // Calculate ADX values
     _calculateADX(candles);
 

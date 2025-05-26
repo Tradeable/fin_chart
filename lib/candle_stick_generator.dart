@@ -132,7 +132,10 @@ class CandleData {
 
 class CandleStickGenerator extends StatefulWidget {
   final Function(List<ICandle> candles) onCandleDataGenerated;
-  const CandleStickGenerator({super.key, required this.onCandleDataGenerated});
+  final List<ICandle>? initialData;
+
+  const CandleStickGenerator(
+      {super.key, required this.onCandleDataGenerated, this.initialData});
 
   @override
   State<CandleStickGenerator> createState() => _CandleStickGeneratorState();
@@ -175,6 +178,46 @@ class _CandleStickGeneratorState extends State<CandleStickGenerator> {
   void initState() {
     super.initState();
     _focusNode.requestFocus();
+
+    if (widget.initialData != null && widget.initialData!.isNotEmpty) {
+      // Convert the initial data to candle data for editing
+      candles = widget.initialData!
+          .map((candle) => CandleData(
+                open: candle.open,
+                high: candle.high,
+                low: candle.low,
+                close: candle.close,
+                volume: candle.volume,
+              ))
+          .toList();
+
+      // Set the date
+      startDate = widget.initialData!.first.date;
+
+      // Update form values
+      candlesController.text = widget.initialData!.length.toString();
+
+      // Find min/max values for form
+      double minValue = double.infinity;
+      double maxValue = double.negativeInfinity;
+      double minVol = double.infinity;
+      double maxVol = double.negativeInfinity;
+
+      for (var candle in widget.initialData!) {
+        if (candle.low < minValue) minValue = candle.low;
+        if (candle.high > maxValue) maxValue = candle.high;
+        if (candle.volume < minVol) minVol = candle.volume;
+        if (candle.volume > maxVol) maxVol = candle.volume;
+      }
+
+      minController.text = minValue.toStringAsFixed(2);
+      maxController.text = maxValue.toStringAsFixed(2);
+      volumeMinController.text = minVol.toStringAsFixed(0);
+      volumeMaxController.text = maxVol.toStringAsFixed(0);
+
+      // Generate data for the UI
+      widget.onCandleDataGenerated(_convertToICandles(candles));
+    }
   }
 
   @override

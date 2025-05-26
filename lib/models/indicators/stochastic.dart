@@ -125,6 +125,9 @@ class Stochastic extends Indicator {
         yValues.map((v) => v.toString()).toList(),
         const TextStyle(color: Colors.black, fontSize: 12));
 
+    candles.clear();
+    candles.addAll(data);
+
     // Calculate after setting the y-axis values
     _calculateStochastic();
   }

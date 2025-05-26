@@ -1,4 +1,5 @@
 import 'package:fin_chart/models/enums/candle_state.dart';
+import 'dart:math' as math;
 
 class ICandle {
   late String id;
@@ -47,5 +48,26 @@ class ICandle {
       'promptText': promptText,
       'state': state.name,
     };
+  }
+
+  ICandle mergeWith(ICandle other) {
+    // Keep the original ID and date
+    return ICandle(
+      id: id,
+      date: date,
+      // For OHLC:
+      // - Keep the original open
+      // - Take the highest high
+      // - Take the lowest low
+      // - Use the latest close
+      open: open,
+      high: math.max(high, other.high),
+      low: math.min(low, other.low),
+      close: other.close,
+      // Add up the volume
+      volume: volume + other.volume,
+      promptText: promptText,
+      state: state,
+    );
   }
 }

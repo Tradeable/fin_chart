@@ -27,6 +27,7 @@ class ChartDemo extends StatefulWidget {
 class _ChartDemoState extends State<ChartDemo> {
   final GlobalKey<ChartState> _chartKey = GlobalKey();
   final GlobalKey<PreviewScreenState> _previewScreenKey = GlobalKey();
+  Map<String, GlobalKey<PreviewScreenState>> previewScreenKeys = {};
   late Recipe recipe;
 
   int taskPointer = 0;
@@ -36,9 +37,9 @@ class _ChartDemoState extends State<ChartDemo> {
   Widget? chart;
   PageController controller = PageController();
   List<AddOptionChainTask> optionChainTasks = [];
-  AddOptionChainTask? correctOptionChainTask;
-  List<String> tabs = [];
-  int currentPageIndex = 0; // 0: chart, 1: option chain, 2: payoff graph
+  List<ShowPayOffGraphTask> payoffGraphTasks = [];
+  List<Map<String, String>> tabs = [];
+  int currentPageIndex = 0;
 
   @override
   void initState() {
@@ -47,9 +48,7 @@ class _ChartDemoState extends State<ChartDemo> {
       currentTask = recipe.tasks.first;
       dd();
     }
-
-    // Add default Chart tab
-    tabs.add("Chart");
+    tabs.add({"type": "chart", "title": "Chart"});
 
     chart =
         Chart.from(key: _chartKey, recipe: recipe, onInteraction: (p0, p1) {});
@@ -105,15 +104,10 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.addOptionChain:
         AddOptionChainTask task = currentTask as AddOptionChainTask;
         optionChainTasks.add(task);
-        setState(() {});
         onTaskFinish();
         print(optionChainTasks.length);
         break;
       case TaskType.chooseCorrectOptionChainValue:
-        ChooseCorrectOptionValueChainTask task =
-            currentTask as ChooseCorrectOptionValueChainTask;
-        correctOptionChainTask =
-            optionChainTasks.firstWhere((e) => e.optionChainId == task.taskId);
         onTaskFinish();
         break;
       case TaskType.highlightCorrectOptionChainValue:
@@ -127,20 +121,47 @@ class _ChartDemoState extends State<ChartDemo> {
           }
         }
         onTaskFinish();
-        setState(() {});
         break;
       case TaskType.showPayOffGraph:
+        ShowPayOffGraphTask task = currentTask as ShowPayOffGraphTask;
+        payoffGraphTasks.add(task);
         onTaskFinish();
         break;
       case TaskType.addTab:
         setState(() {
-          tabs.add((currentTask as AddTabTask).tabTitle);
+          final task = currentTask as AddTabTask;
+          previewScreenKeys[task.taskId] = GlobalKey<PreviewScreenState>();
+
+          final tasks = recipe.tasks
+              .whereType<ChooseCorrectOptionValueChainTask>()
+              .where((t) => t.taskId == task.taskId)
+              .toList();
+
+          if (tasks.isNotEmpty) {
+            tabs.add({
+              "type": "option_chain",
+              "title": task.tabTitle,
+              "taskId": task.taskId
+            });
+          } else {
+            final payoffTasks =
+                recipe.tasks.whereType<ShowPayOffGraphTask>().toList();
+
+            if (payoffTasks.isNotEmpty) {
+              tabs.add({
+                "type": "payoff",
+                "title": task.tabTitle,
+                "taskId": task.taskId
+              });
+            }
+          }
         });
         onTaskFinish();
         break;
       case TaskType.removeTab:
         setState(() {
-          tabs.remove((currentTask as RemoveTabTask).tabTitle);
+          final task = currentTask as RemoveTabTask;
+          tabs.removeWhere((tab) => tab["title"] == task.tabTitle);
         });
         onTaskFinish();
         break;
@@ -157,15 +178,15 @@ class _ChartDemoState extends State<ChartDemo> {
           onTaskFinish();
           return;
         }
-        final targetTabTask = addTabTasks.firstWhere(
-          (t) => t.taskId == task.tabTaskID,
-          orElse: () => addTabTasks.first,
-        );
+        final targetTabTask =
+            addTabTasks.firstWhere((t) => t.taskId == task.tabTaskID);
         final targetTab = tabs.firstWhere(
-          (tab) => tab == targetTabTask.tabTitle,
+          (tab) => tab["title"] == targetTabTask.tabTitle,
           orElse: () => tabs.first,
         );
-        navigateToPage(tabs.indexOf(targetTab)).then((_) {
+        final targetTabIndex = tabs.indexOf(targetTab);
+
+        navigateToPage(targetTabIndex).then((_) {
           onTaskFinish();
         });
         break;
@@ -217,46 +238,45 @@ class _ChartDemoState extends State<ChartDemo> {
             ),
           ),
           Text(tabs.toString()),
-          // optionChainButtonVisibility
-          //     ? Flexible(
-          //         flex: 1,
-          //         child: Align(
-          //           alignment: Alignment.topRight,
-          //           child: ElevatedButton(
-          //               onPressed: () {
-          //                 setState(() {
-          //                   currentPageIndex = currentPageIndex == 1 ? 0 : 1;
-          //                   navigateToPage(currentPageIndex);
-          //                 });
-          //               },
-          //               child: Text(currentPageIndex == 1
-          //                   ? "View Chart"
-          //                   : "View Option Chain")),
-          //         ))
-          //     : Container(),
           Expanded(
             flex: 6,
             child: PageView.builder(
                 controller: controller,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: 3,
+                itemCount: tabs.length,
                 itemBuilder: (context, index) {
-                  switch (index) {
-                    case 0:
+                  final tab = tabs[index];
+                  switch (tab["type"]) {
+                    case "chart":
                       return Chart.from(
                           key: _chartKey,
                           recipe: recipe,
                           onInteraction: (p0, p1) {});
-                    case 1:
+                    case "option_chain":
+                      final taskId = tab["taskId"]!;
+                      final chooseTask = recipe.tasks
+                          .whereType<ChooseCorrectOptionValueChainTask>()
+                          .firstWhere((t) => t.taskId == taskId);
+
+                      final optionChainTask = optionChainTasks.firstWhere(
+                        (t) => t.optionChainId == chooseTask.taskId,
+                        orElse: () => optionChainTasks.first,
+                      );
+
                       return PreviewScreen.from(
-                          key: _previewScreenKey,
-                          task: correctOptionChainTask!,
+                          key: previewScreenKeys[taskId] ?? _previewScreenKey,
+                          task: optionChainTask,
                           isEditorMode: false);
-                    case 2:
+                    case "payoff":
+                      final taskId = tab["taskId"]!;
+                      final payoffTask = payoffGraphTasks.firstWhere(
+                        (t) => t.id == taskId,
+                        orElse: () => payoffGraphTasks.first,
+                      );
                       return Container(
                         color: Colors.blue,
-                        child: const Center(
-                          child: Text("Payoff Graph View"),
+                        child: Center(
+                          child: Text("Payoff Graph View for ${payoffTask.id}"),
                         ),
                       );
                     default:

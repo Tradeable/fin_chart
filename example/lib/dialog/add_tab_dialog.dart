@@ -36,11 +36,22 @@ Future<AddTabTask?> addTabDialog({
                   itemCount: filteredTasks.length,
                   itemBuilder: (context, index) {
                     final task = filteredTasks[index];
+                    final taskId =
+                        task.runtimeType == ChooseCorrectOptionValueChainTask
+                            ? (task as ChooseCorrectOptionValueChainTask).taskId
+                            : task.id;
                     return ListTile(
                       title: Text(task.runtimeType.toString()),
-                      subtitle: Text(task.id),
+                      subtitle: Text(taskId),
                       onTap: () {
-                        selectedTaskId = task.id;
+                        if (task.runtimeType ==
+                            ChooseCorrectOptionValueChainTask) {
+                          selectedTaskId =
+                              (task as ChooseCorrectOptionValueChainTask)
+                                  .taskId;
+                        } else {
+                          selectedTaskId = task.id;
+                        }
                         showDialog(
                           context: context,
                           builder: (context) {

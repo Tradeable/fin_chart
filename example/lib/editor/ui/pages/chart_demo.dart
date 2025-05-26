@@ -107,6 +107,7 @@ class _ChartDemoState extends State<ChartDemo> {
         optionChainTasks.add(task);
         setState(() {});
         onTaskFinish();
+        print(optionChainTasks.length);
         break;
       case TaskType.chooseCorrectOptionChainValue:
         ChooseCorrectOptionValueChainTask task =

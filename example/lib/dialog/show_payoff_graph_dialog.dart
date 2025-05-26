@@ -61,8 +61,11 @@ Future<ShowPayOffGraphTask?> showPayOffGraphDialog({
                         if (quantityController.text.trim().isEmpty ||
                             spotPriceController.text.trim().isEmpty ||
                             spotPriceDayDeltaController.text.trim().isEmpty ||
-                            spotPriceDayDeltaPerController.text.trim().isEmpty)
+                            spotPriceDayDeltaPerController.text
+                                .trim()
+                                .isEmpty) {
                           return;
+                        }
 
                         final task = ShowPayOffGraphTask(
                           quantity: int.tryParse(quantityController.text) ?? 0,

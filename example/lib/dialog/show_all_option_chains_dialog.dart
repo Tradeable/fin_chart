@@ -214,7 +214,6 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
   if (selectedRowIndex != null) {
     final selectionMode =
         selectedOptionChain.settings?.selectionMode ?? SelectionMode.entireRow;
-    print(selectedRowIndex);
     if (selectionMode == SelectionMode.bucketRow) {
       return HighlightCorrectOptionChainValueTask(
         optionChainId: selectedOptionChain.optionChainId,

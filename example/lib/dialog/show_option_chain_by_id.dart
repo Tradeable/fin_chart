@@ -33,7 +33,6 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
     builder: (BuildContext dialogContext) {
       final pageController = PageController(initialPage: currentPage);
       final totalPages = (optionChainTasks.length / 2).ceil();
-      final previewKey = GlobalKey<PreviewScreenState>();
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -87,6 +86,7 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
                             crossAxisSpacing: 12,
                             childAspectRatio: 1.2,
                             children: pageItems.map((task) {
+                              final previewKey = GlobalKey<PreviewScreenState>();
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.pop(dialogContext, task);
@@ -122,7 +122,7 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
                                                 columns: task.columns,
                                                 visibility: task.visibility,
                                                 settings: task.settings,
-                                            isEditorMode: true),
+                                                isEditorMode: true),
                                           ),
                                         ),
                                       ],

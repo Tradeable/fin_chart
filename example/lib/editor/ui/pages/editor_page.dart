@@ -685,6 +685,7 @@ class _EditorPageState extends State<EditorPage> {
   void showAddTab() async {
     final chooseTab = await addTabDialog(context: context, tasks: tasks);
     if (chooseTab != null) {
+      print("added ${chooseTab.taskId}");
       _updateTaskList(chooseTab);
     }
   }

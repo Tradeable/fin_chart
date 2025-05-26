@@ -6,10 +6,13 @@ import 'package:fin_chart/utils/calculations.dart';
 class HighlightCorrectOptionChainValueTask extends Task {
   String optionChainId;
   List<int> correctRowIndex;
+  List<Map<int, int>>? bucketRows;
 
-  HighlightCorrectOptionChainValueTask(
-      {required this.optionChainId, required this.correctRowIndex})
-      : super(
+  HighlightCorrectOptionChainValueTask({
+    required this.optionChainId,
+    required this.correctRowIndex,
+    this.bucketRows,
+  }) : super(
           id: generateV4(),
           actionType: ActionType.empty,
           taskType: TaskType.highlightCorrectOptionChainValue,
@@ -20,6 +23,11 @@ class HighlightCorrectOptionChainValueTask extends Task {
     final data = super.toJson();
     data['optionChainId'] = optionChainId;
     data['correctRowIndex'] = correctRowIndex;
+    if (bucketRows != null) {
+      data['bucketRows'] = bucketRows!
+          .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
+          .toList();
+    }
     return data;
   }
 
@@ -27,7 +35,15 @@ class HighlightCorrectOptionChainValueTask extends Task {
       Map<String, dynamic> json) {
     return HighlightCorrectOptionChainValueTask(
       optionChainId: json['optionChainId'],
-      correctRowIndex: (json['correctRowIndex'] as List?)?.cast<int>() ?? [],
+      correctRowIndex: json['correctRowIndex'] is List
+          ? List<int>.from(json['correctRowIndex'])
+          : json['correctRowIndex'] is int
+              ? [json['correctRowIndex']]
+              : [],
+      bucketRows: json['bucketRows'] != null
+          ? List<Map<int, int>>.from(json['bucketRows'].map((map) =>
+              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))))
+          : null,
     );
   }
 }

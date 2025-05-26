@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
-import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';

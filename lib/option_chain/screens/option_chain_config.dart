@@ -147,7 +147,8 @@ class _OptionChainPageState extends State<OptionChainPage> {
   }
 
   void _showAddColumnDialog() {
-    final availableTypes = DataTransformer.getAvailableColumnTypes(_columns);
+    final availableTypes =
+        DataTransformer.getAvailableColumnTypes(_columns, _visibility);
 
     if (availableTypes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -162,13 +163,33 @@ class _OptionChainPageState extends State<OptionChainPage> {
         availableTypes: availableTypes,
         onAdd: (type) {
           setState(() {
-            _customColumns.add(
-              ColumnConfig(
-                columnType: type,
-                columnTitle: type.displayName,
-                isColumnVisible: true,
-              ),
-            );
+            if (_visibility == OptionChainVisibility.both) {
+              _customColumns.add(
+                ColumnConfig(
+                  columnType: type,
+                  columnTitle: type.displayName,
+                  isColumnVisible: true,
+                ),
+              );
+              final oppositeType = DataTransformer.getOppositeColumnType(type);
+              if (oppositeType != type) {
+                _customColumns.add(
+                  ColumnConfig(
+                    columnType: oppositeType,
+                    columnTitle: oppositeType.displayName,
+                    isColumnVisible: true,
+                  ),
+                );
+              }
+            } else {
+              _customColumns.add(
+                ColumnConfig(
+                  columnType: type,
+                  columnTitle: type.displayName,
+                  isColumnVisible: true,
+                ),
+              );
+            }
             _updateColumns();
           });
         },
@@ -548,10 +569,13 @@ class _OptionChainPageState extends State<OptionChainPage> {
         DropdownButton<OptionChainVisibility>(
           value: _visibility,
           onChanged: (OptionChainVisibility? newValue) {
-            setState(() {
-              _visibility = newValue!;
-              _updateColumns();
-            });
+            if (newValue != null) {
+              setState(() {
+                _visibility = newValue;
+                _customColumns = [];
+                _updateColumns();
+              });
+            }
           },
           items: OptionChainVisibility.values.map((value) {
             return DropdownMenuItem<OptionChainVisibility>(
@@ -658,14 +682,38 @@ class _OptionChainPageState extends State<OptionChainPage> {
             label: Text(column.columnTitle),
             selected: column.isColumnVisible,
             onSelected: (bool selected) {
-              setState(() => column.isColumnVisible = selected);
+              setState(() {
+                column.isColumnVisible = selected;
+                if (_visibility == OptionChainVisibility.both) {
+                  final oppositeType =
+                      DataTransformer.getOppositeColumnType(column.columnType);
+                  final oppositeColumn = _columns.firstWhere(
+                    (c) => c.columnType == oppositeType,
+                    orElse: () => column,
+                  );
+                  if (oppositeColumn != column) {
+                    oppositeColumn.isColumnVisible = selected;
+                  }
+                }
+              });
             },
             onDeleted: () {
               setState(() {
-                _columns.remove(column);
-                _customColumns.removeWhere(
-                  (c) => c.columnType == column.columnType,
-                );
+                if (_visibility == OptionChainVisibility.both) {
+                  final oppositeType =
+                      DataTransformer.getOppositeColumnType(column.columnType);
+                  _columns.removeWhere((c) =>
+                      c.columnType == column.columnType ||
+                      c.columnType == oppositeType);
+                  _customColumns.removeWhere((c) =>
+                      c.columnType == column.columnType ||
+                      c.columnType == oppositeType);
+                } else {
+                  _columns.remove(column);
+                  _customColumns.removeWhere(
+                    (c) => c.columnType == column.columnType,
+                  );
+                }
               });
             },
           );

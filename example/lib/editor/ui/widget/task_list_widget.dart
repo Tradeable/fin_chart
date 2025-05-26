@@ -1,9 +1,10 @@
+import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_mcq.task.dart';
+import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
-import 'package:fin_chart/models/tasks/highlight_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:example/editor/ui/widget/task_type_dropdown.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
@@ -301,6 +302,48 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         return Text(
             ((task as HighlightCorrectOptionChainValueTask).optionChainId)
                 .toString());
+      case TaskType.showPayOffGraph:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text((task as ShowPayOffGraphTask).id),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.addTab:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Added ${(task as AddTabTask).taskId} tab"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.removeTab:
+        return Text("Removed ${(task as RemoveTabTask).tabTitle} tab");
+      case TaskType.moveTab:
+        return Text("Moved to ${(task as MoveTabTask).tabTaskID} tab}");
     }
   }
 }

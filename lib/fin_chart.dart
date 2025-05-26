@@ -20,3 +20,7 @@ export 'package:fin_chart/models/indicators/adx.dart';
 export 'package:fin_chart/models/tasks/add_mcq.task.dart';
 export 'package:fin_chart/models/tasks/clear.task.dart';
 export 'package:fin_chart/models/layers/arrow_text_pointer.dart';
+export 'package:fin_chart/models/tasks/add_tab.task.dart';
+export 'package:fin_chart/models/tasks/remove_tab.task.dart';
+export 'package:fin_chart/models/tasks/show_payoff_graph.task.dart';
+export 'package:fin_chart/models/tasks/move_tab.task.dart';

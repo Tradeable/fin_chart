@@ -12,29 +12,27 @@ class OptionChainUtils {
     void addColumnIfExists(List<ColumnConfig> target, ColumnType type) {
       final column =
           customColumns.firstWhereOrNull((c) => c.columnType == type);
-      if (column != null) {
-        target.add(column);
-      }
+      if (column != null) target.add(column);
     }
 
     void addCallColumns() {
-      callColumns.addAll([
-        ColumnConfig(
-          columnType: ColumnType.callOi,
-          columnTitle: ColumnType.callOi.displayName,
-          isColumnVisible: true,
-        ),
-        ColumnConfig(
-          columnType: ColumnType.callPremium,
-          columnTitle: ColumnType.callPremium.displayName,
-          isColumnVisible: true,
-        ),
-      ]);
+      // Only add basic columns by default
+      callColumns.add(ColumnConfig(
+        columnType: ColumnType.callOi,
+        columnTitle: ColumnType.callOi.displayName,
+        isColumnVisible: true,
+      ));
+      callColumns.add(ColumnConfig(
+        columnType: ColumnType.callPremium,
+        columnTitle: ColumnType.callPremium.displayName,
+        isColumnVisible: true,
+      ));
 
+      // Add other call columns if they exist in customColumns
       for (final type in [
+        ColumnType.callVega,
         ColumnType.callDelta,
         ColumnType.callGamma,
-        ColumnType.callVega,
         ColumnType.callTheta,
         ColumnType.callIV,
         ColumnType.callVolume
@@ -44,26 +42,26 @@ class OptionChainUtils {
     }
 
     void addPutColumns() {
-      putColumns.addAll([
-        ColumnConfig(
-          columnType: ColumnType.putPremium,
-          columnTitle: ColumnType.putPremium.displayName,
-          isColumnVisible: true,
-        ),
-        ColumnConfig(
-          columnType: ColumnType.putOi,
-          columnTitle: ColumnType.putOi.displayName,
-          isColumnVisible: true,
-        ),
-      ]);
+      // Only add basic columns by default
+      putColumns.add(ColumnConfig(
+        columnType: ColumnType.putOi,
+        columnTitle: ColumnType.putOi.displayName,
+        isColumnVisible: true,
+      ));
+      putColumns.add(ColumnConfig(
+        columnType: ColumnType.putPremium,
+        columnTitle: ColumnType.putPremium.displayName,
+        isColumnVisible: true,
+      ));
 
+      // Add other put columns if they exist in customColumns
       for (final type in [
-        ColumnType.putDelta,
-        ColumnType.putGamma,
-        ColumnType.putVega,
-        ColumnType.putTheta,
+        ColumnType.putVolume,
         ColumnType.putIV,
-        ColumnType.putVolume
+        ColumnType.putTheta,
+        ColumnType.putGamma,
+        ColumnType.putDelta,
+        ColumnType.putVega,
       ]) {
         addColumnIfExists(putColumns, type);
       }

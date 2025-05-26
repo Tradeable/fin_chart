@@ -48,11 +48,11 @@ class OptionChainUtils {
         columnTitle: ColumnType.putOi.displayName,
         isColumnVisible: true,
       ));
-      putColumns.add(ColumnConfig(
+        putColumns.add(ColumnConfig(
         columnType: ColumnType.putPremium,
         columnTitle: ColumnType.putPremium.displayName,
-        isColumnVisible: true,
-      ));
+          isColumnVisible: true,
+        ));
 
       // Add other put columns if they exist in customColumns
       for (final type in [

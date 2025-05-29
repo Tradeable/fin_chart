@@ -6,6 +6,7 @@ import 'package:example/dialog/edit_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_bottom_sheet_dialog.dart';
+import 'package:example/dialog/show_insights_page_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
@@ -24,6 +25,7 @@ import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
+import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
@@ -238,6 +240,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.moveTab:
           case TaskType.popUpTask:
           case TaskType.showBottomSheet:
+          case TaskType.showInsightsPage:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -538,6 +541,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.showBottomSheet:
           showBottomSheetTask();
           break;
+        case TaskType.showInsightsPage:
+          showInsightsPageTask();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -593,6 +599,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.showBottomSheet:
         editBottomSheetTask(task as ShowBottomSheetTask);
+        break;
+      case TaskType.showInsightsPage:
+        editInsightsPageTask(task as ShowInsightsPageTask);
         break;
     }
   }
@@ -1386,6 +1395,26 @@ class _EditorPageState extends State<EditorPage> {
           task.showImage = data.showImage;
           task.primaryButtonText = data.primaryButtonText;
           task.secondaryButtonText = data.secondaryButtonText;
+        }
+      });
+    });
+  }
+
+  void showInsightsPageTask() async {
+    await showInsightsPageDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editInsightsPageTask(ShowInsightsPageTask task) async {
+    await showInsightsPageDialog(context: context, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.title = data.title;
+          task.description = data.description;
         }
       });
     });

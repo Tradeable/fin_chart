@@ -9,6 +9,7 @@ import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
+import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -157,6 +158,19 @@ class _ChartDemoState extends State<ChartDemo> {
                 "title": task.tabTitle,
                 "taskId": task.taskId
               });
+            } else {
+              final insightsTasks = recipe.tasks
+                  .whereType<ShowInsightsPageTask>()
+                  .where((t) => t.id == task.taskId)
+                  .toList();
+
+              if (insightsTasks.isNotEmpty) {
+                tabs.add({
+                  "type": "insights",
+                  "title": task.tabTitle,
+                  "taskId": task.taskId,
+                });
+              }
             }
           }
         });
@@ -285,6 +299,10 @@ class _ChartDemoState extends State<ChartDemo> {
         });
         setState(() {});
         break;
+      case TaskType.showInsightsPage:
+        setState(() {});
+        onTaskFinish();
+        break;
     }
   }
 
@@ -379,6 +397,28 @@ class _ChartDemoState extends State<ChartDemo> {
                           child: Text("Payoff Graph View for ${payoffTask.id}"),
                         ),
                       );
+                    case "insights":
+                      final taskId = tab["taskId"]!;
+                      final insightsTask = recipe.tasks
+                          .whereType<ShowInsightsPageTask>()
+                          .firstWhere((t) => t.id == taskId);
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              insightsTask.title,
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              insightsTask.description,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+                      );
                     default:
                       return Container();
                   }
@@ -429,6 +469,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.moveTab:
       case TaskType.popUpTask:
       case TaskType.showBottomSheet:
+      case TaskType.showInsightsPage:
         return Container();
     }
   }

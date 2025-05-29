@@ -210,13 +210,12 @@ class _ChartDemoState extends State<ChartDemo> {
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        onTaskFinish();
                       },
                       child: Text(task.buttonText),
                     ),
                   ],
                 );
-              }).then((val) {
+              }).then((_) {
             onTaskFinish();
           });
         });
@@ -262,7 +261,6 @@ class _ChartDemoState extends State<ChartDemo> {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop();
-                                    onTaskFinish();
                                   },
                                   child: Text(task.secondaryButtonText!),
                                 ),
@@ -271,7 +269,6 @@ class _ChartDemoState extends State<ChartDemo> {
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
-                                  onTaskFinish();
                                 },
                                 child: Text(task.primaryButtonText),
                               ),
@@ -282,7 +279,9 @@ class _ChartDemoState extends State<ChartDemo> {
                     ),
                   ),
                 );
-              });
+              }).then((_) {
+            onTaskFinish();
+          });
         });
         setState(() {});
         break;

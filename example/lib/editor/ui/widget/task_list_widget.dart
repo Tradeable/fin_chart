@@ -345,9 +345,39 @@ class _TaskListWidgetState extends State<TaskListWidget> {
       case TaskType.moveTab:
         return Text("Moved to ${(task as MoveTabTask).tabTaskID} tab}");
       case TaskType.popUpTask:
-        return Text("Show Popup ${(task as ShowPopupTask).title}");
+        return Row(
+          children: [
+            Text("Show Popup ${(task as ShowPopupTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
       case TaskType.showBottomSheet:
-        return Text("Show Bottomsheet ${(task as ShowBottomSheetTask).title}");
+        return Row(
+          children: [
+            Text("Show Bottomsheet ${(task as ShowBottomSheetTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
     }
   }
 }

@@ -2,9 +2,10 @@ import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
-import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
+import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
+import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:example/editor/ui/widget/task_type_dropdown.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
@@ -344,6 +345,57 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         return Text("Removed ${(task as RemoveTabTask).tabTitle} tab");
       case TaskType.moveTab:
         return Text("Moved to ${(task as MoveTabTask).tabTaskID} tab}");
+      case TaskType.popUpTask:
+        return Row(
+          children: [
+            Text("Show Popup ${(task as ShowPopupTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.showBottomSheet:
+        return Row(
+          children: [
+            Text("Show Bottomsheet ${(task as ShowBottomSheetTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.showInsightsPage:
+        return Row(
+          children: [
+            Text("Show Insights Page ${(task as ShowInsightsPageTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
     }
   }
 }

@@ -24,3 +24,4 @@ export 'package:fin_chart/models/tasks/add_tab.task.dart';
 export 'package:fin_chart/models/tasks/remove_tab.task.dart';
 export 'package:fin_chart/models/tasks/show_payoff_graph.task.dart';
 export 'package:fin_chart/models/tasks/move_tab.task.dart';
+export 'package:fin_chart/models/tasks/show_popup.task.dart';

@@ -13,7 +13,9 @@ enum TaskType {
   showPayOffGraph,
   addTab,
   removeTab,
-  moveTab
+  moveTab,
+  popUpTask,
+  showBottomSheet
 }
 
 // extension TaskTypeExtension on TaskType {

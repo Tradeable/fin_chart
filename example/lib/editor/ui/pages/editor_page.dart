@@ -5,8 +5,10 @@ import 'package:example/dialog/edit_move_tab_dialog.dart';
 import 'package:example/dialog/edit_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
+import 'package:example/dialog/show_bottom_sheet_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_payoff_graph_dialog.dart';
+import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -21,6 +23,7 @@ import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
@@ -233,6 +236,8 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.addTab:
           case TaskType.removeTab:
           case TaskType.moveTab:
+          case TaskType.popUpTask:
+          case TaskType.showBottomSheet:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -527,6 +532,12 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.moveTab:
           moveToTab();
           break;
+        case TaskType.popUpTask:
+          showPopupTask();
+          break;
+        case TaskType.showBottomSheet:
+          showBottomSheetTask();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -576,6 +587,12 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.moveTab:
         editMoveToTab(task as MoveTabTask);
+        break;
+      case TaskType.popUpTask:
+        editPopupTask(task as ShowPopupTask);
+        break;
+      case TaskType.showBottomSheet:
+        editBottomSheetTask(task as ShowBottomSheetTask);
         break;
     }
   }
@@ -685,7 +702,6 @@ class _EditorPageState extends State<EditorPage> {
   void showAddTab() async {
     final chooseTab = await addTabDialog(context: context, tasks: tasks);
     if (chooseTab != null) {
-      print("added ${chooseTab.taskId}");
       _updateTaskList(chooseTab);
     }
   }
@@ -740,17 +756,18 @@ class _EditorPageState extends State<EditorPage> {
   Future<AddPromptTask?> showPromptDialog({
     required BuildContext context,
     String title = 'Enter Text',
-    String hintText = 'Enter your text here',
+    String promptHintText = 'Enter your text here',
+    String hintHintText = 'Hint',
     String okButtonText = 'OK',
     String cancelButtonText = 'Cancel',
     AddPromptTask? initialTask,
     int? maxLines = 5,
     TextInputType keyboardType = TextInputType.multiline,
   }) async {
-    final TextEditingController textController =
+    final TextEditingController promptController =
         TextEditingController(text: initialTask?.promptText ?? '');
-
-    // Track if this is an explanation
+    final TextEditingController hintController =
+        TextEditingController(text: initialTask?.hint ?? '');
     bool isExplanation = initialTask?.isExplanation ?? false;
 
     return showDialog<AddPromptTask>(
@@ -767,9 +784,9 @@ class _EditorPageState extends State<EditorPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextField(
-                      controller: textController,
+                      controller: promptController,
                       decoration: InputDecoration(
-                        hintText: hintText,
+                        hintText: promptHintText,
                         border: const OutlineInputBorder(),
                         filled: true,
                       ),
@@ -777,6 +794,18 @@ class _EditorPageState extends State<EditorPage> {
                       keyboardType: keyboardType,
                       textCapitalization: TextCapitalization.sentences,
                       autofocus: true,
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: hintController,
+                      decoration: InputDecoration(
+                        hintText: hintHintText,
+                        border: const OutlineInputBorder(),
+                        filled: true,
+                      ),
+                      maxLines: 1,
+                      keyboardType: TextInputType.text,
+                      textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -804,16 +833,16 @@ class _EditorPageState extends State<EditorPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    final text = textController.text.trim();
-                    if (text.isNotEmpty) {
-                      // Create and return a new AddPromptTask
+                    final promptText = promptController.text.trim();
+                    final hintText = hintController.text.trim();
+                    if (promptText.isNotEmpty) {
                       final task = AddPromptTask(
-                        promptText: text,
+                        promptText: promptText,
                         isExplanation: isExplanation,
+                        hint: hintText.isNotEmpty ? hintText : null,
                       );
                       Navigator.of(context).pop(task);
                     } else {
-                      // Show error or just close with null
                       Navigator.of(context).pop();
                     }
                   },
@@ -1318,6 +1347,48 @@ class _EditorPageState extends State<EditorPage> {
     if (moveTab != null) {
       _updateTaskList(moveTab);
     }
+  }
+
+  void showPopupTask() async {
+    await showPopupDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editPopupTask(ShowPopupTask task) async {
+    await showPopupDialog(context: context, initialTask: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.title = data.title;
+          task.description = data.description;
+          task.buttonText = data.buttonText;
+        }
+      });
+    });
+  }
+
+  void showBottomSheetTask() async {
+    await showBottomSheetDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editBottomSheetTask(ShowBottomSheetTask task) async {
+    await showBottomSheetDialog(context: context, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.title = data.title;
+          task.showImage = data.showImage;
+          task.primaryButtonText = data.primaryButtonText;
+          task.secondaryButtonText = data.secondaryButtonText;
+        }
+      });
+    });
   }
 
   Widget _buildToolBox() {

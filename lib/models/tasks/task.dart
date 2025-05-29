@@ -3,16 +3,15 @@ import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
-import 'package:fin_chart/models/tasks/add_mcq.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
-import 'package:fin_chart/models/tasks/clear.task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
 
 import 'highlight_correct_option_chain_value_task.dart';
+import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 
 abstract class Task {
   final String id;
@@ -77,6 +76,10 @@ abstract class Task {
         return RemoveTabTask.fromJson(json);
       case 'moveTab':
         return MoveTabTask.fromJson(json);
+      case 'popUpTask':
+        return ShowPopupTask.fromJson(json);
+      case 'showBottomSheet':
+        return ShowBottomSheetTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

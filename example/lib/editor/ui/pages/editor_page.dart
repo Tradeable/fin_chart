@@ -812,9 +812,10 @@ class _EditorPageState extends State<EditorPage> {
                         border: const OutlineInputBorder(),
                         filled: true,
                       ),
-                      maxLines: 1,
-                      keyboardType: TextInputType.text,
+                      maxLines: 2,
+                      keyboardType: keyboardType,
                       textCapitalization: TextCapitalization.sentences,
+                      autofocus: true,
                     ),
                     const SizedBox(height: 16),
                     Row(

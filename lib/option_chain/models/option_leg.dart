@@ -12,6 +12,8 @@ class OptionLeg {
   final DateTime expiry;
   final int quantity;
   final double premium;
+  final int? rowIndex;
+  final int? side;
 
   OptionLeg({
     required this.symbol,
@@ -21,6 +23,8 @@ class OptionLeg {
     required this.expiry,
     required this.quantity,
     required this.premium,
+    this.rowIndex,
+    this.side,
   });
 
   static PositionType parsePositionType(String type) {
@@ -39,7 +43,41 @@ class OptionLeg {
       'optionType': optionType.name,
       'expiry': expiry.toIso8601String(),
       'quantity': quantity,
-      'premium': premium
+      'premium': premium,
+      'rowIndex': rowIndex,
+      'side': side,
     };
+  }
+
+  factory OptionLeg.fromJson(Map<String, dynamic> json) {
+    return OptionLeg(
+      symbol: json['symbol'],
+      strike: json['strike'].toDouble(),
+      type: parsePositionType(json['type']),
+      optionType: parseOptionType(json['optionType']),
+      expiry: DateTime.parse(json['expiry']),
+      quantity: json['quantity'],
+      premium: json['premium'].toDouble(),
+      rowIndex: json['rowIndex'],
+      side: json['side'],
+    );
+  }
+
+  Map<int, int> toLegacyFormat() {
+    return {rowIndex ?? 0: side ?? 0};
+  }
+
+  factory OptionLeg.fromLegacyFormat(Map<int, int> legacy, {bool isBuy = true, String symbol = '', DateTime? expiry, double strike = 0.0, double premium = 0.0}) {
+    return OptionLeg(
+      symbol: symbol,
+      strike: strike,
+      type: isBuy ? PositionType.buy : PositionType.sell,
+      optionType: legacy.values.first == 0 ? OptionType.call : OptionType.put,
+      expiry: expiry ?? DateTime.now(),
+      quantity: 1,
+      premium: premium,
+      rowIndex: legacy.keys.first,
+      side: legacy.values.first,
+    );
   }
 }

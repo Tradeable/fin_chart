@@ -2,6 +2,7 @@ import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
+import 'package:fin_chart/option_chain/models/option_leg.dart';
 
 class PreviewData {
   final List<OptionData> optionData;
@@ -14,7 +15,7 @@ class PreviewData {
   OptionChainSettings? settings;
   bool isEditorMode;
   int? _maxSelectableRows;
-  List<BucketRowSelection>? bucketRows;
+  List<OptionLeg>? bucketRows;
 
   PreviewData({
     required this.optionData,
@@ -37,35 +38,77 @@ class PreviewData {
     return settings?.maxSelectableRows;
   }
 
-  // For backward compatibility
   List<Map<int, int>>? getLegacyBucketRows() {
     return bucketRows?.map((e) => e.toLegacyFormat()).toList();
   }
 
-  // For backward compatibility
   void setLegacyBucketRows(List<Map<int, int>>? legacyRows) {
     if (legacyRows != null) {
-      bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+      final symbol = optionData.isNotEmpty ? 
+          (strikePrice != null ? '${strikePrice}_${expiryDate?.millisecondsSinceEpoch}' : '') : '';
+      final expiry = expiryDate ?? DateTime.now();
+      
+      bucketRows = legacyRows.map((e) {
+        final rowIndex = e.keys.first;
+        final side = e.values.first;
+        final strike = rowIndex < optionData.length ? optionData[rowIndex].strike : 0.0;
+        final premium = side == 0 && rowIndex < optionData.length ? 
+            optionData[rowIndex].callPremium : 
+            (side == 1 && rowIndex < optionData.length ? optionData[rowIndex].putPremium : 0.0);
+        
+        return OptionLeg.fromLegacyFormat(
+          e, 
+          symbol: symbol, 
+          expiry: expiry, 
+          strike: strike, 
+          premium: premium
+        );
+      }).toList();
     } else {
       bucketRows = null;
     }
   }
 
   factory PreviewData.fromJson(Map<String, dynamic> json) {
-    List<BucketRowSelection>? bucketRows;
+    List<OptionLeg>? bucketRows;
     
-    // Handle both new and legacy formats
     if (json['bucketRows'] != null) {
       if (json['bucketRows'] is List && json['bucketRows'].isNotEmpty) {
-        // Check if it's the new format (has 'rowIndex' field)
         if (json['bucketRows'][0] is Map && json['bucketRows'][0].containsKey('rowIndex')) {
-          bucketRows = List<BucketRowSelection>.from(
-              json['bucketRows'].map((e) => BucketRowSelection.fromJson(e)));
+          bucketRows = List<OptionLeg>.from(
+              json['bucketRows'].map((e) => OptionLeg.fromJson(e)));
         } else {
-          // Legacy format
           final legacyRows = List<Map<int, int>>.from(json['bucketRows'].map((map) =>
               Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))));
-          bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+          
+          final optionData = (json['optionData'] as List)
+              .map((e) => OptionData.fromJson(e))
+              .toList();
+          final strikePrice = (json['strikePrice'] as num?)?.toDouble();
+          final expiryDate = json['expiryDate'] != null
+              ? DateTime.parse(json['expiryDate'])
+              : null;
+          
+          final symbol = optionData.isNotEmpty ? 
+              (strikePrice != null ? '${strikePrice}_${expiryDate?.millisecondsSinceEpoch}' : '') : '';
+          final expiry = expiryDate ?? DateTime.now();
+          
+          bucketRows = legacyRows.map((e) {
+            final rowIndex = e.keys.first;
+            final side = e.values.first;
+            final strike = rowIndex < optionData.length ? optionData[rowIndex].strike : 0.0;
+            final premium = side == 0 && rowIndex < optionData.length ? 
+                optionData[rowIndex].callPremium : 
+                (side == 1 && rowIndex < optionData.length ? optionData[rowIndex].putPremium : 0.0);
+            
+            return OptionLeg.fromLegacyFormat(
+              e, 
+              symbol: symbol, 
+              expiry: expiry, 
+              strike: strike, 
+              premium: premium
+            );
+          }).toList();
         }
       }
     }

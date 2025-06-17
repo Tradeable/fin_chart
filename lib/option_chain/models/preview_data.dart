@@ -1,3 +1,4 @@
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
@@ -13,7 +14,7 @@ class PreviewData {
   OptionChainSettings? settings;
   bool isEditorMode;
   int? _maxSelectableRows;
-  List<Map<int, int>>? bucketRows;
+  List<BucketRowSelection>? bucketRows;
 
   PreviewData({
     required this.optionData,
@@ -36,7 +37,40 @@ class PreviewData {
     return settings?.maxSelectableRows;
   }
 
-  factory PreviewData.fromJson(Map<String, dynamic> json) => PreviewData(
+  // For backward compatibility
+  List<Map<int, int>>? getLegacyBucketRows() {
+    return bucketRows?.map((e) => e.toLegacyFormat()).toList();
+  }
+
+  // For backward compatibility
+  void setLegacyBucketRows(List<Map<int, int>>? legacyRows) {
+    if (legacyRows != null) {
+      bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+    } else {
+      bucketRows = null;
+    }
+  }
+
+  factory PreviewData.fromJson(Map<String, dynamic> json) {
+    List<BucketRowSelection>? bucketRows;
+    
+    // Handle both new and legacy formats
+    if (json['bucketRows'] != null) {
+      if (json['bucketRows'] is List && json['bucketRows'].isNotEmpty) {
+        // Check if it's the new format (has 'rowIndex' field)
+        if (json['bucketRows'][0] is Map && json['bucketRows'][0].containsKey('rowIndex')) {
+          bucketRows = List<BucketRowSelection>.from(
+              json['bucketRows'].map((e) => BucketRowSelection.fromJson(e)));
+        } else {
+          // Legacy format
+          final legacyRows = List<Map<int, int>>.from(json['bucketRows'].map((map) =>
+              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))));
+          bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+        }
+      }
+    }
+
+    return PreviewData(
       optionData: (json['optionData'] as List)
           .map((e) => OptionData.fromJson(e))
           .toList(),
@@ -57,10 +91,9 @@ class PreviewData {
           : null,
       isEditorMode: json['isEditorMode'],
       maxSelectableRows: json['maxSelectableRows'],
-      bucketRows: json['bucketRows'] != null
-          ? List<Map<int, int>>.from(json['bucketRows'].map((map) =>
-              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))))
-          : null);
+      bucketRows: bucketRows,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'optionData': optionData.map((e) => e.toJson()).toList(),
@@ -73,8 +106,6 @@ class PreviewData {
         'settings': settings != null ? settings!.toJson() : {},
         'isEditorMode': isEditorMode,
         'maxSelectableRows': _maxSelectableRows,
-        'bucketRows': bucketRows
-            ?.map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
-            .toList(),
+        'bucketRows': bucketRows?.map((e) => e.toJson()).toList(),
       };
 }

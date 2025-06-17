@@ -132,7 +132,7 @@ Future<ChooseBucketRowsTask?> showChooseBucketRowsDialog({
   selectedTask.settings!.selectionMode = SelectionMode.bucketRow;
   selectedTask.settings!.isBuySellVisible = true;
 
-  final selectedBucketRows = await showDialog<List<Map<int, int>>>(
+  final selectedBucketRows = await showDialog<List<BucketRowSelection>>(
     context: context,
     builder: (BuildContext dialogContext) {
       final previewKey = GlobalKey<PreviewScreenState>();

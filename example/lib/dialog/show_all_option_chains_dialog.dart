@@ -1,8 +1,10 @@
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
+import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
@@ -169,8 +171,9 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                         optionData: selectedOptionChain.data,
                         columns: selectedOptionChain.columns,
                         visibility: selectedOptionChain.visibility,
-                        settings: selectedOptionChain.settings,
-                        isEditorMode: true,
+                        settings: (selectedOptionChain.settings ?? OptionChainSettings())
+                          ..isBuySellVisible = false,
+                        isEditorMode: false,
                         maxSelectableRows: getMaxSelectableRows(
                             selectedOptionChain.optionChainId)),
                   ),
@@ -191,7 +194,9 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                         final selectionMode =
                             selectedOptionChain.settings?.selectionMode ??
                                 SelectionMode.entireRow;
+                        
                         if (selectionMode == SelectionMode.bucketRow) {
+                          // Handle bucket row selection
                           final bucketRows =
                               previewKey.currentState?.getBucketRows();
                           if (bucketRows != null && bucketRows.isNotEmpty) {
@@ -204,6 +209,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                             );
                           }
                         } else {
+                          // Handle regular row selection
                           final selectedIndex =
                               previewKey.currentState?.getCorrectRowIndex();
                           if (selectedIndex != null &&
@@ -212,7 +218,8 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                           } else {
                             ScaffoldMessenger.of(dialogContext).showSnackBar(
                               const SnackBar(
-                                  content: Text('Please select a row')),
+                                  content:
+                                      Text('Please select at least one row')),
                             );
                           }
                         }
@@ -232,16 +239,21 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
   if (selectedRowIndex != null) {
     final selectionMode =
         selectedOptionChain.settings?.selectionMode ?? SelectionMode.entireRow;
+    
     if (selectionMode == SelectionMode.bucketRow) {
+      // Handle bucket row selection
+      final bucketRows = selectedRowIndex as List<BucketRowSelection>;
       return HighlightCorrectOptionChainValueTask(
         optionChainId: selectedOptionChain.optionChainId,
         correctRowIndex: [],
-        bucketRows: selectedRowIndex as List<Map<int, int>>,
+        bucketRows: bucketRows,
       );
     } else {
+      // Handle regular row selection
+      final rowIndices = selectedRowIndex as List<int>;
       return HighlightCorrectOptionChainValueTask(
         optionChainId: selectedOptionChain.optionChainId,
-        correctRowIndex: selectedRowIndex as List<int>,
+        correctRowIndex: rowIndices,
       );
     }
   }

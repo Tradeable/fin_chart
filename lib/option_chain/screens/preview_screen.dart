@@ -1,4 +1,5 @@
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
@@ -64,17 +65,26 @@ class PreviewScreenState extends State<PreviewScreen> {
 
     if (widget.previewData.bucketRows != null) {
       for (var bucketRow in widget.previewData.bucketRows!) {
-        final rowIndex = bucketRow.keys.first;
-        final side = bucketRow.values.first;
+        final rowIndex = bucketRow.rowIndex;
+        final side = bucketRow.side;
+        final isBuy = bucketRow.isBuy;
 
         if (side == 0) {
           bucketCallSelections[rowIndex] = true;
           bucketSelections[rowIndex] = true;
-          callBuySelections[rowIndex] = true;
+          if (isBuy) {
+            callBuySelections[rowIndex] = true;
+          } else {
+            callSellSelections[rowIndex] = true;
+          }
         } else {
           bucketPutSelections[rowIndex] = true;
           bucketSelections[rowIndex] = true;
-          putBuySelections[rowIndex] = true;
+          if (isBuy) {
+            putBuySelections[rowIndex] = true;
+          } else {
+            putSellSelections[rowIndex] = true;
+          }
         }
       }
     }
@@ -99,19 +109,28 @@ class PreviewScreenState extends State<PreviewScreen> {
     });
   }
 
-  void chooseBucketRows(List<Map<int, int>> bucketRows) {
+  void chooseBucketRows(List<BucketRowSelection> bucketRows) {
     setState(() {
-      correctBucketIndexes = bucketRows;
+      correctBucketIndexes = bucketRows.map((e) => e.toLegacyFormat()).toList();
       for (var bucketRow in bucketRows) {
-        final rowIndex = bucketRow.keys.first;
-        final side = bucketRow.values.first;
+        final rowIndex = bucketRow.rowIndex;
+        final side = bucketRow.side;
+        final isBuy = bucketRow.isBuy;
 
         if (side == 0) {
           bucketCallSelections[rowIndex] = true;
-          callBuySelections[rowIndex] = true;
+          if (isBuy) {
+            callBuySelections[rowIndex] = true;
+          } else {
+            callSellSelections[rowIndex] = true;
+          }
         } else {
           bucketPutSelections[rowIndex] = true;
-          putBuySelections[rowIndex] = true;
+          if (isBuy) {
+            putBuySelections[rowIndex] = true;
+          } else {
+            putSellSelections[rowIndex] = true;
+          }
         }
         bucketSelections[rowIndex] = true;
       }
@@ -131,40 +150,49 @@ class PreviewScreenState extends State<PreviewScreen> {
     return _selectedRowIndex;
   }
 
-  List<Map<int, int>>? getBucketRows() {
+  List<BucketRowSelection>? getBucketRows() {
     final selectionMode =
         widget.previewData.settings?.selectionMode ?? SelectionMode.entireRow;
     if (selectionMode == SelectionMode.bucketRow) {
-      List<Map<int, int>> bucketRows = [];
-      bucketCallSelections.forEach((rowIndex, isSelected) {
-        if (isSelected) {
-          bucketRows.add({rowIndex: 0});
-        }
-      });
-      bucketPutSelections.forEach((rowIndex, isSelected) {
-        if (isSelected) {
-          bucketRows.add({rowIndex: 1});
-        }
-      });
-
+      List<BucketRowSelection> bucketRows = [];
+      
+      // Handle call side selections (left side of strike)
       callBuySelections.forEach((rowIndex, isSelected) {
         if (isSelected) {
-          bucketRows.add({rowIndex: 0});
+          bucketRows.add(BucketRowSelection(
+            rowIndex: rowIndex,
+            side: 0, // 0 for call side
+            isBuy: true,
+          ));
         }
       });
       callSellSelections.forEach((rowIndex, isSelected) {
         if (isSelected) {
-          bucketRows.add({rowIndex: 0});
+          bucketRows.add(BucketRowSelection(
+            rowIndex: rowIndex,
+            side: 0, // 0 for call side
+            isBuy: false,
+          ));
         }
       });
+      
+      // Handle put side selections (right side of strike)
       putBuySelections.forEach((rowIndex, isSelected) {
         if (isSelected) {
-          bucketRows.add({rowIndex: 1});
+          bucketRows.add(BucketRowSelection(
+            rowIndex: rowIndex,
+            side: 1, // 1 for put side
+            isBuy: true,
+          ));
         }
       });
       putSellSelections.forEach((rowIndex, isSelected) {
         if (isSelected) {
-          bucketRows.add({rowIndex: 1});
+          bucketRows.add(BucketRowSelection(
+            rowIndex: rowIndex,
+            side: 1, // 1 for put side
+            isBuy: false,
+          ));
         }
       });
 
@@ -648,7 +676,7 @@ class PreviewScreenState extends State<PreviewScreen> {
     return null;
   }
 
-  void setBuySellSelections(List<Map<int, int>> bucketRows) {
+  void setBuySellSelections(List<BucketRowSelection> bucketRows) {
     setState(() {
       bucketCallSelections.clear();
       bucketPutSelections.clear();
@@ -658,21 +686,30 @@ class PreviewScreenState extends State<PreviewScreen> {
       putSellSelections.clear();
 
       for (var bucketRow in bucketRows) {
-        final rowIndex = bucketRow.keys.first;
-        final side = bucketRow.values.first;
+        final rowIndex = bucketRow.rowIndex;
+        final side = bucketRow.side;
+        final isBuy = bucketRow.isBuy;
 
         if (side == 0) {
           bucketCallSelections[rowIndex] = true;
           bucketSelections[rowIndex] = true;
-          callBuySelections[rowIndex] = true;
+          if (isBuy) {
+            callBuySelections[rowIndex] = true;
+          } else {
+            callSellSelections[rowIndex] = true;
+          }
         } else {
           bucketPutSelections[rowIndex] = true;
           bucketSelections[rowIndex] = true;
-          putBuySelections[rowIndex] = true;
+          if (isBuy) {
+            putBuySelections[rowIndex] = true;
+          } else {
+            putSellSelections[rowIndex] = true;
+          }
         }
       }
 
-      correctBucketIndexes = bucketRows;
+      correctBucketIndexes = bucketRows.map((e) => e.toLegacyFormat()).toList();
       _isChecked = true;
     });
   }

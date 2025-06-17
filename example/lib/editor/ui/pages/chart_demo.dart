@@ -16,6 +16,8 @@ import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -119,7 +121,7 @@ class _ChartDemoState extends State<ChartDemo> {
         final previewKey =
             previewScreenKeys[task.optionChainId] ?? _previewScreenKey;
         if ((task.bucketRows ?? []).isNotEmpty) {
-          previewKey.currentState?.chooseBucketRows(task.bucketRows!);
+          previewKey.currentState?.setBuySellSelections(task.bucketRows!);
         } else {
           for (int i in task.correctRowIndex) {
             previewKey.currentState?.chooseRow(i);
@@ -303,6 +305,22 @@ class _ChartDemoState extends State<ChartDemo> {
         setState(() {});
         onTaskFinish();
         break;
+      case TaskType.chooseBucketRows:
+        ChooseBucketRowsTask task = currentTask as ChooseBucketRowsTask;
+        final previewKey =
+            previewScreenKeys[task.optionChainId] ?? _previewScreenKey;
+        if (task.bucketRows != null && task.bucketRows!.isNotEmpty) {
+          previewKey.currentState?.setBuySellSelections(task.bucketRows!);
+        }
+        onTaskFinish();
+        break;
+      case TaskType.clearBucketRows:
+        ClearBucketRowsTask task = currentTask as ClearBucketRowsTask;
+        final previewKey =
+            previewScreenKeys[task.optionChainId] ?? _previewScreenKey;
+        previewKey.currentState?.clearBucketSelections();
+        onTaskFinish();
+        break;
     }
   }
 
@@ -384,7 +402,8 @@ class _ChartDemoState extends State<ChartDemo> {
                       return PreviewScreen.from(
                           key: previewScreenKeys[taskId] ?? _previewScreenKey,
                           task: optionChainTask,
-                          isEditorMode: false);
+                          isEditorMode: false,
+                          maxSelectableRows: chooseTask.maxSelectableRows);
                     case "payoff":
                       final taskId = tab["taskId"]!;
                       final payoffTask = payoffGraphTasks.firstWhere(
@@ -470,6 +489,8 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.popUpTask:
       case TaskType.showBottomSheet:
       case TaskType.showInsightsPage:
+      case TaskType.chooseBucketRows:
+      case TaskType.clearBucketRows:
         return Container();
     }
   }

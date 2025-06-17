@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:example/dialog/add_tab_dialog.dart';
+import 'package:example/dialog/choose_bucket_rows_dialog.dart';
 import 'package:example/dialog/edit_added_tab_dialog.dart';
 import 'package:example/dialog/edit_move_tab_dialog.dart';
 import 'package:example/dialog/edit_payoff_graph_dialog.dart';
@@ -24,6 +25,7 @@ import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
@@ -49,6 +51,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:example/dialog/add_option_chain_dialog.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
+import 'package:example/dialog/clear_bucket_rows_dialog.dart';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
@@ -241,6 +245,8 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.popUpTask:
           case TaskType.showBottomSheet:
           case TaskType.showInsightsPage:
+          case TaskType.chooseBucketRows:
+          case TaskType.clearBucketRows:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -544,6 +550,12 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.showInsightsPage:
           showInsightsPageTask();
           break;
+        case TaskType.chooseBucketRows:
+          showChooseBucketRows();
+          break;
+        case TaskType.clearBucketRows:
+          showClearBucketRows();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -602,6 +614,12 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.showInsightsPage:
         editInsightsPageTask(task as ShowInsightsPageTask);
+        break;
+      case TaskType.chooseBucketRows:
+        editChooseBucketRows(task as ChooseBucketRowsTask);
+        break;
+      case TaskType.clearBucketRows:
+        editClearBucketRows(task as ClearBucketRowsTask);
         break;
     }
   }
@@ -749,6 +767,7 @@ class _EditorPageState extends State<EditorPage> {
       setState(() {
         if (data != null) {
           task.taskId = data.taskId;
+          task.maxSelectableRows = data.maxSelectableRows;
         }
       });
     });
@@ -1416,6 +1435,56 @@ class _EditorPageState extends State<EditorPage> {
         if (data != null) {
           task.title = data.title;
           task.description = data.description;
+        }
+      });
+    });
+  }
+
+  void showChooseBucketRows() async {
+    final bucketRowsTask = await showChooseBucketRowsDialog(
+      context: context,
+      tasks: tasks,
+    );
+    if (bucketRowsTask != null) {
+      _updateTaskList(bucketRowsTask);
+    }
+  }
+
+  Future<void> editChooseBucketRows(ChooseBucketRowsTask task) async {
+    await showChooseBucketRowsDialog(
+      context: context,
+      tasks: tasks,
+      initialTask: task,
+    ).then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
+          task.bucketRows = data.bucketRows;
+          task.maxSelectableRows = data.maxSelectableRows;
+        }
+      });
+    });
+  }
+
+  void showClearBucketRows() async {
+    final clearBucketRowsTask = await showClearBucketRowsDialog(
+      context: context,
+      tasks: tasks,
+    );
+    if (clearBucketRowsTask != null) {
+      _updateTaskList(clearBucketRowsTask);
+    }
+  }
+
+  Future<void> editClearBucketRows(ClearBucketRowsTask task) async {
+    await showClearBucketRowsDialog(
+      context: context,
+      tasks: tasks,
+      initialTask: task,
+    ).then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
         }
       });
     });

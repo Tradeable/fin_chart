@@ -38,7 +38,6 @@ class _OptionChainPageState extends State<OptionChainPage> {
   late int _interval;
   List<int> selectedRowIndices = [];
   List<int> _correctRowIndices = [];
-  int? _maxSelectableRows;
   final GlobalKey<PreviewScreenState> _previewKey =
       GlobalKey<PreviewScreenState>();
   late List<ColumnConfig> _columns = [];
@@ -56,8 +55,6 @@ class _OptionChainPageState extends State<OptionChainPage> {
     _interval = widget.initialTask?.interval ?? 5;
     settings = widget.initialTask?.settings ?? OptionChainSettings();
     _correctRowIndices = widget.initialTask?.correctRowIndices ?? [];
-    _maxSelectableRows = widget.initialTask?.settings?.maxSelectableRows ?? 0;
-    controller.text = _maxSelectableRows.toString();
 
     if (widget.initialTask?.data.isNotEmpty ?? false) {
       final strikes = widget.initialTask!.data.map((d) => d.strike).toList();
@@ -526,8 +523,6 @@ class _OptionChainPageState extends State<OptionChainPage> {
               ],
             ),
             const SizedBox(height: 8),
-            _buildExpiryDateRow(),
-            const SizedBox(height: 8),
             _buildStrikePriceRow(),
             const SizedBox(height: 8),
             _buildIntervalRow(),
@@ -656,20 +651,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
   }
 
   Widget _buildMaxRowsField() {
-    return TextFormField(
-      controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'Max Selectable Rows',
-      ),
-      keyboardType: TextInputType.number,
-      enabled: settings?.isMultiRowSelectable ?? false,
-      onChanged: (value) {
-        setState(() {
-          _maxSelectableRows = value.isEmpty ? null : int.tryParse(value);
-          settings?.maxSelectableRows = _maxSelectableRows;
-        });
-      },
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildColumnsRow() {
@@ -886,11 +868,6 @@ class _OptionChainPageState extends State<OptionChainPage> {
             setState(() {
               settings ??= OptionChainSettings();
               settings!.isMultiRowSelectable = value;
-              if (!value) {
-                settings!.maxSelectableRows = 1;
-                _maxSelectableRows = 1;
-                controller.text = 1.toString();
-              }
             });
           },
         ),

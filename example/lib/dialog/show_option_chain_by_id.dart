@@ -86,7 +86,8 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
                             crossAxisSpacing: 12,
                             childAspectRatio: 1.2,
                             children: pageItems.map((task) {
-                              final previewKey = GlobalKey<PreviewScreenState>();
+                              final previewKey =
+                                  GlobalKey<PreviewScreenState>();
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.pop(dialogContext, task);
@@ -122,7 +123,9 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
                                                 columns: task.columns,
                                                 visibility: task.visibility,
                                                 settings: task.settings,
-                                                isEditorMode: true),
+                                                isEditorMode: true,
+                                                maxSelectableRows: initialTask
+                                                    ?.maxSelectableRows),
                                           ),
                                         ),
                                       ],
@@ -185,5 +188,56 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
 
   if (selectedTask == null) return null;
 
-  return ChooseCorrectOptionValueChainTask(taskId: selectedTask.optionChainId);
+  // Show dialog to get maxSelectableRows input
+  final maxRows = await showDialog<int>(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      final controller = TextEditingController(
+        text: initialTask?.maxSelectableRows?.toString() ?? '',
+      );
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Enter Maximum Selectable Rows'),
+            content: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Maximum Selectable Rows',
+                hintText: 'Enter a number',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (!context.mounted) return;
+                  final rows = int.tryParse(controller.text);
+                  if (rows != null && rows > 0) {
+                    Navigator.pop(dialogContext, rows);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Please enter a valid number greater than 0'),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  if (maxRows == null || !context.mounted) return null;
+
+  return ChooseCorrectOptionValueChainTask(
+      taskId: selectedTask.optionChainId, maxSelectableRows: maxRows);
 }

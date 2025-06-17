@@ -2,11 +2,12 @@ import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/utils/calculations.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 
 class HighlightCorrectOptionChainValueTask extends Task {
   String optionChainId;
   List<int> correctRowIndex;
-  List<Map<int, int>>? bucketRows;
+  List<BucketRowSelection>? bucketRows;
 
   HighlightCorrectOptionChainValueTask({
     required this.optionChainId,
@@ -24,15 +25,31 @@ class HighlightCorrectOptionChainValueTask extends Task {
     data['optionChainId'] = optionChainId;
     data['correctRowIndex'] = correctRowIndex;
     if (bucketRows != null) {
-      data['bucketRows'] = bucketRows!
-          .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
-          .toList();
+      data['bucketRows'] = bucketRows!.map((e) => e.toJson()).toList();
     }
     return data;
   }
 
   factory HighlightCorrectOptionChainValueTask.fromJson(
       Map<String, dynamic> json) {
+    List<BucketRowSelection>? bucketRows;
+    
+    // Handle both new and legacy formats
+    if (json['bucketRows'] != null) {
+      if (json['bucketRows'] is List && json['bucketRows'].isNotEmpty) {
+        // Check if it's the new format (has 'rowIndex' field)
+        if (json['bucketRows'][0] is Map && json['bucketRows'][0].containsKey('rowIndex')) {
+          bucketRows = List<BucketRowSelection>.from(
+              json['bucketRows'].map((e) => BucketRowSelection.fromJson(e)));
+        } else {
+          // Legacy format
+          final legacyRows = List<Map<int, int>>.from(json['bucketRows'].map((map) =>
+              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))));
+          bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+        }
+      }
+    }
+
     return HighlightCorrectOptionChainValueTask(
       optionChainId: json['optionChainId'],
       correctRowIndex: json['correctRowIndex'] is List
@@ -40,10 +57,21 @@ class HighlightCorrectOptionChainValueTask extends Task {
           : json['correctRowIndex'] is int
               ? [json['correctRowIndex']]
               : [],
-      bucketRows: json['bucketRows'] != null
-          ? List<Map<int, int>>.from(json['bucketRows'].map((map) =>
-              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))))
-          : null,
+      bucketRows: bucketRows,
     );
+  }
+
+  // For backward compatibility
+  List<Map<int, int>>? getLegacyBucketRows() {
+    return bucketRows?.map((e) => e.toLegacyFormat()).toList();
+  }
+
+  // For backward compatibility
+  void setLegacyBucketRows(List<Map<int, int>>? legacyRows) {
+    if (legacyRows != null) {
+      bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+    } else {
+      bucketRows = null;
+    }
   }
 }

@@ -7,6 +7,8 @@ import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
@@ -83,6 +85,10 @@ abstract class Task {
         return ShowBottomSheetTask.fromJson(json);
       case 'showInsightsPage':
         return ShowInsightsPageTask.fromJson(json);
+      case 'chooseBucketRows':
+        return ChooseBucketRowsTask.fromJson(json);
+      case 'clearBucketRows':
+        return ClearBucketRowsTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

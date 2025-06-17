@@ -12,17 +12,29 @@ class PreviewData {
   DateTime? expiryDate;
   OptionChainSettings? settings;
   bool isEditorMode;
+  int? _maxSelectableRows;
+  List<Map<int, int>>? bucketRows;
 
-  PreviewData(
-      {required this.optionData,
-      required this.columns,
-      required this.visibility,
-      this.selectedRowIndices = const [],
-      this.correctRowIndices = const [],
-      this.strikePrice,
-      this.expiryDate,
-      this.settings,
-      required this.isEditorMode});
+  PreviewData({
+    required this.optionData,
+    required this.columns,
+    required this.visibility,
+    this.selectedRowIndices = const [],
+    this.correctRowIndices = const [],
+    this.strikePrice,
+    this.expiryDate,
+    this.settings,
+    required this.isEditorMode,
+    int? maxSelectableRows,
+    this.bucketRows,
+  }) : _maxSelectableRows = maxSelectableRows;
+
+  int? get maxSelectableRows {
+    if (_maxSelectableRows != null) {
+      return _maxSelectableRows;
+    }
+    return settings?.maxSelectableRows;
+  }
 
   factory PreviewData.fromJson(Map<String, dynamic> json) => PreviewData(
       optionData: (json['optionData'] as List)
@@ -43,7 +55,12 @@ class PreviewData {
       settings: json['settings'] != null
           ? OptionChainSettings.fromJson(json['settings'])
           : null,
-      isEditorMode: json['isEditorMode']);
+      isEditorMode: json['isEditorMode'],
+      maxSelectableRows: json['maxSelectableRows'],
+      bucketRows: json['bucketRows'] != null
+          ? List<Map<int, int>>.from(json['bucketRows'].map((map) =>
+              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))))
+          : null);
 
   Map<String, dynamic> toJson() => {
         'optionData': optionData.map((e) => e.toJson()).toList(),
@@ -54,6 +71,10 @@ class PreviewData {
         'strikePrice': strikePrice,
         'expiryDate': expiryDate?.toIso8601String(),
         'settings': settings != null ? settings!.toJson() : {},
-        'isEditorMode': isEditorMode
+        'isEditorMode': isEditorMode,
+        'maxSelectableRows': _maxSelectableRows,
+        'bucketRows': bucketRows
+            ?.map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
+            .toList(),
       };
 }

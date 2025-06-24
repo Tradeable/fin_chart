@@ -2,7 +2,9 @@ import 'package:fin_chart/models/fundamental/earnings_event.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
+import 'package:fin_chart/ui/indicator_settings/pe_settings_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Pe extends Indicator {
@@ -66,10 +68,6 @@ class Pe extends Indicator {
   }
 
   void _drawEPSChangeMarkers(Canvas canvas) {
-    final markerPaint = Paint()
-      ..color = Colors.red
-      ..style = PaintingStyle.fill;
-
     for (final overrideDate in epsOverrides.keys) {
       // Find candle index for this date
       for (int i = 0; i < candles.length; i++) {
@@ -79,6 +77,24 @@ class Pe extends Indicator {
             candle.date.day == overrideDate.day) {
           final x = toX(i.toDouble());
           final y = toY(peValues[i]);
+
+          // Determine marker color based on P/E change
+          Color markerColor = Colors.grey; // Default
+
+          if (i > 0) {
+            final previousPE = peValues[i - 1];
+            final currentPE = peValues[i];
+
+            if (currentPE < previousPE) {
+              markerColor = Colors.green; // P/E decreased (good)
+            } else if (currentPE > previousPE) {
+              markerColor = Colors.red; // P/E increased (could be bad)
+            }
+          }
+
+          final markerPaint = Paint()
+            ..color = markerColor
+            ..style = PaintingStyle.fill;
 
           // Draw small triangle marker
           final path = Path()
@@ -113,8 +129,8 @@ class Pe extends Indicator {
       _autoUpdateEPSFromEvents();
     }
 
-    _calculatePE();
-    _updateYAxisValues();
+    calculatePE();
+    updateYAxisValues();
   }
 
   void _autoUpdateEPSFromEvents() {
@@ -130,10 +146,14 @@ class Pe extends Indicator {
           epsOverrides[event.date] = eps;
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      if (kDebugMode) {
+        print('Could not update EPS from events: $e');
+      }
+    }
   }
 
-  void _calculatePE() {
+  void calculatePE() {
     peValues.clear();
 
     for (int i = 0; i < candles.length; i++) {
@@ -146,8 +166,6 @@ class Pe extends Indicator {
         peValues.add(0);
       }
     }
-
-    _debugPrintData();
   }
 
   double _getEPSForDate(DateTime date) {
@@ -169,7 +187,7 @@ class Pe extends Indicator {
         : defaultEPS;
   }
 
-  void _updateYAxisValues() {
+  void updateYAxisValues() {
     final validPEs = peValues.where((v) => v > 0).toList();
 
     if (validPEs.isEmpty) {
@@ -217,8 +235,8 @@ class Pe extends Indicator {
 
     // Trigger recalculation if we have candle data
     if (candles.isNotEmpty) {
-      _calculatePE();
-      _updateYAxisValues();
+      calculatePE();
+      updateYAxisValues();
     }
   }
 
@@ -227,21 +245,21 @@ class Pe extends Indicator {
 
     // Trigger recalculation if we have candle data
     if (candles.isNotEmpty) {
-      _calculatePE();
-      _updateYAxisValues();
+      calculatePE();
+      updateYAxisValues();
     }
-  }
-
-  void _debugPrintData() {
-    epsOverrides.forEach((date, eps) {});
-
-    if (peValues.isNotEmpty) {}
   }
 
   @override
   showIndicatorSettings(
       {required BuildContext context, required Function(Indicator) onUpdate}) {
-    // TODO: Create PeSettingsDialog to edit defaultEPS
+    showDialog(
+      context: context,
+      builder: (context) => PeSettingsDialog(
+        indicator: this,
+        onUpdate: (updatedIndicator) => onUpdate(updatedIndicator),
+      ),
+    );
   }
 
   @override

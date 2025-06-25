@@ -8,6 +8,7 @@ import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:example/editor/ui/widget/task_type_dropdown.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
@@ -425,6 +426,25 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           children: [
             Text(
                 "Bucket Rows in ${(task as ClearBucketRowsTask).optionChainId}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.tableTask:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Bucket Rows in ${(task as TableTask).id}"),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {

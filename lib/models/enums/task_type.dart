@@ -18,7 +18,8 @@ enum TaskType {
   showBottomSheet,
   showInsightsPage,
   chooseBucketRows,
-  clearBucketRows
+  clearBucketRows,
+  tableTask
 }
 
 // extension TaskTypeExtension on TaskType {

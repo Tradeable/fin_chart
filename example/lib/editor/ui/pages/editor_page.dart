@@ -11,6 +11,7 @@ import 'package:example/dialog/show_insights_page_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
+import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -28,6 +29,7 @@ import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
@@ -247,6 +249,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.showInsightsPage:
           case TaskType.chooseBucketRows:
           case TaskType.clearBucketRows:
+          case TaskType.tableTask:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -556,6 +559,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.clearBucketRows:
           showClearBucketRows();
           break;
+        case TaskType.tableTask:
+          showTableTask();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -620,6 +626,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.clearBucketRows:
         editClearBucketRows(task as ClearBucketRowsTask);
+        break;
+      case TaskType.tableTask:
+        editTableTask(task as TableTask);
         break;
     }
   }
@@ -1485,6 +1494,24 @@ class _EditorPageState extends State<EditorPage> {
       setState(() {
         if (data != null) {
           task.optionChainId = data.optionChainId;
+        }
+      });
+    });
+  }
+
+  void showTableTask() async {
+    await showTableTaskDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editTableTask(TableTask task) async {
+    await showTableTaskDialog(context: context, initialTask: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.tables = data.tables;
         }
       });
     });

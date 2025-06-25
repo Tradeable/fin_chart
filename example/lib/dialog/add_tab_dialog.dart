@@ -1,5 +1,6 @@
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
@@ -15,7 +16,8 @@ Future<AddTabTask?> addTabDialog({
       .where((t) =>
           t is ChooseCorrectOptionValueChainTask ||
           t is ShowPayOffGraphTask ||
-          t is ShowInsightsPageTask)
+          t is ShowInsightsPageTask ||
+          t is TableTask)
       .toList();
   String? selectedTaskId;
   String tabTitle = '';
@@ -185,6 +187,83 @@ Future<AddTabTask?> addTabDialog({
                               Text('Title: ${task.title}'),
                               const SizedBox(height: 8),
                               Text('Description: ${task.description}'),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else if (task is TableTask) {
+                      taskType = 'Table';
+                      previewWidget = Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(
+                            color: Colors.blue,
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.table_chart, size: 24),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Table Task (${task.tables.tables.length} table${task.tables.tables.length > 1 ? 's' : ''})',
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                ],
+                              ),
+                              ...task.tables.tables
+                                  .asMap()
+                                  .entries
+                                  .map((entry) {
+                                final idx = entry.key;
+                                final table = entry.value;
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.only(top: 16, bottom: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          'Table ${idx + 1}: ${table.tableTitle}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium),
+                                      if (table.tableDescription.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: Text(table.tableDescription),
+                                        ),
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: DataTable(
+                                          columns: table.columns
+                                              .map((col) =>
+                                                  DataColumn(label: Text(col)))
+                                              .toList(),
+                                          rows: table.rows
+                                              .map((row) => DataRow(
+                                                    cells: row
+                                                        .map((cell) => DataCell(
+                                                            Text(cell)))
+                                                        .toList(),
+                                                  ))
+                                              .toList(),
+                                        ),
+                                      ),
+                                      const Divider(height: 24, thickness: 1),
+                                    ],
+                                  ),
+                                );
+                              }),
                             ],
                           ),
                         ),

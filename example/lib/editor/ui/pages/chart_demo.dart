@@ -10,6 +10,7 @@ import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -139,12 +140,12 @@ class _ChartDemoState extends State<ChartDemo> {
           final task = currentTask as AddTabTask;
           previewScreenKeys[task.taskId] = GlobalKey<PreviewScreenState>();
 
-          final tasks = recipe.tasks
+          final optionChainTasks = recipe.tasks
               .whereType<ChooseCorrectOptionValueChainTask>()
               .where((t) => t.taskId == task.taskId)
               .toList();
 
-          if (tasks.isNotEmpty) {
+          if (optionChainTasks.isNotEmpty) {
             tabs.add({
               "type": "option_chain",
               "title": task.tabTitle,
@@ -169,6 +170,17 @@ class _ChartDemoState extends State<ChartDemo> {
               if (insightsTasks.isNotEmpty) {
                 tabs.add({
                   "type": "insights",
+                  "title": task.tabTitle,
+                  "taskId": task.taskId,
+                });
+              }
+              final tableTasks = recipe.tasks
+                  .whereType<TableTask>()
+                  .where((t) => t.id == task.taskId)
+                  .toList();
+              if (tableTasks.isNotEmpty) {
+                tabs.add({
+                  "type": "table",
                   "title": task.tabTitle,
                   "taskId": task.taskId,
                 });
@@ -321,6 +333,10 @@ class _ChartDemoState extends State<ChartDemo> {
         previewKey.currentState?.clearBucketSelections();
         onTaskFinish();
         break;
+      case TaskType.tableTask:
+        setState(() {});
+        onTaskFinish();
+        break;
     }
   }
 
@@ -438,6 +454,65 @@ class _ChartDemoState extends State<ChartDemo> {
                           ],
                         ),
                       );
+                    case "table":
+                      final taskId = tab["taskId"]!;
+                      final tableTask = recipe.tasks
+                          .whereType<TableTask>()
+                          .firstWhere((t) => t.id == taskId);
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ...tableTask.tables.tables.map((table) => Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    table.tableTitle,
+                                    style: Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                  if (table.tableDescription.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8.0),
+                                      child: Text(
+                                        table.tableDescription,
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                    ),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: DataTable(
+                                      columnSpacing: 16,
+                                      headingRowColor: WidgetStateProperty.all(Colors.grey[100]),
+                                      border: TableBorder.all(color: Colors.grey.shade300, width: 1),
+                                      columns: table.columns
+                                          .map((col) => DataColumn(label: Text(col)))
+                                          .toList(),
+                                      rows: List.generate(table.rows.length, (rowIdx) {
+                                        final row = table.rows[rowIdx];
+                                        final isStriped = table.rows.length >= 6;
+                                        final rowColor = isStriped
+                                            ? (rowIdx % 2 == 0
+                                                ? Colors.white
+                                                : Colors.blueGrey[50])
+                                            : Colors.white;
+                                        return DataRow(
+                                          color: WidgetStateProperty.all(rowColor),
+                                          cells: row
+                                              .map((cell) => DataCell(Text(cell)))
+                                              .toList(),
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                          ],
+                        ),
+                      );
                     default:
                       return Container();
                   }
@@ -491,6 +566,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.showInsightsPage:
       case TaskType.chooseBucketRows:
       case TaskType.clearBucketRows:
+      case TaskType.tableTask:
         return Container();
     }
   }

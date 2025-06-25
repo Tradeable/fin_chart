@@ -16,7 +16,8 @@ Future<ShowInsightsPageTask?> showInsightsPageDialog({
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(initialTask != null ? 'Edit Insights Page' : 'Add Insights Page'),
+        title: Text(
+            initialTask != null ? 'Edit Insights Page' : 'Add Insights Page'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -79,4 +80,4 @@ Future<ShowInsightsPageTask?> showInsightsPageDialog({
       );
     },
   );
-} 
+}

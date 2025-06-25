@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import 'highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 
 abstract class Task {
   final String id;
@@ -89,6 +90,8 @@ abstract class Task {
         return ChooseBucketRowsTask.fromJson(json);
       case 'clearBucketRows':
         return ClearBucketRowsTask.fromJson(json);
+      case 'tableTask':
+        return TableTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

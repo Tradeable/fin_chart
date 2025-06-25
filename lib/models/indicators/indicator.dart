@@ -1,4 +1,5 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,8 @@ enum IndicatorType {
   stochastic,
   mfi,
   adx,
-  atr
+  atr,
+  pivotPoint
 }
 
 enum DisplayMode { main, panel }
@@ -121,6 +123,8 @@ abstract class Indicator with RegionProp {
         return Mfi.fromJson(json);
       case IndicatorType.adx:
         return Adx.fromJson(json);
+      case IndicatorType.pivotPoint:
+        return PivotPoint.fromJson(json);
     }
   }
 

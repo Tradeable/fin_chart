@@ -42,6 +42,51 @@ class Supertrend extends Indicator {
   drawIndicator({required Canvas canvas}) {
     if (candles.isEmpty || supertrendValues.isEmpty) return;
 
+    // Draw filled areas first (so lines appear on top)
+    _drawFilledAreas(canvas);
+
+    // Then draw the supertrend lines
+    _drawSupertrendLines(canvas);
+  }
+
+  void _drawFilledAreas(Canvas canvas) {
+    for (int i = period; i < supertrendValues.length - 1; i++) {
+      if (supertrendValues[i] == 0 || supertrendValues[i + 1] == 0) continue;
+
+      final x1 = toX(i.toDouble());
+      final x2 = toX((i + 1).toDouble());
+
+      Color fillColor = trendDirection[i] ? uptrendColor : downtrendColor;
+
+      // Create path for the filled area
+      final path = Path();
+
+      if (trendDirection[i]) {
+        // Uptrend: fill between supertrend line and candle lows
+        path.moveTo(x1, toY(supertrendValues[i]));
+        path.lineTo(x2, toY(supertrendValues[i + 1]));
+        path.lineTo(x2, toY(candles[i + 1].low));
+        path.lineTo(x1, toY(candles[i].low));
+        path.close();
+      } else {
+        // Downtrend: fill between supertrend line and candle highs
+        path.moveTo(x1, toY(supertrendValues[i]));
+        path.lineTo(x2, toY(supertrendValues[i + 1]));
+        path.lineTo(x2, toY(candles[i + 1].high));
+        path.lineTo(x1, toY(candles[i].high));
+        path.close();
+      }
+
+      // Draw filled area with transparency
+      final fillPaint = Paint()
+        ..color = fillColor.withAlpha(30) // Adjust transparency as needed
+        ..style = PaintingStyle.fill;
+
+      canvas.drawPath(path, fillPaint);
+    }
+  }
+
+  void _drawSupertrendLines(Canvas canvas) {
     final path = Path();
     bool pathStarted = false;
     Color currentColor = uptrendColor;
@@ -62,7 +107,7 @@ class Supertrend extends Indicator {
             ..style = PaintingStyle.stroke;
           canvas.drawPath(path, paint);
         }
-        
+
         // Start new path with new color
         currentColor = trendDirection[i] ? uptrendColor : downtrendColor;
         path.reset();
@@ -113,7 +158,7 @@ class Supertrend extends Indicator {
 
     List<double> atrValues = _calculateATR();
     List<double> hl2 = candles.map((c) => (c.high + c.low) / 2).toList();
-    
+
     List<double> upperBand = [];
     List<double> lowerBand = [];
     List<double> finalUpperBand = [];
@@ -135,16 +180,16 @@ class Supertrend extends Indicator {
       lowerBand[i] = hl2[i] - (multiplier * atrValues[i]);
 
       // Calculate final upper band
-      finalUpperBand[i] = (upperBand[i] < finalUpperBand[i - 1] || 
-                          candles[i - 1].close > finalUpperBand[i - 1]) 
-                         ? upperBand[i] 
-                         : finalUpperBand[i - 1];
+      finalUpperBand[i] = (upperBand[i] < finalUpperBand[i - 1] ||
+              candles[i - 1].close > finalUpperBand[i - 1])
+          ? upperBand[i]
+          : finalUpperBand[i - 1];
 
       // Calculate final lower band
-      finalLowerBand[i] = (lowerBand[i] > finalLowerBand[i - 1] || 
-                          candles[i - 1].close < finalLowerBand[i - 1]) 
-                         ? lowerBand[i] 
-                         : finalLowerBand[i - 1];
+      finalLowerBand[i] = (lowerBand[i] > finalLowerBand[i - 1] ||
+              candles[i - 1].close < finalLowerBand[i - 1])
+          ? lowerBand[i]
+          : finalLowerBand[i - 1];
 
       // Determine supertrend direction and value
       if (i == period) {
@@ -152,20 +197,20 @@ class Supertrend extends Indicator {
         supertrendValues[i] = finalUpperBand[i];
         trendDirection[i] = false; // Start with downtrend
       } else {
-        if (supertrendValues[i - 1] == finalUpperBand[i - 1] && 
+        if (supertrendValues[i - 1] == finalUpperBand[i - 1] &&
             candles[i].close <= finalUpperBand[i]) {
           supertrendValues[i] = finalUpperBand[i];
           trendDirection[i] = false; // Downtrend
-        } else if (supertrendValues[i - 1] == finalUpperBand[i - 1] && 
-                   candles[i].close > finalUpperBand[i]) {
+        } else if (supertrendValues[i - 1] == finalUpperBand[i - 1] &&
+            candles[i].close > finalUpperBand[i]) {
           supertrendValues[i] = finalLowerBand[i];
           trendDirection[i] = true; // Uptrend
-        } else if (supertrendValues[i - 1] == finalLowerBand[i - 1] && 
-                   candles[i].close >= finalLowerBand[i]) {
+        } else if (supertrendValues[i - 1] == finalLowerBand[i - 1] &&
+            candles[i].close >= finalLowerBand[i]) {
           supertrendValues[i] = finalLowerBand[i];
           trendDirection[i] = true; // Uptrend
-        } else if (supertrendValues[i - 1] == finalLowerBand[i - 1] && 
-                   candles[i].close < finalLowerBand[i]) {
+        } else if (supertrendValues[i - 1] == finalLowerBand[i - 1] &&
+            candles[i].close < finalLowerBand[i]) {
           supertrendValues[i] = finalUpperBand[i];
           trendDirection[i] = false; // Downtrend
         }
@@ -179,12 +224,12 @@ class Supertrend extends Indicator {
 
     // Calculate true ranges
     trueRanges.add(candles[0].high - candles[0].low);
-    
+
     for (int i = 1; i < candles.length; i++) {
       double highLow = candles[i].high - candles[i].low;
       double highPrevClose = (candles[i].high - candles[i - 1].close).abs();
       double lowPrevClose = (candles[i].low - candles[i - 1].close).abs();
-      
+
       double tr = math.max(highLow, math.max(highPrevClose, lowPrevClose));
       trueRanges.add(tr);
     }
@@ -200,7 +245,8 @@ class Supertrend extends Indicator {
 
       // Subsequent ATRs (smoothed)
       for (int i = period; i < candles.length; i++) {
-        atrValues[i] = (atrValues[i - 1] * (period - 1) + trueRanges[i]) / period;
+        atrValues[i] =
+            (atrValues[i - 1] * (period - 1) + trueRanges[i]) / period;
       }
     }
 
@@ -208,10 +254,8 @@ class Supertrend extends Indicator {
   }
 
   @override
-  showIndicatorSettings({
-    required BuildContext context,
-    required Function(Indicator) onUpdate
-  }) {
+  showIndicatorSettings(
+      {required BuildContext context, required Function(Indicator) onUpdate}) {
     // You'll need to create this dialog
     showDialog(
       context: context,

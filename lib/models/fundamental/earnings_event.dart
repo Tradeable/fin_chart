@@ -9,6 +9,7 @@ class EarningsEvent extends FundamentalEvent {
   final double? revenueActual;
   final double? revenueEstimate;
   final double? revenueSurprise;
+  final double? bookValue;
 
   EarningsEvent({
     required super.id,
@@ -22,6 +23,7 @@ class EarningsEvent extends FundamentalEvent {
     this.revenueActual,
     this.revenueEstimate,
     this.revenueSurprise,
+    this.bookValue,
   }) : super(type: EventType.earnings);
 
   @override
@@ -46,6 +48,7 @@ class EarningsEvent extends FundamentalEvent {
       if (revenueActual != null) 'revenueActual': revenueActual,
       if (revenueEstimate != null) 'revenueEstimate': revenueEstimate,
       if (revenueSurprise != null) 'revenueSurprise': revenueSurprise,
+      if (bookValue != null) 'bookValue': bookValue,
     };
   }
 
@@ -62,6 +65,7 @@ class EarningsEvent extends FundamentalEvent {
       revenueActual: json['revenueActual'].toDouble(),
       revenueEstimate: json['revenueEstimate'].toDouble(),
       revenueSurprise: json['revenueSurprise'].toDouble(),
+      bookValue: json['bookValue']?.toDouble(),
     );
   }
 

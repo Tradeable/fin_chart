@@ -107,6 +107,7 @@ class _StochasticSettingsDialogState extends State<StochasticSettingsDialog> {
             widget.indicator.kLineColor = kLineColor;
             widget.indicator.dLineColor = dLineColor;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

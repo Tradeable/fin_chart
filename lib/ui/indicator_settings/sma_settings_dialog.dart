@@ -40,7 +40,7 @@ class _SmaSettingsDialogState extends State<SmaSettingsDialog> {
             Slider(
               value: period.toDouble(),
               min: 5.0,
-              max: 50.0,
+              max: 250.0,
               divisions: 45,
               label: period.toString(),
               onChanged: (value) {
@@ -74,6 +74,7 @@ class _SmaSettingsDialogState extends State<SmaSettingsDialog> {
           onPressed: () {
             widget.indicator.period = period;
             widget.indicator.lineColor = lineColor;
+            widget.indicator.updateData(widget.indicator.candles);
             widget.onUpdate(widget.indicator);
             Navigator.of(context).pop();
           },

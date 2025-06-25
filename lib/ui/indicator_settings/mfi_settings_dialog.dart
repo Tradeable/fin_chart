@@ -144,6 +144,7 @@ class _MfiSettingsDialogState extends State<MfiSettingsDialog> {
             widget.indicator.overboughtThreshold = overboughtThreshold;
             widget.indicator.oversoldThreshold = oversoldThreshold;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

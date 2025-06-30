@@ -1,35 +1,32 @@
 import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/task.dart';
+import 'package:fin_chart/models/table_model.dart';
 import 'package:fin_chart/utils/calculations.dart';
 
-class ShowInsightsPageTask extends Task {
-  String title;
-  String description;
+class TableTask extends Task {
+  TablesModel tables;
 
-  ShowInsightsPageTask({
-    required this.title,
-    required this.description,
+  TableTask({
+    required this.tables,
     String? id,
   }) : super(
           id: id ?? generateV4(),
           actionType: ActionType.interupt,
-          taskType: TaskType.showInsightsPage,
+          taskType: TaskType.tableTask,
         );
 
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data['title'] = title;
-    data['description'] = description;
+    data['tables'] = tables.toJson();
     return data;
   }
 
-  factory ShowInsightsPageTask.fromJson(Map<String, dynamic> json) {
-    return ShowInsightsPageTask(
-      title: json['title'],
-      description: json['description'],
+  factory TableTask.fromJson(Map<String, dynamic> json) {
+    return TableTask(
+      tables: TablesModel.fromJson(json['tables']),
       id: json['id'],
     );
   }
-}
+} 

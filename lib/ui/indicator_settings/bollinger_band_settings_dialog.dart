@@ -139,6 +139,7 @@ class _BollingerBandSettingsDialogState
             widget.indicator.lowerBandColor = lowerBandColor;
             widget.indicator.alpha = alpha;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

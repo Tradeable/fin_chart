@@ -106,6 +106,7 @@ class _RsiSettingsDialogState extends State<RsiSettingsDialog> {
             widget.indicator.rsiColor = rsiColor;
             widget.indicator.rsiMaColor = rsiMaColor;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

@@ -145,6 +145,7 @@ class _AdxSettingsDialogState extends State<AdxSettingsDialog> {
             widget.indicator.showDiPlus = showDiPlus;
             widget.indicator.showDiMinus = showDiMinus;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

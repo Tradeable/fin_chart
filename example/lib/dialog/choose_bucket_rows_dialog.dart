@@ -3,6 +3,7 @@ import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
+import 'package:fin_chart/option_chain/models/option_leg.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
@@ -132,7 +133,7 @@ Future<ChooseBucketRowsTask?> showChooseBucketRowsDialog({
   selectedTask.settings!.selectionMode = SelectionMode.bucketRow;
   selectedTask.settings!.isBuySellVisible = true;
 
-  final selectedBucketRows = await showDialog<List<BucketRowSelection>>(
+  final selectedBucketRows = await showDialog<List<OptionLeg>>(
     context: context,
     builder: (BuildContext dialogContext) {
       final previewKey = GlobalKey<PreviewScreenState>();

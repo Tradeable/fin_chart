@@ -1,13 +1,13 @@
 import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/task.dart';
+import 'package:fin_chart/option_chain/models/option_leg.dart';
 import 'package:fin_chart/utils/calculations.dart';
-import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 
 class HighlightCorrectOptionChainValueTask extends Task {
   String optionChainId;
   List<int> correctRowIndex;
-  List<BucketRowSelection>? bucketRows;
+  List<OptionLeg>? bucketRows;
 
   HighlightCorrectOptionChainValueTask({
     required this.optionChainId,
@@ -32,20 +32,17 @@ class HighlightCorrectOptionChainValueTask extends Task {
 
   factory HighlightCorrectOptionChainValueTask.fromJson(
       Map<String, dynamic> json) {
-    List<BucketRowSelection>? bucketRows;
+    List<OptionLeg>? bucketRows;
     
-    // Handle both new and legacy formats
     if (json['bucketRows'] != null) {
       if (json['bucketRows'] is List && json['bucketRows'].isNotEmpty) {
-        // Check if it's the new format (has 'rowIndex' field)
         if (json['bucketRows'][0] is Map && json['bucketRows'][0].containsKey('rowIndex')) {
-          bucketRows = List<BucketRowSelection>.from(
-              json['bucketRows'].map((e) => BucketRowSelection.fromJson(e)));
+          bucketRows = List<OptionLeg>.from(
+              json['bucketRows'].map((e) => OptionLeg.fromJson(e)));
         } else {
-          // Legacy format
           final legacyRows = List<Map<int, int>>.from(json['bucketRows'].map((map) =>
               Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))));
-          bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+          bucketRows = legacyRows.map((e) => OptionLeg.fromLegacyFormat(e)).toList();
         }
       }
     }
@@ -61,15 +58,28 @@ class HighlightCorrectOptionChainValueTask extends Task {
     );
   }
 
-  // For backward compatibility
   List<Map<int, int>>? getLegacyBucketRows() {
     return bucketRows?.map((e) => e.toLegacyFormat()).toList();
   }
 
-  // For backward compatibility
-  void setLegacyBucketRows(List<Map<int, int>>? legacyRows) {
+  void setLegacyBucketRows(List<Map<int, int>>? legacyRows, {String symbol = '', DateTime? expiry, List<double>? strikes, List<double>? callPremiums, List<double>? putPremiums}) {
     if (legacyRows != null) {
-      bucketRows = legacyRows.map((e) => BucketRowSelection.fromLegacyFormat(e)).toList();
+      bucketRows = legacyRows.map((e) {
+        final rowIndex = e.keys.first;
+        final side = e.values.first;
+        final strike = strikes != null && rowIndex < strikes.length ? strikes[rowIndex] : 0.0;
+        final premium = side == 0 && callPremiums != null && rowIndex < callPremiums.length ? 
+            callPremiums[rowIndex] : 
+            (side == 1 && putPremiums != null && rowIndex < putPremiums.length ? putPremiums[rowIndex] : 0.0);
+        
+        return OptionLeg.fromLegacyFormat(
+          e, 
+          symbol: symbol, 
+          expiry: expiry, 
+          strike: strike, 
+          premium: premium
+        );
+      }).toList();
     } else {
       bucketRows = null;
     }

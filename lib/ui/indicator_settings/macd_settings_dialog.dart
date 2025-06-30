@@ -159,6 +159,7 @@ class _MacdSettingsDialogState extends State<MacdSettingsDialog> {
             widget.indicator.posHistogramColor = posHistogramColor;
             widget.indicator.negHistogramColor = negHistogramColor;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

@@ -17,6 +17,7 @@ import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
+import 'package:fin_chart/models/indicators/ev_ebitda.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
@@ -1717,6 +1718,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case IndicatorType.supertrend:
         indicator = Supertrend();
+        break;
+      case IndicatorType.evEbitda:
+        indicator = EvEbitda();
         break;
     }
     _chartKey.currentState?.addIndicator(indicator);

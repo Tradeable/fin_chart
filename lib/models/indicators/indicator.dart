@@ -1,4 +1,5 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
@@ -15,8 +16,9 @@ enum IndicatorType {
   mfi,
   adx,
   atr,
+  pe,
   pb,
-  supertrend
+  supertrend,
 }
 
 enum DisplayMode { main, panel }
@@ -125,6 +127,8 @@ abstract class Indicator with RegionProp {
         return Mfi.fromJson(json);
       case IndicatorType.adx:
         return Adx.fromJson(json);
+      case IndicatorType.pe:
+        return Pe.fromJson(json);
       case IndicatorType.pb:
         return Pb.fromJson(json);
       case IndicatorType.supertrend:

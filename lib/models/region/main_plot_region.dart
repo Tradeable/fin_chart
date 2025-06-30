@@ -119,12 +119,12 @@ class MainPlotRegion extends PlotRegion {
         candleColor = Colors.red;
       }
 
-            double maxVolume = candles
+      double maxVolume = candles
           .reduce((currentMax, candle) =>
               candle.volume > currentMax.volume ? candle : currentMax)
           .volume;
 
-          maxVolume = maxVolume == 0 ? 1 : maxVolume;
+      maxVolume = maxVolume == 0 ? 1 : maxVolume;
 
       Paint volumePaint = Paint()
         ..strokeWidth = 2

@@ -11,6 +11,7 @@ import 'package:example/dialog/show_insights_page_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
+import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -26,8 +27,10 @@ import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:example/editor/ui/widget/blinking_text.dart';
@@ -53,6 +56,7 @@ import 'dart:async';
 import 'package:example/dialog/add_option_chain_dialog.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:example/dialog/clear_bucket_rows_dialog.dart';
+import 'package:example/dialog/show_highlight_table_row_dialog.dart';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
@@ -247,6 +251,8 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.showInsightsPage:
           case TaskType.chooseBucketRows:
           case TaskType.clearBucketRows:
+          case TaskType.tableTask:
+          case TaskType.highlightTableRow:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -556,6 +562,12 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.clearBucketRows:
           showClearBucketRows();
           break;
+        case TaskType.tableTask:
+          showTableTask();
+          break;
+        case TaskType.highlightTableRow:
+          highlightTableRowPrompt();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -620,6 +632,12 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.clearBucketRows:
         editClearBucketRows(task as ClearBucketRowsTask);
+        break;
+      case TaskType.tableTask:
+        editTableTask(task as TableTask);
+        break;
+      case TaskType.highlightTableRow:
+        editHighlightTableRowTask(task as HighlightTableRowTask);
         break;
     }
   }
@@ -1488,6 +1506,91 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
+  }
+
+  void showTableTask() async {
+    await showTableTaskDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editTableTask(TableTask task) async {
+    await showTableTaskDialog(context: context, initialTask: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.tables = data.tables;
+        }
+      });
+    });
+  }
+
+  void highlightTableRowPrompt() async {
+    final tableTasks = tasks.whereType<TableTask>().toList();
+    if (tableTasks.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('No TableTask found. Add a table first.')),
+        );
+      }
+      return;
+    }
+    String tableTaskId = tableTasks.first.id;
+    if (tableTasks.length > 1) {
+      final selected = await showDialog<String>(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+            title: const Text('Select Table Task'),
+            children: tableTasks
+                .map((t) => SimpleDialogOption(
+                      child: Text(t.tables.tables.first.tableTitle.isNotEmpty
+                          ? t.tables.tables.first.tableTitle
+                          : t.id),
+                      onPressed: () => Navigator.pop(context, t.id),
+                    ))
+                .toList(),
+          );
+        },
+      );
+      if (selected == null) return;
+      tableTaskId = selected;
+    }
+    final tableTask = tableTasks.firstWhere((t) => t.id == tableTaskId);
+    final result = await showHighlightTableRowDialog(
+      context: context,
+      tableTaskId: tableTaskId,
+      tables: tableTask.tables.tables,
+    );
+    if (result != null) {
+      final selectedRows = result.map((k, v) => MapEntry(k, v.toList()));
+      _updateTaskList(HighlightTableRowTask(
+        tableTaskId: tableTaskId,
+        selectedRows: selectedRows,
+      ));
+    }
+  }
+
+  void editHighlightTableRowTask(HighlightTableRowTask task) async {
+    final tableTasks = tasks.whereType<TableTask>().toList();
+    if (tableTasks.isEmpty) return;
+    final tableTask = tableTasks.firstWhere((t) => t.id == task.tableTaskId,
+        orElse: () => tableTasks.first);
+    final initialSelection =
+        task.selectedRows.map((k, v) => MapEntry(k, v.toSet()));
+    final result = await showHighlightTableRowDialog(
+      context: context,
+      tableTaskId: tableTask.id,
+      tables: tableTask.tables.tables,
+      initialSelection: initialSelection,
+    );
+    if (result != null) {
+      setState(() {
+        task.selectedRows = result.map((k, v) => MapEntry(k, v.toList()));
+      });
+    }
   }
 
   Widget _buildToolBox() {

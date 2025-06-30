@@ -17,6 +17,7 @@ import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
+import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
@@ -1691,6 +1692,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case IndicatorType.adx:
         indicator = Adx();
+        break;
+      case IndicatorType.supertrend:
+        indicator = Supertrend();
         break;
     }
     _chartKey.currentState?.addIndicator(indicator);

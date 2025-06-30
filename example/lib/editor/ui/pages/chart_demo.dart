@@ -8,6 +8,7 @@ import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
@@ -19,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:example/editor/ui/widget/table_display_widget.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -46,6 +48,7 @@ class _ChartDemoState extends State<ChartDemo> {
   List<ShowPayOffGraphTask> payoffGraphTasks = [];
   List<Map<String, String>> tabs = [];
   int currentPageIndex = 0;
+  Map<String, List<GlobalKey<TableDisplayWidgetState>>> tableWidgetKeys = {};
 
   @override
   void initState() {
@@ -337,6 +340,20 @@ class _ChartDemoState extends State<ChartDemo> {
         setState(() {});
         onTaskFinish();
         break;
+      case TaskType.highlightTableRow:
+        final task = currentTask as HighlightTableRowTask;
+        final keys = tableWidgetKeys[task.tableTaskId];
+        if (keys != null && task.selectedRows.isNotEmpty) {
+          task.selectedRows.forEach((tableIdx, rowIndices) {
+            if (tableIdx < keys.length) {
+              final key = keys[tableIdx];
+              key.currentState?.setSelectedRows(rowIndices.toSet());
+            }
+          });
+        }
+        setState(() {});
+        onTaskFinish();
+        break;
     }
   }
 
@@ -459,57 +476,65 @@ class _ChartDemoState extends State<ChartDemo> {
                       final tableTask = recipe.tasks
                           .whereType<TableTask>()
                           .firstWhere((t) => t.id == taskId);
+                      tableWidgetKeys[taskId] = List.generate(
+                        tableTask.tables.tables.length,
+                        (_) => GlobalKey<TableDisplayWidgetState>(),
+                      );
                       return Container(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ...tableTask.tables.tables.map((table) => Padding(
-                              padding: const EdgeInsets.only(bottom: 24),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    table.tableTitle,
-                                    style: Theme.of(context).textTheme.titleLarge,
-                                  ),
-                                  if (table.tableDescription.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 8.0),
-                                      child: Text(
-                                        table.tableDescription,
-                                        style: Theme.of(context).textTheme.bodyMedium,
+                            ...tableTask.tables.tables
+                                .asMap()
+                                .entries
+                                .map((entry) {
+                              final idx = entry.key;
+                              final table = entry.value;
+                              final highlightTask = recipe.tasks
+                                  .whereType<HighlightTableRowTask>()
+                                  .where((t) => t.tableTaskId == taskId)
+                                  .toList();
+                              Set<int> selectedRows = {};
+                              if (highlightTask.isNotEmpty &&
+                                  highlightTask.first.selectedRows[idx] !=
+                                      null) {
+                                selectedRows = highlightTask
+                                    .first.selectedRows[idx]!
+                                    .toSet();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      table.tableTitle,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
+                                    ),
+                                    if (table.tableDescription.isNotEmpty)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          table.tableDescription,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
+                                        ),
                                       ),
+                                    TableDisplayWidget(
+                                      key: tableWidgetKeys[taskId]![idx],
+                                      columns: table.columns,
+                                      rows: table.rows,
+                                      selectedRowIndices: selectedRows,
                                     ),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: DataTable(
-                                      columnSpacing: 16,
-                                      headingRowColor: WidgetStateProperty.all(Colors.grey[100]),
-                                      border: TableBorder.all(color: Colors.grey.shade300, width: 1),
-                                      columns: table.columns
-                                          .map((col) => DataColumn(label: Text(col)))
-                                          .toList(),
-                                      rows: List.generate(table.rows.length, (rowIdx) {
-                                        final row = table.rows[rowIdx];
-                                        final isStriped = table.rows.length >= 6;
-                                        final rowColor = isStriped
-                                            ? (rowIdx % 2 == 0
-                                                ? Colors.white
-                                                : Colors.blueGrey[50])
-                                            : Colors.white;
-                                        return DataRow(
-                                          color: WidgetStateProperty.all(rowColor),
-                                          cells: row
-                                              .map((cell) => DataCell(Text(cell)))
-                                              .toList(),
-                                        );
-                                      }),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )),
+                                  ],
+                                ),
+                              );
+                            }),
                           ],
                         ),
                       );
@@ -567,6 +592,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.chooseBucketRows:
       case TaskType.clearBucketRows:
       case TaskType.tableTask:
+      case TaskType.highlightTableRow:
         return Container();
     }
   }

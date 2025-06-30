@@ -6,6 +6,7 @@ import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
+import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
@@ -445,6 +446,29 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("Bucket Rows in ${(task as TableTask).id}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.highlightTableRow:
+        final highlightTask = task as HighlightTableRowTask;
+        final summary = highlightTask.selectedRows.entries.map((e) =>
+          'Table ${e.key + 1}: Rows ${e.value.map((i) => i + 1).join(", ")}'
+        ).join(' | ');
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Highlight Table Row ${highlightTask.id} $summary"),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {

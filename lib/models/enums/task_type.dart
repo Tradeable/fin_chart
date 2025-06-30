@@ -16,7 +16,11 @@ enum TaskType {
   moveTab,
   popUpTask,
   showBottomSheet,
-  showInsightsPage
+  showInsightsPage,
+  chooseBucketRows,
+  clearBucketRows,
+  tableTask,
+  highlightTableRow
 }
 
 // extension TaskTypeExtension on TaskType {

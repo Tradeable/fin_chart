@@ -4,57 +4,40 @@ import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/option_leg.dart';
 import 'package:fin_chart/utils/calculations.dart';
 
-class HighlightCorrectOptionChainValueTask extends Task {
+class ChooseBucketRowsTask extends Task {
   String optionChainId;
-  List<int> correctRowIndex;
   List<OptionLeg>? bucketRows;
+  int? maxSelectableRows;
 
-  HighlightCorrectOptionChainValueTask({
+  ChooseBucketRowsTask({
     required this.optionChainId,
-    required this.correctRowIndex,
     this.bucketRows,
+    this.maxSelectableRows,
   }) : super(
           id: generateV4(),
           actionType: ActionType.empty,
-          taskType: TaskType.highlightCorrectOptionChainValue,
+          taskType: TaskType.chooseBucketRows,
         );
 
   @override
   Map<String, dynamic> toJson() {
     final data = super.toJson();
     data['optionChainId'] = optionChainId;
-    data['correctRowIndex'] = correctRowIndex;
     if (bucketRows != null) {
       data['bucketRows'] = bucketRows!.map((e) => e.toJson()).toList();
     }
+    data['maxSelectableRows'] = maxSelectableRows;
     return data;
   }
 
-  factory HighlightCorrectOptionChainValueTask.fromJson(
-      Map<String, dynamic> json) {
-    List<OptionLeg>? bucketRows;
-    
-    if (json['bucketRows'] != null) {
-      if (json['bucketRows'] is List && json['bucketRows'].isNotEmpty) {
-        if (json['bucketRows'][0] is Map && json['bucketRows'][0].containsKey('rowIndex')) {
-          bucketRows = List<OptionLeg>.from(
-              json['bucketRows'].map((e) => OptionLeg.fromJson(e)));
-        } else {
-          final legacyRows = List<Map<int, int>>.from(json['bucketRows'].map((map) =>
-              Map<int, int>.from(map.map((k, v) => MapEntry(int.parse(k), v)))));
-          bucketRows = legacyRows.map((e) => OptionLeg.fromLegacyFormat(e)).toList();
-        }
-      }
-    }
-
-    return HighlightCorrectOptionChainValueTask(
+  factory ChooseBucketRowsTask.fromJson(Map<String, dynamic> json) {
+    return ChooseBucketRowsTask(
       optionChainId: json['optionChainId'],
-      correctRowIndex: json['correctRowIndex'] is List
-          ? List<int>.from(json['correctRowIndex'])
-          : json['correctRowIndex'] is int
-              ? [json['correctRowIndex']]
-              : [],
-      bucketRows: bucketRows,
+      bucketRows: json['bucketRows'] != null
+          ? List<OptionLeg>.from(
+              json['bucketRows'].map((e) => OptionLeg.fromJson(e)))
+          : null,
+      maxSelectableRows: json['maxSelectableRows'],
     );
   }
 
@@ -84,4 +67,4 @@ class HighlightCorrectOptionChainValueTask extends Task {
       bucketRows = null;
     }
   }
-}
+} 

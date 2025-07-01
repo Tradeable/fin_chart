@@ -28,7 +28,7 @@ class EvSalesPoint {
 class EvSales extends Indicator {
   Color lineColor = Colors.teal;
   List<EvSalesPoint> points = [];
-  double defaultValue = 2.0; // Typical EV/Sales ratio
+  double defaultValue = 2.0; // Add this default
 
   final List<double> values = [];
   final List<ICandle> candles = [];
@@ -36,7 +36,7 @@ class EvSales extends Indicator {
   EvSales({
     this.lineColor = Colors.teal,
     this.points = const [],
-    this.defaultValue = 2.0,
+    this.defaultValue = 2.0, // Add to constructor
   }) : super(
             id: generateV4(),
             type: IndicatorType.evSales,
@@ -48,7 +48,7 @@ class EvSales extends Indicator {
     required super.displayMode,
     this.lineColor = Colors.teal,
     this.points = const [],
-    this.defaultValue = 2.0,
+    this.defaultValue = 2.0, // Add to private constructor
   });
 
   @override
@@ -84,149 +84,201 @@ class EvSales extends Indicator {
           });
         }
       } else {
-        path.lineTo(x, y);
+        // Check if value changed from previous point
+        if (i > 0 && values[i] != values[i - 1]) {
+          // Draw horizontal line to current X position with previous Y value
+          path.lineTo(x, toY(values[i - 1]));
+          // Then draw vertical line to new Y value
+          path.lineTo(x, y);
 
-        // Check if this is a new point (value changed from previous)
-        if (i > 0 && values[i] != values[i - 1] && values[i] != defaultValue) {
-          double previousValue = values[i - 1];
-          double changePercent =
-              ((values[i] - previousValue) / previousValue) * 100;
-
-          labelsToDraw.add({
-            'x': x,
-            'y': y,
-            'value': values[i],
-            'changePercent': changePercent,
-            'date': candles[i].date,
-          });
+          // Only store label data if the new value is not the default value
+          if (values[i] != defaultValue) {
+            double changePercent =
+                ((values[i] - values[i - 1]) / values[i - 1]) * 100;
+            labelsToDraw.add({
+              'x': x,
+              'y': y,
+              'value': values[i],
+              'changePercent': changePercent,
+              'date': candles[i].date,
+            });
+          }
+        } else {
+          // Same value, just continue horizontal line
+          path.lineTo(x, y);
         }
       }
     }
 
-    // Draw the main line
-    canvas.drawPath(path, paint);
+    // Draw the line first
+    if (pathStarted) {
+      canvas.drawPath(path, paint);
+    }
 
-    // Draw labels
+    // Then draw all labels on top
     for (var labelData in labelsToDraw) {
-      _drawValueLabel(canvas, labelData);
+      _drawValueLabel(
+        canvas,
+        labelData['x'],
+        labelData['y'],
+        labelData['value'],
+        labelData['changePercent'],
+        labelData['date'],
+      );
     }
   }
 
-  void _drawValueLabel(Canvas canvas, Map<String, dynamic> data) {
-    final double x = data['x'];
-    final double y = data['y'];
-    final double value = data['value'];
-    final double? changePercent = data['changePercent'];
+  void _drawValueLabel(Canvas canvas, double x, double y, double value,
+      double? changePercent, DateTime date) {
+    // Format the month (e.g., "Jan 2025")
+    List<String> months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    String month = '${months[date.month - 1]} ${date.year}';
 
-    String mainText = value.toStringAsFixed(1);
-    String? changeText = changePercent != null
-        ? '${changePercent >= 0 ? '+' : ''}${changePercent.toStringAsFixed(1)}%'
-        : null;
+    // Create the label text
+    String valueText = value.toStringAsFixed(1);
+    String changeText = changePercent != null
+        ? '(${changePercent >= 0 ? '+' : ''}${changePercent.toStringAsFixed(1)}%)'
+        : '';
 
-    final textStyle = TextStyle(
-      color: lineColor,
-      fontSize: 12,
-      fontWeight: FontWeight.bold,
+    // Text styles
+    const fillTextStyle = TextStyle(
+      color: Colors.black,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
     );
 
-    final changeTextStyle = TextStyle(
-      color: changePercent != null
-          ? (changePercent >= 0 ? Colors.green : Colors.red)
-          : lineColor,
-      fontSize: 10,
+    const strokeTextStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
     );
 
-    final mainTextPainter = TextPainter(
-      text: TextSpan(text: mainText, style: textStyle),
-      textDirection: TextDirection.ltr,
-    );
-    mainTextPainter.layout();
+    // Calculate total label height
+    double totalLabelHeight =
+        changePercent != null ? 36.0 : 24.0; // 3 lines vs 2 lines
 
-    TextPainter? changeTextPainter;
-    if (changeText != null) {
-      changeTextPainter = TextPainter(
-        text: TextSpan(text: changeText, style: changeTextStyle),
+    // Determine preferred position based on value change
+    bool preferAbove = changePercent != null
+        ? changePercent > 0
+        : false; // Going up = above, going down = below
+
+    // Check bounds and adjust if necessary
+    bool drawAbove;
+    if (preferAbove) {
+      // Want to draw above, but check if it goes out of bounds at top
+      drawAbove = (y - totalLabelHeight - 15) >= topPos; // 15px buffer from top
+    } else {
+      // Want to draw below, but check if it goes out of bounds at bottom
+      drawAbove =
+          (y + totalLabelHeight + 15) > bottomPos; // 15px buffer from bottom
+    }
+
+    // Calculate label position
+    double labelY =
+        drawAbove ? y - totalLabelHeight - 16 : y + 10; // 8px offset from point
+
+    // Helper function to draw outlined text
+    void drawOutlinedText(String text, double textY) {
+      final textPainter = TextPainter(
+        text: TextSpan(text: text, style: fillTextStyle),
         textDirection: TextDirection.ltr,
-      );
-      changeTextPainter.layout();
+        textAlign: TextAlign.center,
+      )..layout();
+
+      final textX = x - textPainter.width / 2;
+
+      // Draw stroke (outline) first
+      final strokePainter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: strokeTextStyle.copyWith(
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..color = Colors.white,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout();
+      strokePainter.paint(canvas, Offset(textX, textY));
+
+      // Draw fill on top
+      textPainter.paint(canvas, Offset(textX, textY));
     }
 
-    // Calculate total height needed
-    double totalHeight = mainTextPainter.height;
-    if (changeTextPainter != null) {
-      totalHeight += changeTextPainter.height + 2;
+    // Draw the text lines with outline
+    double textY = labelY;
+
+    // Value line
+    drawOutlinedText(valueText, textY);
+
+    // Change percentage line (if applicable)
+    if (changePercent != null) {
+      textY += 15;
+      drawOutlinedText(changeText, textY);
     }
 
-    // Position above the point
-    double labelY = y - totalHeight - 10;
-    double labelX = x - mainTextPainter.width / 2;
+    // Month line
+    textY += 15;
+    drawOutlinedText(month, textY);
 
-    // Keep within bounds
-    labelX = labelX.clamp(0, rightPos - mainTextPainter.width);
-    labelY = labelY.clamp(topPos, bottomPos - totalHeight);
-
-    // Draw background
-    final bgPaint = Paint()
-      ..color = Colors.white.withAlpha(int.parse((0.8 * 255).toString()))
-      ..style = PaintingStyle.fill;
-
-    double maxWidth = mainTextPainter.width;
-    if (changeTextPainter != null && changeTextPainter.width > maxWidth) {
-      maxWidth = changeTextPainter.width;
-    }
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(labelX - 4, labelY - 2, maxWidth + 8, totalHeight + 4),
-        const Radius.circular(4),
-      ),
-      bgPaint,
+    // Draw a small dot at the actual point
+    canvas.drawCircle(
+      Offset(x, y),
+      5,
+      Paint()
+        ..color = lineColor
+        ..style = PaintingStyle.fill,
     );
-
-    // Draw border
-    final borderPaint = Paint()
-      ..color = lineColor.withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(labelX - 4, labelY - 2, maxWidth + 8, totalHeight + 4),
-        const Radius.circular(4),
-      ),
-      borderPaint,
-    );
-
-    // Draw main text
-    mainTextPainter.paint(canvas, Offset(labelX, labelY));
-
-    // Draw change text if present
-    if (changeTextPainter != null) {
-      double changeX = labelX + (maxWidth - changeTextPainter.width) / 2;
-      changeTextPainter.paint(
-          canvas, Offset(changeX, labelY + mainTextPainter.height + 2));
-    }
-
-    // Draw small circle at the data point
-    final pointPaint = Paint()
-      ..color = lineColor
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(x, y), 3, pointPaint);
-
-    final pointBorderPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    canvas.drawCircle(Offset(x, y), 3, pointBorderPaint);
   }
 
   @override
   updateData(List<ICandle> data) {
-    candles.clear();
-    candles.addAll(data);
-    values.clear();
+    if (data.isEmpty) return;
 
-    if (data.isEmpty) {
+    // Update candles
+    if (candles.isEmpty) {
+      candles.addAll(data);
+    } else {
+      int existingCount = candles.length;
+      if (data.length > existingCount) {
+        candles.addAll(data.sublist(existingCount));
+      }
+    }
+
+    // Calculate values FIRST
+    _calculateValues();
+
+    // THEN calculate Y-range based on the actual values
+    calculateYValueRange(data);
+
+    yLabelSize = getLargetRnderBoxSizeForList(
+        yValues.map((v) => v.toString()).toList(),
+        const TextStyle(color: Colors.black, fontSize: 12));
+  }
+
+  void _calculateValues() {
+    values.clear();
+    if (candles.isEmpty) {
+      return;
+    }
+
+    // If no points, use default value for all candles
+    if (points.isEmpty) {
       values.addAll(List.filled(candles.length, defaultValue));
       return;
     }
@@ -307,7 +359,7 @@ class EvSales extends Indicator {
     Map<String, dynamic> json = super.toJson();
     json['lineColor'] = colorToJson(lineColor);
     json['points'] = points.map((p) => p.toJson()).toList();
-    json['defaultValue'] = defaultValue;
+    json['defaultValue'] = defaultValue; // Add this
     return json;
   }
 
@@ -323,7 +375,7 @@ class EvSales extends Indicator {
               ?.map((p) => EvSalesPoint.fromJson(p))
               .toList() ??
           [],
-      defaultValue: json['defaultValue']?.toDouble() ?? 2.0,
+      defaultValue: json['defaultValue']?.toDouble() ?? 2.0, // Add this
     );
   }
 

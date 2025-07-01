@@ -49,6 +49,7 @@ class _ChartDemoState extends State<ChartDemo> {
   List<Map<String, String>> tabs = [];
   int currentPageIndex = 0;
   Map<String, List<GlobalKey<TableDisplayWidgetState>>> tableWidgetKeys = {};
+  Map<String, Map<int, Set<int>>> userSelectedRows = {};
 
   @override
   void initState() {
@@ -348,6 +349,8 @@ class _ChartDemoState extends State<ChartDemo> {
             if (tableIdx < keys.length) {
               final key = keys[tableIdx];
               key.currentState?.setSelectedRows(rowIndices.toSet());
+              userSelectedRows[task.tableTaskId] ??= {};
+              userSelectedRows[task.tableTaskId]![tableIdx] = rowIndices.toSet();
             }
           });
         }
@@ -476,11 +479,13 @@ class _ChartDemoState extends State<ChartDemo> {
                       final tableTask = recipe.tasks
                           .whereType<TableTask>()
                           .firstWhere((t) => t.id == taskId);
-                      tableWidgetKeys[taskId] = List.generate(
-                        tableTask.tables.tables.length,
-                        (_) => GlobalKey<TableDisplayWidgetState>(),
-                      );
-                      return Container(
+                      if (!tableWidgetKeys.containsKey(taskId)) {
+                        tableWidgetKeys[taskId] = List.generate(
+                          tableTask.tables.tables.length,
+                          (_) => GlobalKey<TableDisplayWidgetState>(),
+                        );
+                      }
+                      return SingleChildScrollView(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,18 +496,7 @@ class _ChartDemoState extends State<ChartDemo> {
                                 .map((entry) {
                               final idx = entry.key;
                               final table = entry.value;
-                              final highlightTask = recipe.tasks
-                                  .whereType<HighlightTableRowTask>()
-                                  .where((t) => t.tableTaskId == taskId)
-                                  .toList();
-                              Set<int> selectedRows = {};
-                              if (highlightTask.isNotEmpty &&
-                                  highlightTask.first.selectedRows[idx] !=
-                                      null) {
-                                selectedRows = highlightTask
-                                    .first.selectedRows[idx]!
-                                    .toSet();
-                              }
+                              final selectedRows = userSelectedRows[taskId]?[idx] ?? <int>{};
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 24),
                                 child: Column(
@@ -530,6 +524,18 @@ class _ChartDemoState extends State<ChartDemo> {
                                       columns: table.columns,
                                       rows: table.rows,
                                       selectedRowIndices: selectedRows,
+                                      onRowTap: (rowIdx) {
+                                        setState(() {
+                                          userSelectedRows[taskId] ??= {};
+                                          final selected = userSelectedRows[taskId]![idx] ?? <int>{};
+                                          if (selected.contains(rowIdx)) {
+                                            selected.remove(rowIdx);
+                                          } else {
+                                            selected.add(rowIdx);
+                                          }
+                                          userSelectedRows[taskId]![idx] = selected;
+                                        });
+                                      },
                                     ),
                                   ],
                                 ),

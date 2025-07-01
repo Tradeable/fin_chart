@@ -14,7 +14,10 @@ class AddEventDialog extends StatefulWidget {
   final int index;
 
   const AddEventDialog(
-      {super.key, required this.onEventAdded, required this.preSelectedDate, required this.index});
+      {super.key,
+      required this.onEventAdded,
+      required this.preSelectedDate,
+      required this.index});
 
   @override
   State<AddEventDialog> createState() => _AddEventDialogState();
@@ -27,17 +30,20 @@ class _AddEventDialogState extends State<AddEventDialog> {
   DateTime? _paymentDate;
   DateTime? _recordDate;
   DateTime? _issueDate;
-  
+
   // Earnings event controllers
   final TextEditingController _epsActualController = TextEditingController();
   final TextEditingController _epsEstimateController = TextEditingController();
-  final TextEditingController _revenueActualController = TextEditingController();
-  final TextEditingController _revenueEstimateController = TextEditingController();
-  
+  final TextEditingController _revenueActualController =
+      TextEditingController();
+  final TextEditingController _revenueEstimateController =
+      TextEditingController();
+  final TextEditingController _bookValueController = TextEditingController();
+
   // Dividend event controllers
   final TextEditingController _amountController = TextEditingController();
   // final TextEditingController _currencyController = TextEditingController(text: 'USD');
-  
+
   // Stock split event controller
   final TextEditingController _ratioController = TextEditingController();
 
@@ -54,6 +60,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
     _amountController.dispose();
     // _currencyController.dispose();
     _ratioController.dispose();
+    _bookValueController.dispose();
     super.dispose();
   }
 
@@ -83,6 +90,11 @@ class _AddEventDialogState extends State<AddEventDialog> {
         TextFormField(
           controller: _revenueEstimateController,
           decoration: const InputDecoration(labelText: 'Revenue Estimate'),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        ),
+        TextFormField(
+          controller: _bookValueController,
+          decoration: const InputDecoration(labelText: 'Book Value (optional)'),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
         ),
       ],
@@ -217,7 +229,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
           },
         ),
 
-               // Ex-Dividend Date
+        // Ex-Dividend Date
         InkWell(
           onTap: () async {
             final DateTime? picked = await showDatePicker(
@@ -309,7 +321,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
               ),
 
               const SizedBox(height: 16),
-              
+
               // Show different form fields based on selected event type
               if (_selectedEventType == EventType.earnings)
                 _buildEarningsForm()
@@ -319,7 +331,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
                 _buildStockSplitForm()
               else if (_selectedEventType == EventType.news)
                 _buildNewsForm()
-              else if (_selectedEventType == EventType.bonus) 
+              else if (_selectedEventType == EventType.bonus)
                 _buildBonusForm(),
             ],
           ),
@@ -359,6 +371,9 @@ class _AddEventDialogState extends State<AddEventDialog> {
                 if (actualRev != null && estRev != null && estRev != 0) {
                   revSurprise = ((actualRev - estRev) / estRev) * 100;
                 }
+                final bookVal = _bookValueController.text.isNotEmpty
+                    ? double.parse(_bookValueController.text)
+                    : null;
 
                 event = EarningsEvent(
                   id: id,
@@ -372,6 +387,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
                   revenueActual: actualRev,
                   revenueEstimate: estRev,
                   revenueSurprise: revSurprise,
+                  bookValue: bookVal,
                 );
               } else if (_selectedEventType == EventType.dividend) {
                 event = DividendEvent(

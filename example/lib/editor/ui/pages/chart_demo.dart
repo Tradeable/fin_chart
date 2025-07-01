@@ -8,8 +8,10 @@ import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
@@ -18,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:example/editor/ui/widget/table_display_widget.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -45,6 +48,7 @@ class _ChartDemoState extends State<ChartDemo> {
   List<ShowPayOffGraphTask> payoffGraphTasks = [];
   List<Map<String, String>> tabs = [];
   int currentPageIndex = 0;
+  Map<String, List<GlobalKey<TableDisplayWidgetState>>> tableWidgetKeys = {};
 
   @override
   void initState() {
@@ -139,12 +143,12 @@ class _ChartDemoState extends State<ChartDemo> {
           final task = currentTask as AddTabTask;
           previewScreenKeys[task.taskId] = GlobalKey<PreviewScreenState>();
 
-          final tasks = recipe.tasks
+          final optionChainTasks = recipe.tasks
               .whereType<ChooseCorrectOptionValueChainTask>()
               .where((t) => t.taskId == task.taskId)
               .toList();
 
-          if (tasks.isNotEmpty) {
+          if (optionChainTasks.isNotEmpty) {
             tabs.add({
               "type": "option_chain",
               "title": task.tabTitle,
@@ -169,6 +173,17 @@ class _ChartDemoState extends State<ChartDemo> {
               if (insightsTasks.isNotEmpty) {
                 tabs.add({
                   "type": "insights",
+                  "title": task.tabTitle,
+                  "taskId": task.taskId,
+                });
+              }
+              final tableTasks = recipe.tasks
+                  .whereType<TableTask>()
+                  .where((t) => t.id == task.taskId)
+                  .toList();
+              if (tableTasks.isNotEmpty) {
+                tabs.add({
+                  "type": "table",
                   "title": task.tabTitle,
                   "taskId": task.taskId,
                 });
@@ -321,6 +336,24 @@ class _ChartDemoState extends State<ChartDemo> {
         previewKey.currentState?.clearBucketSelections();
         onTaskFinish();
         break;
+      case TaskType.tableTask:
+        setState(() {});
+        onTaskFinish();
+        break;
+      case TaskType.highlightTableRow:
+        final task = currentTask as HighlightTableRowTask;
+        final keys = tableWidgetKeys[task.tableTaskId];
+        if (keys != null && task.selectedRows.isNotEmpty) {
+          task.selectedRows.forEach((tableIdx, rowIndices) {
+            if (tableIdx < keys.length) {
+              final key = keys[tableIdx];
+              key.currentState?.setSelectedRows(rowIndices.toSet());
+            }
+          });
+        }
+        setState(() {});
+        onTaskFinish();
+        break;
     }
   }
 
@@ -438,6 +471,73 @@ class _ChartDemoState extends State<ChartDemo> {
                           ],
                         ),
                       );
+                    case "table":
+                      final taskId = tab["taskId"]!;
+                      final tableTask = recipe.tasks
+                          .whereType<TableTask>()
+                          .firstWhere((t) => t.id == taskId);
+                      tableWidgetKeys[taskId] = List.generate(
+                        tableTask.tables.tables.length,
+                        (_) => GlobalKey<TableDisplayWidgetState>(),
+                      );
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ...tableTask.tables.tables
+                                .asMap()
+                                .entries
+                                .map((entry) {
+                              final idx = entry.key;
+                              final table = entry.value;
+                              final highlightTask = recipe.tasks
+                                  .whereType<HighlightTableRowTask>()
+                                  .where((t) => t.tableTaskId == taskId)
+                                  .toList();
+                              Set<int> selectedRows = {};
+                              if (highlightTask.isNotEmpty &&
+                                  highlightTask.first.selectedRows[idx] !=
+                                      null) {
+                                selectedRows = highlightTask
+                                    .first.selectedRows[idx]!
+                                    .toSet();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      table.tableTitle,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge,
+                                    ),
+                                    if (table.tableDescription.isNotEmpty)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8.0),
+                                        child: Text(
+                                          table.tableDescription,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
+                                        ),
+                                      ),
+                                    TableDisplayWidget(
+                                      key: tableWidgetKeys[taskId]![idx],
+                                      columns: table.columns,
+                                      rows: table.rows,
+                                      selectedRowIndices: selectedRows,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      );
                     default:
                       return Container();
                   }
@@ -491,6 +591,8 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.showInsightsPage:
       case TaskType.chooseBucketRows:
       case TaskType.clearBucketRows:
+      case TaskType.tableTask:
+      case TaskType.highlightTableRow:
         return Container();
     }
   }

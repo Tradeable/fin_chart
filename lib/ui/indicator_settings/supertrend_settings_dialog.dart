@@ -1,46 +1,43 @@
-import 'package:fin_chart/models/indicators/bollinger_bands.dart';
+import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/ui/color_picker_widget.dart';
 import 'package:flutter/material.dart';
 
-class BollingerBandSettingsDialog extends StatefulWidget {
-  final BollingerBands indicator;
-  final Function(BollingerBands) onUpdate;
+class SupertrendSettingsDialog extends StatefulWidget {
+  final Supertrend indicator;
+  final Function(Supertrend) onUpdate;
 
-  const BollingerBandSettingsDialog({
+  const SupertrendSettingsDialog({
     super.key,
     required this.indicator,
     required this.onUpdate,
   });
 
   @override
-  State<BollingerBandSettingsDialog> createState() =>
-      _BollingerBandSettingsDialogState();
+  State<SupertrendSettingsDialog> createState() =>
+      _SupertrendSettingsDialogState();
 }
 
-class _BollingerBandSettingsDialogState
-    extends State<BollingerBandSettingsDialog> {
+class _SupertrendSettingsDialogState extends State<SupertrendSettingsDialog> {
   late int period;
   late double multiplier;
-  late Color upperBandColor;
-  late Color middleBandColor;
-  late Color lowerBandColor;
-  late int alpha;
+  late Color uptrendColor;
+  late Color downtrendColor;
+  late double strokeWidth;
 
   @override
   void initState() {
     super.initState();
     period = widget.indicator.period;
     multiplier = widget.indicator.multiplier;
-    upperBandColor = widget.indicator.upperBandColor;
-    middleBandColor = widget.indicator.middleBandColor;
-    lowerBandColor = widget.indicator.lowerBandColor;
-    alpha = widget.indicator.alpha;
+    uptrendColor = widget.indicator.uptrendColor;
+    downtrendColor = widget.indicator.downtrendColor;
+    strokeWidth = widget.indicator.strokeWidth;
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Bollinger Bands Settings'),
+      title: const Text('Supertrend Settings'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,12 +57,12 @@ class _BollingerBandSettingsDialogState
               },
             ),
             const SizedBox(height: 16),
-            const Text('Standard Deviation Multiplier'),
+            const Text('Multiplier'),
             Slider(
               value: multiplier,
               min: 1.0,
-              max: 4.0,
-              divisions: 30,
+              max: 5.0,
+              divisions: 40,
               label: multiplier.toStringAsFixed(1),
               onChanged: (value) {
                 setState(() {
@@ -74,49 +71,38 @@ class _BollingerBandSettingsDialogState
               },
             ),
             const SizedBox(height: 16),
-            const Text('Upper Band Color'),
-            const SizedBox(height: 8),
-            ColorPickerWidget(
-              selectedColor: upperBandColor,
-              onColorSelected: (color) {
-                setState(() {
-                  upperBandColor = color;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text('Middle Band Color'),
-            const SizedBox(height: 8),
-            ColorPickerWidget(
-              selectedColor: middleBandColor,
-              onColorSelected: (color) {
-                setState(() {
-                  middleBandColor = color;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text('Lower Band Color'),
-            const SizedBox(height: 8),
-            ColorPickerWidget(
-              selectedColor: lowerBandColor,
-              onColorSelected: (color) {
-                setState(() {
-                  lowerBandColor = color;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text('Fill Transparency'),
+            const Text('Line Width'),
             Slider(
-              value: alpha.toDouble(),
-              min: 0.0,
-              max: 255.0,
-              divisions: 51,
-              label: alpha.toString(),
+              value: strokeWidth,
+              min: 1.0,
+              max: 5.0,
+              divisions: 8,
+              label: strokeWidth.toStringAsFixed(1),
               onChanged: (value) {
                 setState(() {
-                  alpha = value.round();
+                  strokeWidth = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            const Text('Uptrend Color'),
+            const SizedBox(height: 8),
+            ColorPickerWidget(
+              selectedColor: uptrendColor,
+              onColorSelected: (color) {
+                setState(() {
+                  uptrendColor = color;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            const Text('Downtrend Color'),
+            const SizedBox(height: 8),
+            ColorPickerWidget(
+              selectedColor: downtrendColor,
+              onColorSelected: (color) {
+                setState(() {
+                  downtrendColor = color;
                 });
               },
             ),
@@ -134,12 +120,10 @@ class _BollingerBandSettingsDialogState
           onPressed: () {
             widget.indicator.period = period;
             widget.indicator.multiplier = multiplier;
-            widget.indicator.upperBandColor = upperBandColor;
-            widget.indicator.middleBandColor = middleBandColor;
-            widget.indicator.lowerBandColor = lowerBandColor;
-            widget.indicator.alpha = alpha;
+            widget.indicator.uptrendColor = uptrendColor;
+            widget.indicator.downtrendColor = downtrendColor;
+            widget.indicator.strokeWidth = strokeWidth;
             widget.onUpdate(widget.indicator);
-            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

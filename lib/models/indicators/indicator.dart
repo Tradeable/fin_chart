@@ -1,4 +1,5 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
@@ -16,6 +17,7 @@ enum IndicatorType {
   mfi,
   adx,
   atr,
+  pivotPoint,
   pe,
   pb,
   supertrend,
@@ -127,6 +129,8 @@ abstract class Indicator with RegionProp {
         return Mfi.fromJson(json);
       case IndicatorType.adx:
         return Adx.fromJson(json);
+      case IndicatorType.pivotPoint:
+        return PivotPoint.fromJson(json);
       case IndicatorType.pe:
         return Pe.fromJson(json);
       case IndicatorType.pb:

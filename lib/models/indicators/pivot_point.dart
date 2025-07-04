@@ -149,15 +149,21 @@ class PivotPoint extends Indicator {
     // Group candles by timeframe periods
     final periods = _groupCandlesByPeriod();
 
-    // Calculate pivot points for each period
-    for (final period in periods) {
-      if (period.candles.isEmpty) continue;
+    // Calculate pivot points for each period using PREVIOUS period's data
+    for (int i = 1; i < periods.length; i++) {
+      final previousPeriod = periods[i - 1]; // Use previous period's data
+      final currentPeriod = periods[i]; // Apply pivots to current period
 
-      final high =
-          period.candles.map((c) => c.high).reduce((a, b) => a > b ? a : b);
-      final low =
-          period.candles.map((c) => c.low).reduce((a, b) => a < b ? a : b);
-      final close = period.candles.last.close;
+      if (previousPeriod.candles.isEmpty) continue;
+
+      // Calculate using PREVIOUS period's H/L/C
+      final high = previousPeriod.candles
+          .map((c) => c.high)
+          .reduce((a, b) => a > b ? a : b);
+      final low = previousPeriod.candles
+          .map((c) => c.low)
+          .reduce((a, b) => a < b ? a : b);
+      final close = previousPeriod.candles.last.close;
 
       // Standard pivot point calculation
       final pivot = (high + low + close) / 3;
@@ -168,9 +174,10 @@ class PivotPoint extends Indicator {
       final s2 = pivot - (high - low);
       final s3 = low - 2 * (high - pivot);
 
+      // Apply these pivots to CURRENT period
       pivotLevels.add(PivotLevel(
-        startIndex: period.startIndex,
-        endIndex: period.endIndex,
+        startIndex: currentPeriod.startIndex,
+        endIndex: currentPeriod.endIndex,
         pivot: pivot,
         r1: r1,
         r2: r2,

@@ -123,6 +123,7 @@ class _SupertrendSettingsDialogState extends State<SupertrendSettingsDialog> {
             widget.indicator.uptrendColor = uptrendColor;
             widget.indicator.downtrendColor = downtrendColor;
             widget.indicator.strokeWidth = strokeWidth;
+            widget.indicator.updateData(widget.indicator.candles);
             widget.onUpdate(widget.indicator);
             Navigator.of(context).pop();
           },

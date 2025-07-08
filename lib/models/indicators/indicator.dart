@@ -3,6 +3,7 @@ import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
+import 'package:fin_chart/models/indicators/vwap.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ enum IndicatorType {
   pe,
   pb,
   supertrend,
+  vwap,
 }
 
 enum DisplayMode { main, panel }
@@ -137,6 +139,8 @@ abstract class Indicator with RegionProp {
         return Pb.fromJson(json);
       case IndicatorType.supertrend:
         return Supertrend.fromJson(json);
+      case IndicatorType.vwap:
+        return Vwap.fromJson(json);
     }
   }
 

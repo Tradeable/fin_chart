@@ -23,6 +23,7 @@ import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
+import 'package:fin_chart/models/indicators/vwap.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
@@ -1723,12 +1724,16 @@ class _EditorPageState extends State<EditorPage> {
       case IndicatorType.supertrend:
         indicator = Supertrend();
         break;
+      case IndicatorType.vwap:
+        indicator = Vwap();
+        break;
       case IndicatorType.evEbitda:
         indicator = EvEbitda();
         break;
       case IndicatorType.evSales:
         indicator = EvSales();
         break;
+
     }
     _chartKey.currentState?.addIndicator(indicator);
   }

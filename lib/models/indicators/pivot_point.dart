@@ -60,16 +60,13 @@ class PivotPoint extends Indicator {
             displayMode: DisplayMode.main);
 
   PivotPoint._({
-    required String id,
+    required super.id,
     this.timeframe = PivotTimeframe.daily,
     this.pivotColor = Colors.blue,
     this.resistanceColor = Colors.red,
     this.supportColor = Colors.green,
     this.showLabels = true,
-  }) : super(
-            id: id,
-            type: IndicatorType.pivotPoint,
-            displayMode: DisplayMode.main);
+  }) : super(type: IndicatorType.pivotPoint, displayMode: DisplayMode.main);
 
   @override
   drawIndicator({required Canvas canvas}) {

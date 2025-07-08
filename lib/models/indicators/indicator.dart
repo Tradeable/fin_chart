@@ -1,4 +1,6 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/indicators/ev_ebitda.dart';
+import 'package:fin_chart/models/indicators/ev_sales.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
@@ -21,6 +23,8 @@ enum IndicatorType {
   pe,
   pb,
   supertrend,
+  evEbitda,
+  evSales,
 }
 
 enum DisplayMode { main, panel }
@@ -137,6 +141,10 @@ abstract class Indicator with RegionProp {
         return Pb.fromJson(json);
       case IndicatorType.supertrend:
         return Supertrend.fromJson(json);
+      case IndicatorType.evEbitda:
+        return EvEbitda.fromJson(json);
+      case IndicatorType.evSales:
+        return EvSales.fromJson(json);
     }
   }
 

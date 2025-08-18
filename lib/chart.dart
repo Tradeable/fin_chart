@@ -27,6 +27,7 @@ class Chart extends StatefulWidget {
   final Function(PlotRegion region)? onRegionSelect;
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
+  final ChartType chartType;
 
   const Chart({
     super.key,
@@ -40,6 +41,7 @@ class Chart extends StatefulWidget {
     this.yAxisSettings = const YAxisSettings(),
     this.xAxisSettings = const XAxisSettings(),
     this.recipe,
+    this.chartType = ChartType.candlestick,
   });
 
   factory Chart.from(
@@ -61,6 +63,7 @@ class Chart extends StatefulWidget {
       yAxisSettings: recipe.chartSettings.yAxisSettings,
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
+      chartType: recipe.chartSettings.chartType,
     );
   }
 
@@ -116,9 +119,12 @@ class ChartState extends State<Chart>
   bool isWaitingForEventPosition = false;
   double? eventSelectionPosition;
 
+  late ChartType chartType;
+
   @override
   void initState() {
     super.initState();
+    chartType = widget.chartType;
     if (widget.recipe != null) {
       _initializeFromFactory();
     } else {
@@ -127,17 +133,31 @@ class ChartState extends State<Chart>
     _initializeControllers();
   }
 
+  void setChartType(ChartType type) {
+    setState(() {
+      chartType = type;
+      // Update the chart type on the region itself
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          region.chartType = type;
+        }
+      }
+    });
+  }
+
   void _initializeDefault() {
     currentData.addAll(widget.candles);
     regions.add(MainPlotRegion(
       candles: currentData,
       yAxisSettings: widget.yAxisSettings!,
+      chartType: chartType,
       // fundamentalEvents: fundamentalEvents,
     ));
   }
 
   void _initializeFromFactory() {
     Recipe recipe = widget.recipe!;
+    chartType = recipe.chartSettings.chartType;
 
     (double, double) range = findMinMaxWithPercentage(recipe.data);
 
@@ -151,7 +171,8 @@ class ChartState extends State<Chart>
         candles: currentData,
         yAxisSettings: widget.yAxisSettings!,
         yMinValue: yMinValue,
-        yMaxValue: yMaxValue));
+        yMaxValue: yMaxValue,
+        chartType: chartType));
 
     (regions[0] as MainPlotRegion)
         .updateFundamentalEvents(recipe.fundamentalEvents ?? []);
@@ -720,6 +741,7 @@ class ChartState extends State<Chart>
         dataFit: widget.dataFit,
         yAxisSettings: widget.yAxisSettings!,
         xAxisSettings: widget.xAxisSettings!,
+        chartType: chartType,
         mainPlotRegionId:
             regions.firstWhere((region) => region is MainPlotRegion).id);
   }

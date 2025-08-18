@@ -96,6 +96,8 @@ class _EditorPageState extends State<EditorPage> {
   bool isWaitingForEventPosition = false;
   FundamentalEvent? selectedEvent;
 
+  ChartType _chartType = ChartType.candlestick;
+
   Timer? _autosaveTimer;
   static const String _savedRecipeKey = 'saved_recipe';
 
@@ -199,6 +201,7 @@ class _EditorPageState extends State<EditorPage> {
     super.initState();
     if (widget.recipeStr != null) {
       recipe = Recipe.fromJson(jsonDecode(widget.recipeStr!));
+      _chartType = recipe!.chartSettings.chartType;
       populateRecipe(recipe!);
     }
 
@@ -312,7 +315,9 @@ class _EditorPageState extends State<EditorPage> {
                         onLayerSelect: _onLayerSelect,
                         onRegionSelect: _onRegionSelect,
                         onIndicatorSelect: _onIndicatorSelect,
-                        onInteraction: _onInteraction)
+                        onInteraction: _onInteraction,
+                        chartType: _chartType,
+                      )
                     : Chart.from(
                         key: _chartKey,
                         recipe: recipe!,
@@ -1609,12 +1614,27 @@ class _EditorPageState extends State<EditorPage> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 20),
-        reverse: true,
+        reverse: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
           children: [
+            IconButton(
+              iconSize: 30,
+              tooltip: "Toggle Chart Type",
+              icon: Icon(_chartType == ChartType.candlestick
+                  ? Icons.candlestick_chart
+                  : Icons.show_chart),
+              onPressed: () {
+                setState(() {
+                  _chartType = _chartType == ChartType.candlestick
+                      ? ChartType.line
+                      : ChartType.candlestick;
+                  _chartKey.currentState?.setChartType(_chartType);
+                });
+              },
+            ),
             ElevatedButton(
               onPressed: _showAddEventDialog,
               style: ButtonStyle(
@@ -1733,7 +1753,6 @@ class _EditorPageState extends State<EditorPage> {
       case IndicatorType.evSales:
         indicator = EvSales();
         break;
-
     }
     _chartKey.currentState?.addIndicator(indicator);
   }

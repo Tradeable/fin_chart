@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:fin_chart/models/enums/candle_state.dart';
+import 'package:fin_chart/models/enums/chart_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
@@ -16,6 +17,7 @@ class MainPlotRegion extends PlotRegion {
   final List<FundamentalEvent> fundamentalEvents = [];
   FundamentalEvent? get selectedEvent => _selectedEvent;
   FundamentalEvent? _selectedEvent;
+  ChartType chartType;
 
   MainPlotRegion({
     String? id,
@@ -23,6 +25,7 @@ class MainPlotRegion extends PlotRegion {
     required super.yAxisSettings,
     super.yMinValue,
     super.yMaxValue,
+    this.chartType = ChartType.candlestick,
   }) : super(id: id ?? generateV4()) {
     if (candles.isNotEmpty) {
       (double, double) range = findMinMaxWithPercentage(candles);
@@ -106,6 +109,42 @@ class MainPlotRegion extends PlotRegion {
 
   @override
   void drawBaseLayer(Canvas canvas) {
+    if (chartType == ChartType.line) {
+      _drawLineGraph(canvas);
+    } else {
+      _drawCandlestickGraph(canvas);
+    }
+
+    // Draw indicators on top of the base layer
+    for (Indicator indicator in indicators) {
+      indicator.drawIndicator(canvas: canvas);
+    }
+  }
+
+  void _drawLineGraph(Canvas canvas) {
+    if (candles.length < 2) return;
+
+    final paint = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    path.moveTo(toX(0), toY(candles[0].close));
+
+    for (int i = 1; i < candles.length; i++) {
+      path.lineTo(toX(i.toDouble()), toY(candles[i].close));
+    }
+
+    canvas.drawPath(path, paint);
+
+    // Also draw fundamental events in line mode
+    for (int i = 0; i < candles.length; i++) {
+      drawFundamentalEvents(canvas, i);
+    }
+  }
+
+  void _drawCandlestickGraph(Canvas canvas) {
     for (int i = 0; i < candles.length; i++) {
       ICandle candle = candles[i];
       Color candleColor;
@@ -155,23 +194,6 @@ class MainPlotRegion extends PlotRegion {
           paint);
 
       drawFundamentalEvents(canvas, i);
-
-      // if (toX(i) >= leftPos && toX(i) <= rightPos) {
-      //   canvas.drawLine(Offset(toX(i), toY(candle.high)),
-      //       Offset(toX(i), toY(candle.low)), paint);
-
-      //   canvas.drawRect(
-      //       Rect.fromLTRB(toX(i) - candleWidth / 2, toY(candle.open),
-      //           toX(i) + candleWidth / 2, toY(candle.close)),
-      //       paint);
-      // }
-      // if (toX(i) > rightPos) {
-      //   break;
-      // }
-    }
-
-    for (Indicator indicator in indicators) {
-      indicator.drawIndicator(canvas: canvas);
     }
   }
 

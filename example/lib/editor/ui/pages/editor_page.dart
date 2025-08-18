@@ -18,10 +18,13 @@ import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/line_graph.dart';
+import 'package:fin_chart/models/indicators/ev_ebitda.dart';
+import 'package:fin_chart/models/indicators/ev_sales.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
+import 'package:fin_chart/models/indicators/vwap.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
@@ -1739,6 +1742,15 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case IndicatorType.lineGraph:
         indicator = LineGraph();
+        break;
+      case IndicatorType.vwap:
+        indicator = Vwap();
+        break;
+      case IndicatorType.evEbitda:
+        indicator = EvEbitda();
+        break;
+      case IndicatorType.evSales:
+        indicator = EvSales();
         break;
     }
     _chartKey.currentState?.addIndicator(indicator);

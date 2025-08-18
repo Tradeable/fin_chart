@@ -1,9 +1,12 @@
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/indicators/line_graph.dart';
+import 'package:fin_chart/models/indicators/ev_ebitda.dart';
+import 'package:fin_chart/models/indicators/ev_sales.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
+import 'package:fin_chart/models/indicators/vwap.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +26,9 @@ enum IndicatorType {
   pb,
   supertrend,
   lineGraph,
+  vwap,
+  evEbitda,
+  evSales,
 }
 
 enum DisplayMode { main, panel }
@@ -141,6 +147,12 @@ abstract class Indicator with RegionProp {
         return Supertrend.fromJson(json);
       case IndicatorType.lineGraph:
         return LineGraph.fromJson(json);
+      case IndicatorType.vwap:
+        return Vwap.fromJson(json);
+      case IndicatorType.evEbitda:
+        return EvEbitda.fromJson(json);
+      case IndicatorType.evSales:
+        return EvSales.fromJson(json);
     }
   }
 

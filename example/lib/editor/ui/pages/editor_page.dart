@@ -17,6 +17,7 @@ import 'package:example/dialog/add_data_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
+import 'package:fin_chart/models/indicators/line_graph.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
@@ -92,6 +93,8 @@ class _EditorPageState extends State<EditorPage> {
   List<FundamentalEvent> fundamentalEvents = [];
   bool isWaitingForEventPosition = false;
   FundamentalEvent? selectedEvent;
+
+  bool _isLineChart = false;
 
   Timer? _autosaveTimer;
   static const String _savedRecipeKey = 'saved_recipe';
@@ -1606,12 +1609,25 @@ class _EditorPageState extends State<EditorPage> {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(right: 20),
-        reverse: true,
+        reverse: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
           children: [
+            IconButton(
+              iconSize: 30,
+              // padding: EdgeInsets.symmetric(horizontal: 10),
+              tooltip: "Toggle Chart Type",
+              icon: Icon(
+                  _isLineChart ? Icons.show_chart : Icons.candlestick_chart),
+              onPressed: () {
+                setState(() {
+                  _isLineChart = !_isLineChart;
+                  _chartKey.currentState?.toggleLineGraph(_isLineChart);
+                });
+              },
+            ),
             ElevatedButton(
               onPressed: _showAddEventDialog,
               style: ButtonStyle(
@@ -1720,6 +1736,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case IndicatorType.supertrend:
         indicator = Supertrend();
+        break;
+      case IndicatorType.lineGraph:
+        indicator = LineGraph();
         break;
     }
     _chartKey.currentState?.addIndicator(indicator);

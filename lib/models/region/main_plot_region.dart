@@ -16,6 +16,7 @@ class MainPlotRegion extends PlotRegion {
   final List<FundamentalEvent> fundamentalEvents = [];
   FundamentalEvent? get selectedEvent => _selectedEvent;
   FundamentalEvent? _selectedEvent;
+  bool isCandleStickVisible = true;
 
   MainPlotRegion({
     String? id,
@@ -106,68 +107,59 @@ class MainPlotRegion extends PlotRegion {
 
   @override
   void drawBaseLayer(Canvas canvas) {
+    // Loop to handle events even if candles are hidden
     for (int i = 0; i < candles.length; i++) {
-      ICandle candle = candles[i];
-      Color candleColor;
-      if (candle.state == CandleState.selected) {
-        candleColor = Colors.orange;
-      } else if (candle.state == CandleState.highlighted) {
-        candleColor = Colors.purple;
-      } else if (candle.open < candle.close) {
-        candleColor = Colors.green;
-      } else {
-        candleColor = Colors.red;
+      if (isCandleStickVisible) {
+        ICandle candle = candles[i];
+        Color candleColor;
+        if (candle.state == CandleState.selected) {
+          candleColor = Colors.orange;
+        } else if (candle.state == CandleState.highlighted) {
+          candleColor = Colors.purple;
+        } else if (candle.open < candle.close) {
+          candleColor = Colors.green;
+        } else {
+          candleColor = Colors.red;
+        }
+
+        double maxVolume = candles
+            .reduce((currentMax, candle) =>
+                candle.volume > currentMax.volume ? candle : currentMax)
+            .volume;
+
+        maxVolume = maxVolume == 0 ? 1 : maxVolume;
+
+        // ... (rest of the candlestick and volume drawing logic)
+        Paint volumePaint = Paint()
+          ..strokeWidth = 2
+          ..style = PaintingStyle.fill
+          ..color = candleColor.withAlpha(100);
+        canvas.drawRect(
+            Rect.fromLTWH(
+                toX(i.toDouble()) - (xStepWidth) * 0.45,
+                bottomPos,
+                xStepWidth * 0.9,
+                -((candle.volume / maxVolume) * (bottomPos - topPos) * 0.2)),
+            volumePaint);
+
+        Paint paint = Paint()
+          ..strokeWidth = 2
+          ..style = PaintingStyle.fill
+          ..color = candleColor;
+
+        canvas.drawLine(Offset(toX(i.toDouble()), toY(candle.high)),
+            Offset(toX(i.toDouble()), toY(candle.low)), paint);
+
+        canvas.drawRect(
+            Rect.fromLTRB(
+                toX(i.toDouble()) - (xStepWidth) * 0.35,
+                toY(candle.open),
+                toX(i.toDouble()) + (xStepWidth) * 0.35,
+                toY(candle.close)),
+            paint);
       }
-
-      double maxVolume = candles
-          .reduce((currentMax, candle) =>
-              candle.volume > currentMax.volume ? candle : currentMax)
-          .volume;
-
-      maxVolume = maxVolume == 0 ? 1 : maxVolume;
-
-      Paint volumePaint = Paint()
-        ..strokeWidth = 2
-        ..style = PaintingStyle.fill
-        ..color = candleColor.withAlpha(100);
-      canvas.drawRect(
-          Rect.fromLTWH(
-              toX(i.toDouble()) - (xStepWidth) * 0.45,
-              bottomPos,
-              xStepWidth * 0.9,
-              -((candle.volume / maxVolume) * (bottomPos - topPos) * 0.2)),
-          volumePaint);
-
-      Paint paint = Paint()
-        ..strokeWidth = 2
-        ..style = PaintingStyle.fill
-        ..color = candleColor;
-
-      canvas.drawLine(Offset(toX(i.toDouble()), toY(candle.high)),
-          Offset(toX(i.toDouble()), toY(candle.low)), paint);
-
-      canvas.drawRect(
-          Rect.fromLTRB(
-              toX(i.toDouble()) - (xStepWidth) * 0.35,
-              toY(candle.open),
-              toX(i.toDouble()) + (xStepWidth) * 0.35,
-              toY(candle.close)),
-          paint);
-
+      // Always draw events
       drawFundamentalEvents(canvas, i);
-
-      // if (toX(i) >= leftPos && toX(i) <= rightPos) {
-      //   canvas.drawLine(Offset(toX(i), toY(candle.high)),
-      //       Offset(toX(i), toY(candle.low)), paint);
-
-      //   canvas.drawRect(
-      //       Rect.fromLTRB(toX(i) - candleWidth / 2, toY(candle.open),
-      //           toX(i) + candleWidth / 2, toY(candle.close)),
-      //       paint);
-      // }
-      // if (toX(i) > rightPos) {
-      //   break;
-      // }
     }
 
     for (Indicator indicator in indicators) {

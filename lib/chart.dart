@@ -5,6 +5,7 @@ import 'package:fin_chart/models/enums/data_fit_type.dart';
 import 'package:fin_chart/models/enums/layer_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
+import 'package:fin_chart/models/indicators/line_graph.dart';
 import 'package:fin_chart/models/layers/layer.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
@@ -329,6 +330,34 @@ class ChartState extends State<Chart>
     setState(() {
       for (PlotRegion region in regions) {
         region.layers.clear();
+      }
+    });
+  }
+
+  void toggleLineGraph(bool showLine) {
+    setState(() {
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          region.isCandleStickVisible = !showLine;
+
+          // Remove any existing line graph indicator to avoid duplicates
+          region.indicators.removeWhere((indicator) => indicator is LineGraph);
+
+          if (showLine) {
+            final lineIndicator = LineGraph();
+            lineIndicator.updateRegionProp(
+                leftPos: region.leftPos,
+                topPos: region.topPos,
+                rightPos: region.rightPos,
+                bottomPos: region.bottomPos,
+                xStepWidth: region.xStepWidth,
+                xOffset: region.xOffset,
+                yMinValue: region.yMinValue,
+                yMaxValue: region.yMaxValue);
+            lineIndicator.updateData(currentData); // Make sure it has data
+            region.indicators.add(lineIndicator);
+          }
+        }
       }
     });
   }

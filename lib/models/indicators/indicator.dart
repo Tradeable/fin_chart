@@ -1,4 +1,5 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/indicators/line_graph.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
@@ -21,6 +22,7 @@ enum IndicatorType {
   pe,
   pb,
   supertrend,
+  lineGraph,
 }
 
 enum DisplayMode { main, panel }
@@ -137,6 +139,8 @@ abstract class Indicator with RegionProp {
         return Pb.fromJson(json);
       case IndicatorType.supertrend:
         return Supertrend.fromJson(json);
+      case IndicatorType.lineGraph:
+        return LineGraph.fromJson(json);
     }
   }
 

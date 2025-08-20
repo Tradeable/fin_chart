@@ -5,6 +5,7 @@ import 'package:fin_chart/models/layers/circular_area.dart';
 import 'package:fin_chart/models/layers/horizontal_line.dart';
 import 'package:fin_chart/models/layers/label.dart';
 import 'package:fin_chart/models/layers/rect_area.dart';
+import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/layers/trend_line.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,8 @@ abstract class Layer with RegionProp {
         return ParallelChannel.fromJson(json: json);
       case LayerType.arrowTextPointer:
         return ArrowTextPointer.fromJson(json: json);
+      case LayerType.scanner:
+        return ScannerLayer.fromJson(json: json);
       default:
         throw UnimplementedError();
     }

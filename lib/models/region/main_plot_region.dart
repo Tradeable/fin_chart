@@ -5,6 +5,7 @@ import 'package:fin_chart/models/enums/chart_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
+import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/settings/y_axis_settings.dart';
 import 'package:fin_chart/utils/calculations.dart';
@@ -109,10 +110,16 @@ class MainPlotRegion extends PlotRegion {
 
   @override
   void drawBaseLayer(Canvas canvas) {
+    final allHighlightedIndices = layers
+        .whereType<ScannerLayer>()
+        .expand((scanner) => scanner.highlightedIndices)
+        .toSet();
+
     if (chartType == ChartType.line) {
       _drawLineGraph(canvas);
     } else {
-      _drawCandlestickGraph(canvas);
+      // Pass the highlighted indices to the candlestick drawing method
+      _drawCandlestickGraph(canvas, allHighlightedIndices);
     }
 
     // Draw indicators on top of the base layer
@@ -144,11 +151,13 @@ class MainPlotRegion extends PlotRegion {
     }
   }
 
-  void _drawCandlestickGraph(Canvas canvas) {
+  void _drawCandlestickGraph(Canvas canvas, Set<int> highlightedIndices) {
     for (int i = 0; i < candles.length; i++) {
       ICandle candle = candles[i];
       Color candleColor;
-      if (candle.state == CandleState.selected) {
+      if (highlightedIndices.contains(i)) {
+        candleColor = Colors.yellow.shade700; // Highlight color
+      } else if (candle.state == CandleState.selected) {
         candleColor = Colors.orange;
       } else if (candle.state == CandleState.highlighted) {
         candleColor = Colors.purple;

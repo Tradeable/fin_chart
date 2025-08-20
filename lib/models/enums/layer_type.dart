@@ -9,6 +9,7 @@ enum LayerType {
   arrow,
   arrowTextPointer,
   verticalLine,
+  scanner,
 }
 
 extension LayerTypeExtension on LayerType {

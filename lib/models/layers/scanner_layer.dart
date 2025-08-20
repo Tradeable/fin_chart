@@ -1,6 +1,9 @@
 import 'package:fin_chart/models/enums/layer_type.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
+import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/layers/static_layer.dart';
+import 'package:fin_chart/models/region/main_plot_region.dart';
+import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
 
@@ -22,19 +25,27 @@ class ScannerLayer extends StaticLayer {
   }) : super(id: generateV4(), type: LayerType.scanner);
 
   @override
-  void drawLayer({required Canvas canvas}) {
-    // This is a basic implementation. You can customize this extensively.
+  void drawLayer({required Canvas canvas, required PlotRegion region}) {
+    // Only draw if the region is the main plot and has candles
+    if (region is! MainPlotRegion) return;
+    if (targetIndex >= region.candles.length) return; // Index out of bounds
 
-    final candleHigh = yMaxValue;
-    final targetPoint = toCanvas(Offset(targetIndex.toDouble(), candleHigh));
+    final ICandle targetCandle = region.candles[targetIndex];
 
-    final labelBoxPosition = Offset(targetPoint.dx, topPos - 20);
+    // 1. Get the target point on the chart (pointing to the high of the candle)
+    final targetPoint =
+        toCanvas(Offset(targetIndex.toDouble(), targetCandle.high));
 
+    // 2. Define the position for the label box (30 pixels above the target point)
+    final labelBoxPosition = Offset(targetPoint.dx, targetPoint.dy - 30);
+
+    // 3. Draw a line from the label to the target
     final linePaint = Paint()
       ..color = color
       ..strokeWidth = 1.5;
     canvas.drawLine(labelBoxPosition, targetPoint, linePaint);
 
+    // 4. Draw the label
     final textPainter = TextPainter(
       text: TextSpan(text: label, style: textStyle),
       textAlign: TextAlign.center,
@@ -47,11 +58,15 @@ class ScannerLayer extends StaticLayer {
       height: textPainter.height + 4,
     );
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(labelRect, const Radius.circular(4)),
-      Paint()..color = color,
-    );
+    final rrect = RRect.fromRectAndRadius(labelRect, const Radius.circular(4));
 
+    // Draw a shadow for better visibility
+    canvas.drawRRect(rrect.shift(const Offset(1, 1)),
+        Paint()..color = Colors.black.withAlpha(128)); // 128/255 ≈ 0.5 opacity
+    // Draw the label box
+    canvas.drawRRect(rrect, Paint()..color = color);
+
+    // Draw the text
     textPainter.paint(canvas, labelRect.topLeft + const Offset(4, 2));
   }
 

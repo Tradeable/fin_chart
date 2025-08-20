@@ -7,6 +7,7 @@ import 'package:fin_chart/models/layers/label.dart';
 import 'package:fin_chart/models/layers/rect_area.dart';
 import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/layers/trend_line.dart';
+import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
 import 'package:flutter/material.dart';
 
@@ -58,7 +59,7 @@ abstract class Layer with RegionProp {
     };
   }
 
-  void drawLayer({required Canvas canvas});
+  void drawLayer({required Canvas canvas, required PlotRegion region});
 
   void drawRightAxisValues({required Canvas canvas}) {}
 

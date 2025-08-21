@@ -2,10 +2,14 @@ import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
+import 'package:flutter/material.dart';
 
 class HammerScanner extends PatternScanner {
   @override
   ScannerType get type => ScannerType.hammer;
+
+  @override
+  Color get color => Colors.green.shade700;
 
   @override
   String get name => 'Hammer Candlestick';
@@ -32,6 +36,7 @@ class HammerScanner extends PatternScanner {
           label: 'Hammer',
           targetIndex: i,
           highlightedIndices: [i],
+          color: color,
         ));
       }
     }

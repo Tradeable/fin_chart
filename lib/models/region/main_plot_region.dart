@@ -155,9 +155,10 @@ class MainPlotRegion extends PlotRegion {
     for (int i = 0; i < candles.length; i++) {
       ICandle candle = candles[i];
       Color candleColor;
-      if (highlightedIndices.contains(i)) {
-        candleColor = Colors.yellow.shade700; // Highlight color
-      } else if (candle.state == CandleState.selected) {
+
+      // STEP 1: Restore the original color logic.
+      // We no longer override the color for highlighting here.
+      if (candle.state == CandleState.selected) {
         candleColor = Colors.orange;
       } else if (candle.state == CandleState.highlighted) {
         candleColor = Colors.purple;
@@ -191,16 +192,36 @@ class MainPlotRegion extends PlotRegion {
         ..style = PaintingStyle.fill
         ..color = candleColor;
 
+      // Draw the wick and body as normal
       canvas.drawLine(Offset(toX(i.toDouble()), toY(candle.high)),
           Offset(toX(i.toDouble()), toY(candle.low)), paint);
 
-      canvas.drawRect(
-          Rect.fromLTRB(
-              toX(i.toDouble()) - (xStepWidth) * 0.35,
-              toY(candle.open),
-              toX(i.toDouble()) + (xStepWidth) * 0.35,
-              toY(candle.close)),
-          paint);
+      final bodyRect = Rect.fromLTRB(
+          toX(i.toDouble()) - (xStepWidth) * 0.35,
+          toY(candle.open),
+          toX(i.toDouble()) + (xStepWidth) * 0.35,
+          toY(candle.close));
+
+      canvas.drawRect(bodyRect, paint);
+
+      if (highlightedIndices.contains(i)) {
+        // --- THIS IS THE CORRECTED LOGIC ---
+        // Create a new rect for the entire candle range (high to low)
+        final fullCandleRect = Rect.fromLTRB(
+          bodyRect.left,
+          toY(candle.high),
+          bodyRect.right,
+          toY(candle.low),
+        );
+
+        // Draw the border around the full candle rect
+        canvas.drawRect(
+            fullCandleRect.inflate(2.0),
+            Paint()
+              ..color = Colors.yellow.shade700
+              ..strokeWidth = 2.0
+              ..style = PaintingStyle.stroke);
+      }
 
       drawFundamentalEvents(canvas, i);
     }

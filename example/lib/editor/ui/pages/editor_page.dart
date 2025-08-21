@@ -27,8 +27,6 @@ import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/models/indicators/vwap.dart';
 import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
-import 'package:fin_chart/models/scanners/hammer_scanner.dart';
-import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
@@ -102,9 +100,6 @@ class _EditorPageState extends State<EditorPage> {
 
   ChartType _chartType = ChartType.candlestick;
 
-  final Map<ScannerType, PatternScanner> _allScanners = {
-    ScannerType.hammer: HammerScanner(),
-  };
   final Map<ScannerType, List<ScannerLayer>> _generatedScanners = {};
   final Set<ScannerType> _visibleScannerTypes = {};
 
@@ -1623,9 +1618,7 @@ class _EditorPageState extends State<EditorPage> {
   void _runScanner(ScannerType type) {
     if (_generatedScanners.containsKey(type)) return;
 
-    final scanner = _allScanners[type];
-    if (scanner == null) return;
-
+    final scanner = type.instance;
     final results = scanner.scan(candleData);
 
     setState(() {
@@ -1664,11 +1657,14 @@ class _EditorPageState extends State<EditorPage> {
         title: const Text('Run a Scanner'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: _allScanners.values.map((scanner) {
+          // Iterate over all enum values to build the list
+          children: ScannerType.values.map((scannerType) {
+            // Get the scanner instance to access its properties (like its name)
+            final scanner = scannerType.instance;
             return ListTile(
               title: Text(scanner.name),
               onTap: () {
-                _toggleScannerVisibility(scanner.type);
+                _toggleScannerVisibility(scannerType);
                 Navigator.of(context).pop();
               },
             );

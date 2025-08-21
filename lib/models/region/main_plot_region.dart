@@ -110,16 +110,19 @@ class MainPlotRegion extends PlotRegion {
 
   @override
   void drawBaseLayer(Canvas canvas) {
-    final allHighlightedIndices = layers
+    // CHANGED: This now creates a list of lists, where each inner list
+    // represents one scanner pattern's highlighted candles.
+    final groupedHighlightIndices = layers
         .whereType<ScannerLayer>()
-        .expand((scanner) => scanner.highlightedIndices)
-        .toSet();
+        .map((scanner) => scanner.highlightedIndices)
+        .where((list) => list.isNotEmpty)
+        .toList();
 
     if (chartType == ChartType.line) {
       _drawLineGraph(canvas);
     } else {
-      // Pass the highlighted indices to the candlestick drawing method
-      _drawCandlestickGraph(canvas, allHighlightedIndices);
+      // Pass the new list of lists to the drawing method
+      _drawCandlestickGraph(canvas, groupedHighlightIndices);
     }
 
     // Draw indicators on top of the base layer
@@ -151,13 +154,14 @@ class MainPlotRegion extends PlotRegion {
     }
   }
 
-  void _drawCandlestickGraph(Canvas canvas, Set<int> highlightedIndices) {
+  void _drawCandlestickGraph(
+      Canvas canvas, List<List<int>> groupedHighlightIndices) {
+    // === PART 1: Draw all candles as normal (without highlighting) ===
     for (int i = 0; i < candles.length; i++) {
       ICandle candle = candles[i];
       Color candleColor;
 
-      // STEP 1: Restore the original color logic.
-      // We no longer override the color for highlighting here.
+      // This logic is now simplified, as highlighting is handled separately
       if (candle.state == CandleState.selected) {
         candleColor = Colors.orange;
       } else if (candle.state == CandleState.highlighted) {
@@ -192,7 +196,6 @@ class MainPlotRegion extends PlotRegion {
         ..style = PaintingStyle.fill
         ..color = candleColor;
 
-      // Draw the wick and body as normal
       canvas.drawLine(Offset(toX(i.toDouble()), toY(candle.high)),
           Offset(toX(i.toDouble()), toY(candle.low)), paint);
 
@@ -204,26 +207,46 @@ class MainPlotRegion extends PlotRegion {
 
       canvas.drawRect(bodyRect, paint);
 
-      if (highlightedIndices.contains(i)) {
-        // --- THIS IS THE CORRECTED LOGIC ---
-        // Create a new rect for the entire candle range (high to low)
-        final fullCandleRect = Rect.fromLTRB(
-          bodyRect.left,
-          toY(candle.high),
-          bodyRect.right,
-          toY(candle.low),
-        );
+      drawFundamentalEvents(canvas, i);
+    }
 
-        // Draw the border around the full candle rect
-        canvas.drawRect(
-            fullCandleRect.inflate(2.0),
-            Paint()
-              ..color = Colors.yellow.shade700
-              ..strokeWidth = 2.0
-              ..style = PaintingStyle.stroke);
+    // === PART 2: Draw the highlight boxes on top of the candles ===
+    final highlightPaint = Paint()
+      ..color = Colors.yellow.shade700
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    for (final group in groupedHighlightIndices) {
+      if (group.isEmpty) continue;
+
+      // Find the min/max indices to determine the horizontal bounds of the box
+      final minIndex = group.reduce(min);
+      final maxIndex = group.reduce(max);
+
+      // Find the highest high and lowest low within the group for vertical bounds
+      double highestHigh = candles[minIndex].high;
+      double lowestLow = candles[minIndex].low;
+      for (final index in group) {
+        if (index < candles.length) {
+          // Bounds check
+          highestHigh = max(highestHigh, candles[index].high);
+          lowestLow = min(lowestLow, candles[index].low);
+        }
       }
 
-      drawFundamentalEvents(canvas, i);
+      // Define the bounding box for the entire group
+      final left = toX(minIndex.toDouble()) - (xStepWidth * 0.45);
+      final right = toX(maxIndex.toDouble()) + (xStepWidth * 0.45);
+      final top = toY(highestHigh);
+      final bottom = toY(lowestLow);
+
+      final highlightRect = Rect.fromLTRB(left, top, right, bottom);
+
+      // Inflate for padding and draw the rectangleF
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(
+              highlightRect.inflate(3.0), const Radius.circular(4)),
+          highlightPaint);
     }
   }
 

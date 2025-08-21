@@ -24,7 +24,7 @@ class BearishHaramiCrossScanner extends PatternScanner {
     }
 
     // Start at index 1 since we need a previous candle
-    for (int i = 1; i < candles.length; i++) {
+    for (int i = lookbackPeriod; i < candles.length; i++) {
       final previousCandle = candles[i - 1];
       final currentCandle = candles[i];
 

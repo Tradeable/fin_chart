@@ -14,6 +14,7 @@ import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
+import 'package:example/dialog/scanners_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
@@ -304,7 +305,6 @@ class _EditorPageState extends State<EditorPage> {
       body: SafeArea(
           child: Column(
         children: [
-          _buildActiveScannersWidget(), // ADD THIS
           Expanded(flex: 1, child: _buildTaskListWidget()),
           Expanded(
               flex: 8,
@@ -1650,62 +1650,6 @@ class _EditorPageState extends State<EditorPage> {
     });
   }
 
-  void _showScannerSelectionDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Run a Scanner'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          // Iterate over all enum values to build the list
-          children: ScannerType.values.map((scannerType) {
-            // Get the scanner instance to access its properties (like its name)
-            final scanner = scannerType.instance;
-            return ListTile(
-              title: Text(scanner.name),
-              onTap: () {
-                _toggleScannerVisibility(scannerType);
-                Navigator.of(context).pop();
-              },
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActiveScannersWidget() {
-    if (_generatedScanners.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      color: Colors.blue.withAlpha(50),
-      child: Row(
-        children: [
-          const Text("Active Scanners: ",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(
-            child: Wrap(
-              spacing: 8.0,
-              children: _generatedScanners.keys.map((type) {
-                return FilterChip(
-                  label: Text(
-                      '${type.name} (${_generatedScanners[type]!.length})'),
-                  selected: _visibleScannerTypes.contains(type),
-                  onSelected: (isSelected) {
-                    _toggleScannerVisibility(type);
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildToolBox() {
     return Container(
       width: double.infinity,
@@ -1746,7 +1690,14 @@ class _EditorPageState extends State<EditorPage> {
             ),
             const SizedBox(width: 20),
             ElevatedButton(
-              onPressed: _showScannerSelectionDialog,
+              onPressed: () {
+                showScannersDialog(
+                  context: context,
+                  visibleScannerTypes: _visibleScannerTypes,
+                  generatedScanners: _generatedScanners,
+                  onToggle: _toggleScannerVisibility,
+                );
+              },
               child: const Text("Scanners"),
             ),
             const SizedBox(width: 20),

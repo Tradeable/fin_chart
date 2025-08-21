@@ -26,3 +26,5 @@ export 'package:fin_chart/models/tasks/show_payoff_graph.task.dart';
 export 'package:fin_chart/models/tasks/move_tab.task.dart';
 export 'package:fin_chart/models/tasks/show_popup.task.dart';
 export 'package:fin_chart/models/enums/chart_type.dart';
+export 'package:fin_chart/models/tasks/show_insights_v2.task.dart';
+export 'package:fin_chart/ui/insights_v2/insights_v2.dart';

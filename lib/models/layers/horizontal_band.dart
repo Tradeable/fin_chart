@@ -1,6 +1,5 @@
 import 'package:fin_chart/models/enums/layer_type.dart';
 import 'package:fin_chart/models/layers/layer.dart';
-import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/ui/layer_settings/horizontal_band_settings_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +43,7 @@ class HorizontalBand extends Layer {
   }
 
   @override
-  void drawLayer({required Canvas canvas, required PlotRegion region}) {
+  void drawLayer({required Canvas canvas}) {
     canvas.drawRect(
         Rect.fromLTWH(leftPos, toY(value) - allowedError / 2,
             rightPos - leftPos, allowedError),

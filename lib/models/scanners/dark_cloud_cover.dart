@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class DarkCloudCoverScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class DarkCloudCoverScanner extends PatternScanner {
   String get name => 'Dark Cloud Cover';
 
   @override
-  Color get color => Colors.red.shade700;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     // This is a two-candle pattern, so start at index 1
     for (int i = 1; i < candles.length; i++) {
       final first = candles[i - 1];
@@ -43,12 +40,11 @@ class DarkCloudCoverScanner extends PatternScanner {
           opensAboveHigh &&
           closesBelowMidpoint &&
           closesAboveOpen) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Dark Cloud',
           targetIndex: i,
           highlightedIndices: [i - 1, i], // Highlight both candles
-          color: color,
         ));
       }
     }

@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class DragonflyDojiScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class DragonflyDojiScanner extends PatternScanner {
   String get name => 'Dragonfly Doji';
 
   @override
-  Color get color => Colors.teal;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
       final totalRange = candle.high - candle.low;
@@ -29,12 +26,11 @@ class DragonflyDojiScanner extends PatternScanner {
       bool isNearHigh = (candle.high - candle.close) < (totalRange * 0.1);
 
       if (isDojiBody && isNearHigh) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Doji',
           targetIndex: i,
           highlightedIndices: [i],
-          color: color,
         ));
       }
     }

@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class AbandonedBabyBottomScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class AbandonedBabyBottomScanner extends PatternScanner {
   String get name => 'Abandoned Baby Bottom';
 
   @override
-  Color get color => Colors.blueAccent;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     // This is a three-candle pattern, so start at index 2
     for (int i = 2; i < candles.length; i++) {
       final first = candles[i - 2];
@@ -49,12 +46,11 @@ class AbandonedBabyBottomScanner extends PatternScanner {
           isThirdBullish &&
           isGapUp &&
           closesInBody) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Abandoned Baby B',
           targetIndex: i - 1, // Point to the Doji in the middle
           highlightedIndices: [i - 2, i - 1, i], // Highlight all three candles
-          color: color,
         ));
       }
     }

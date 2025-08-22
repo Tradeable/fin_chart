@@ -1,6 +1,5 @@
 import 'package:fin_chart/models/enums/layer_type.dart';
 import 'package:fin_chart/models/layers/layer.dart';
-import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
 
@@ -39,7 +38,7 @@ class VerticalLine extends Layer {
   }
 
   @override
-  void drawLayer({required Canvas canvas, required PlotRegion region}) {
+  void drawLayer({required Canvas canvas}) {
     canvas.drawLine(
         Offset(toX(pos) + xStepWidth / 2, topPos),
         Offset(toX(pos) + xStepWidth / 2, bottomPos),

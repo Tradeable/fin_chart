@@ -1,11 +1,11 @@
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
 import 'package:flutter/material.dart';
 
 Future<void> showScannersDialog({
   required BuildContext context,
   required Set<ScannerType> visibleScannerTypes,
-  required Map<ScannerType, List<ScannerLayer>> generatedScanners,
+  required Map<ScannerType, List<ScannerResult>> generatedScanners,
   required Function(ScannerType) onToggle,
 }) async {
   return showDialog(

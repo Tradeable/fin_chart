@@ -5,7 +5,6 @@ import 'package:fin_chart/models/enums/chart_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/models/settings/y_axis_settings.dart';
 import 'package:fin_chart/utils/calculations.dart';
@@ -110,19 +109,10 @@ class MainPlotRegion extends PlotRegion {
 
   @override
   void drawBaseLayer(Canvas canvas) {
-    // CHANGED: This now creates a list of lists, where each inner list
-    // represents one scanner pattern's highlighted candles.
-    final groupedHighlightIndices = layers
-        .whereType<ScannerLayer>()
-        .map((scanner) => scanner.highlightedIndices)
-        .where((list) => list.isNotEmpty)
-        .toList();
-
     if (chartType == ChartType.line) {
       _drawLineGraph(canvas);
     } else {
-      // Pass the new list of lists to the drawing method
-      _drawCandlestickGraph(canvas, groupedHighlightIndices);
+      _drawCandlestickGraph(canvas);
     }
 
     // Draw indicators on top of the base layer
@@ -154,14 +144,10 @@ class MainPlotRegion extends PlotRegion {
     }
   }
 
-  void _drawCandlestickGraph(
-      Canvas canvas, List<List<int>> groupedHighlightIndices) {
-    // === PART 1: Draw all candles as normal (without highlighting) ===
+  void _drawCandlestickGraph(Canvas canvas) {
     for (int i = 0; i < candles.length; i++) {
       ICandle candle = candles[i];
       Color candleColor;
-
-      // This logic is now simplified, as highlighting is handled separately
       if (candle.state == CandleState.selected) {
         candleColor = Colors.orange;
       } else if (candle.state == CandleState.highlighted) {
@@ -199,54 +185,15 @@ class MainPlotRegion extends PlotRegion {
       canvas.drawLine(Offset(toX(i.toDouble()), toY(candle.high)),
           Offset(toX(i.toDouble()), toY(candle.low)), paint);
 
-      final bodyRect = Rect.fromLTRB(
-          toX(i.toDouble()) - (xStepWidth) * 0.35,
-          toY(candle.open),
-          toX(i.toDouble()) + (xStepWidth) * 0.35,
-          toY(candle.close));
-
-      canvas.drawRect(bodyRect, paint);
+      canvas.drawRect(
+          Rect.fromLTRB(
+              toX(i.toDouble()) - (xStepWidth) * 0.35,
+              toY(candle.open),
+              toX(i.toDouble()) + (xStepWidth) * 0.35,
+              toY(candle.close)),
+          paint);
 
       drawFundamentalEvents(canvas, i);
-    }
-
-    // === PART 2: Draw the highlight boxes on top of the candles ===
-    final highlightPaint = Paint()
-      ..color = Colors.yellow.shade700
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    for (final group in groupedHighlightIndices) {
-      if (group.isEmpty) continue;
-
-      // Find the min/max indices to determine the horizontal bounds of the box
-      final minIndex = group.reduce(min);
-      final maxIndex = group.reduce(max);
-
-      // Find the highest high and lowest low within the group for vertical bounds
-      double highestHigh = candles[minIndex].high;
-      double lowestLow = candles[minIndex].low;
-      for (final index in group) {
-        if (index < candles.length) {
-          // Bounds check
-          highestHigh = max(highestHigh, candles[index].high);
-          lowestLow = min(lowestLow, candles[index].low);
-        }
-      }
-
-      // Define the bounding box for the entire group
-      final left = toX(minIndex.toDouble()) - (xStepWidth * 0.45);
-      final right = toX(maxIndex.toDouble()) + (xStepWidth * 0.45);
-      final top = toY(highestHigh);
-      final bottom = toY(lowestLow);
-
-      final highlightRect = Rect.fromLTRB(left, top, right, bottom);
-
-      // Inflate for padding and draw the rectangleF
-      canvas.drawRRect(
-          RRect.fromRectAndRadius(
-              highlightRect.inflate(3.0), const Radius.circular(4)),
-          highlightPaint);
     }
   }
 

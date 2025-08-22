@@ -3,11 +3,9 @@ import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/chart_settings.dart';
 import 'package:fin_chart/models/enums/data_fit_type.dart';
 import 'package:fin_chart/models/enums/layer_type.dart';
-import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/layers/layer.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/panel_plot_region.dart';
@@ -348,15 +346,6 @@ class ChartState extends State<Chart>
     });
   }
 
-  void removeLayersByScannerType(ScannerType type) {
-    setState(() {
-      for (final region in regions) {
-        region.layers.removeWhere(
-            (layer) => layer is ScannerLayer && layer.scannerType == type);
-      }
-    });
-  }
-
   void clearChart() {
     setState(() {
       for (PlotRegion region in regions) {
@@ -419,6 +408,7 @@ class ChartState extends State<Chart>
                     selectedIndicator?.showIndicatorSettings(
                         context: context,
                         onUpdate: (indicator) {
+                          indicator.updateData(currentData);
                           setState(() {
                             selectedIndicator = indicator;
                           });

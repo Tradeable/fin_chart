@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class InvertedHammerScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class InvertedHammerScanner extends PatternScanner {
   String get name => 'Inverted Hammer';
 
   @override
-  Color get color => Colors.lightGreen.shade700;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
 
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
@@ -35,12 +32,11 @@ class InvertedHammerScanner extends PatternScanner {
       if (totalRange > 0 &&
           upperShadow >= bodySize * 2 &&
           lowerShadow < bodySize) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Inv Hammer',
           targetIndex: i,
           highlightedIndices: [i], // Highlight just this candle
-          color: color,
         ));
       }
     }

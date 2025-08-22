@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class BullishHaramiCrossScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class BullishHaramiCrossScanner extends PatternScanner {
   String get name => 'Bullish Harami Cross';
 
   @override
-  Color get color => Colors.lightBlue.shade400;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     const int lookbackPeriod = 10;
 
     if (candles.length < lookbackPeriod) {
@@ -55,12 +52,11 @@ class BullishHaramiCrossScanner extends PatternScanner {
       bool isPreviousLong = previousBodySize > avgBodySize;
 
       if (isHarami && isPreviousLong) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Bullish Harami Cross',
           targetIndex: i,
           highlightedIndices: [i - 1, i], // Highlight both candles
-          color: color,
         ));
       }
     }

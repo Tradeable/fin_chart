@@ -14,19 +14,17 @@ import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
-import 'package:example/dialog/scanners_dialog.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
-import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/ev_ebitda.dart';
 import 'package:fin_chart/models/indicators/ev_sales.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
+import 'package:fin_chart/models/indicators/scanner_indicator.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/models/indicators/vwap.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
@@ -100,9 +98,6 @@ class _EditorPageState extends State<EditorPage> {
   FundamentalEvent? selectedEvent;
 
   ChartType _chartType = ChartType.candlestick;
-
-  final Map<ScannerType, List<ScannerLayer>> _generatedScanners = {};
-  final Set<ScannerType> _visibleScannerTypes = {};
 
   Timer? _autosaveTimer;
   static const String _savedRecipeKey = 'saved_recipe';
@@ -454,10 +449,6 @@ class _EditorPageState extends State<EditorPage> {
           break;
         case LayerType.arrowTextPointer:
           layer = ArrowTextPointer.fromTool(pos: drawPoints.first, label: "");
-          break;
-        case LayerType.scanner:
-          // Scanners are not drawn manually, so do nothing.
-          layer = null;
           break;
       }
       setState(() {
@@ -1615,41 +1606,6 @@ class _EditorPageState extends State<EditorPage> {
     }
   }
 
-  void _runScanner(ScannerType type) {
-    if (_generatedScanners.containsKey(type)) return;
-
-    final scanner = type.instance;
-    final results = scanner.scan(candleData);
-
-    setState(() {
-      _generatedScanners[type] = results;
-    });
-  }
-
-  void _toggleScannerVisibility(ScannerType type) {
-    // Ensure the scan has been run at least once
-    _runScanner(type);
-
-    setState(() {
-      if (_visibleScannerTypes.contains(type)) {
-        _visibleScannerTypes.remove(type);
-        _chartKey.currentState?.removeLayersByScannerType(type);
-      } else {
-        _visibleScannerTypes.add(type);
-        final scanners = _generatedScanners[type] ?? [];
-        for (final scanner in scanners) {
-          // Add scanner to the main plot region
-          _chartKey.currentState?.addLayerAtRegion(
-            _chartKey.currentState!.regions
-                .firstWhere((r) => r is MainPlotRegion)
-                .id,
-            scanner,
-          );
-        }
-      }
-    });
-  }
-
   Widget _buildToolBox() {
     return Container(
       width: double.infinity,
@@ -1687,18 +1643,6 @@ class _EditorPageState extends State<EditorPage> {
                     isWaitingForEventPosition ? Colors.tealAccent : null),
               ),
               child: const Text("Add Event"),
-            ),
-            const SizedBox(width: 20),
-            ElevatedButton(
-              onPressed: () {
-                showScannersDialog(
-                  context: context,
-                  visibleScannerTypes: _visibleScannerTypes,
-                  generatedScanners: _generatedScanners,
-                  onToggle: _toggleScannerVisibility,
-                );
-              },
-              child: const Text("Scanners"),
             ),
             const SizedBox(width: 20),
             ElevatedButton(
@@ -1810,6 +1754,8 @@ class _EditorPageState extends State<EditorPage> {
       case IndicatorType.evSales:
         indicator = EvSales();
         break;
+      case IndicatorType.scanner:
+        indicator = ScannerIndicator();
     }
     _chartKey.currentState?.addIndicator(indicator);
   }

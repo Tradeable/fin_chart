@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class ThreeWhiteSoldiersScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class ThreeWhiteSoldiersScanner extends PatternScanner {
   String get name => 'Three White Soldiers';
 
   @override
-  Color get color => Colors.lightGreen.shade600;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     // This is a three-candle pattern, so start at index 2
     for (int i = 2; i < candles.length; i++) {
       final first = candles[i - 2];
@@ -48,12 +45,11 @@ class ThreeWhiteSoldiersScanner extends PatternScanner {
           (third.high - third.close) < thirdBody * 0.3;
 
       if (opensInBody && closesHigher && smallWicks) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: '3W Soldiers',
           targetIndex: i,
           highlightedIndices: [i - 2, i - 1, i], // Highlight all three candles
-          color: color,
         ));
       }
     }

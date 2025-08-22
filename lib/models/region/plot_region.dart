@@ -91,7 +91,7 @@ abstract class PlotRegion with RegionProp {
 
   void drawLayers(Canvas canvas) {
     for (final layer in layers) {
-      layer.drawLayer(canvas: canvas, region: this);
+      layer.drawLayer(canvas: canvas);
     }
   }
 

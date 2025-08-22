@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class HangingManScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class HangingManScanner extends PatternScanner {
   String get name => 'Hanging Man';
 
   @override
-  Color get color => Colors.orange.shade700;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
 
     for (int i = 0; i < candles.length; i++) {
       final candle = candles[i];
@@ -36,12 +33,11 @@ class HangingManScanner extends PatternScanner {
           bodySize < totalRange * 0.33 &&
           lowerShadow >= bodySize * 2 &&
           upperShadow < bodySize * 0.5) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Hanging Man',
           targetIndex: i,
           highlightedIndices: [i], // Highlight just this candle
-          color: color,
         ));
       }
     }

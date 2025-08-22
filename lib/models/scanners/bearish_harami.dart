@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class BearishHaramiScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class BearishHaramiScanner extends PatternScanner {
   String get name => 'Bearish Harami';
 
   @override
-  Color get color => Colors.orange.shade800;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     const int lookbackPeriod = 10;
 
     if (candles.length < lookbackPeriod) {
@@ -49,12 +46,11 @@ class BearishHaramiScanner extends PatternScanner {
       bool isPreviousLong = previousBodySize > avgBodySize;
 
       if (isHarami && isPreviousLong) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'Bearish Harami',
           targetIndex: i,
           highlightedIndices: [i - 1, i], // Highlight both candles
-          color: color,
         ));
       }
     }

@@ -1,6 +1,5 @@
 import 'package:fin_chart/models/enums/layer_type.dart';
 import 'package:fin_chart/models/layers/layer.dart';
-import 'package:fin_chart/models/region/plot_region.dart';
 import 'package:fin_chart/ui/layer_settings/parallel_channel_settings_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +81,7 @@ class ParallelChannel extends Layer {
   }
 
   @override
-  void drawLayer({required Canvas canvas, required PlotRegion region}) {
+  void drawLayer({required Canvas canvas}) {
     final path = Path();
     path.moveTo(toX(topLeft.dx), toY(topLeft.dy));
     path.lineTo(toX(topRight.dx), toY(topRight.dy));

@@ -1,8 +1,8 @@
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
-import 'package:fin_chart/models/layers/scanner_layer.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
-import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
+import 'package:fin_chart/models/scanners/trend_data.dart';
 
 class WhiteMarubozuScanner extends PatternScanner {
   @override
@@ -12,11 +12,8 @@ class WhiteMarubozuScanner extends PatternScanner {
   String get name => 'White Marubozu';
 
   @override
-  Color get color => Colors.lightBlue.shade700;
-
-  @override
-  List<ScannerLayer> scan(List<ICandle> candles) {
-    final scanners = <ScannerLayer>[];
+  List<ScannerResult> scan(List<ICandle> candles, {TrendData? trendData}) {
+    final scanners = <ScannerResult>[];
     const int lookbackPeriod = 10; // Period to average body size
 
     if (candles.length < lookbackPeriod) {
@@ -48,12 +45,11 @@ class WhiteMarubozuScanner extends PatternScanner {
           (candle.open - candle.low) < shadowThreshold;
 
       if (isLongBody && hasNoShadows) {
-        scanners.add(ScannerLayer(
+        scanners.add(ScannerResult(
           scannerType: type,
           label: 'W Marubozu',
           targetIndex: i,
           highlightedIndices: [i],
-          color: color,
         ));
       }
     }

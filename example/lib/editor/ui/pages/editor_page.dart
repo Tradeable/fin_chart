@@ -168,7 +168,7 @@ class _EditorPageState extends State<EditorPage> {
                             fundamentalEvents: fundamentalEvents)
                         .toJson())))
                 .then((_) {
-              if (context.mounted) {
+              if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("recipe to clipboar")));
               }

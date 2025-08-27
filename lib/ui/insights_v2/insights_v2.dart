@@ -4,11 +4,19 @@ import 'package:fin_chart/models/insights_v2/text_block.dart';
 import 'package:fin_chart/models/insights_v2/image_block.dart';
 import 'package:fin_chart/models/insights_v2/video_block.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InsightsPreviewPage extends StatelessWidget {
   final ShowInsightsPageV2Task task;
 
   const InsightsPreviewPage({super.key, required this.task});
+
+  Future<void> _openLink(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,18 +46,21 @@ class InsightsPreviewPage extends StatelessWidget {
             ),
           );
         } else if (block is VideoBlock) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Center(
-                child: Icon(
-                  Icons.play_circle_fill,
-                  size: 64,
-                  color: Colors.white,
+          return GestureDetector(
+            onTap: () => _openLink(block.url),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Center(
+                  child: Icon(
+                    Icons.play_circle_fill,
+                    size: 64,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

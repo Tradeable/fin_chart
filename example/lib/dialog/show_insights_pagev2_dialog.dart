@@ -4,6 +4,7 @@ import 'package:fin_chart/models/insights_v2/text_block.dart';
 import 'package:fin_chart/models/insights_v2/video_block.dart';
 import 'package:fin_chart/models/tasks/show_insights_v2.task.dart';
 import 'package:flutter/material.dart';
+import 'package:markdown_toolbar/markdown_toolbar.dart';
 
 Future<ShowInsightsPageV2Task?> showInsightsPageV2Dialog({
   required BuildContext context,
@@ -209,12 +210,22 @@ class _ShowInsightsPageV2EditorState extends State<ShowInsightsPageV2Editor> {
             ),
             const SizedBox(height: 8),
             if (block is TextBlock)
-              TextField(
-                controller: _ctrl('${block.id}_markdown'),
-                minLines: 1,
-                maxLines: 10,
-                decoration: const InputDecoration(
-                    hintText: 'Markdown', border: OutlineInputBorder()),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MarkdownToolbar(
+                    controller: _ctrl('${block.id}_markdown'),
+                    useIncludedTextField: false,
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _ctrl('${block.id}_markdown'),
+                    minLines: 1,
+                    maxLines: 10,
+                    decoration: const InputDecoration(
+                        hintText: 'Markdown', border: OutlineInputBorder()),
+                  )
+                ],
               )
             else if (block is ImageBlock)
               Column(

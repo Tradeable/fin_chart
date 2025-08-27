@@ -3,8 +3,8 @@ import 'package:fin_chart/models/tasks/show_insights_v2.task.dart';
 import 'package:fin_chart/models/insights_v2/text_block.dart';
 import 'package:fin_chart/models/insights_v2/image_block.dart';
 import 'package:fin_chart/models/insights_v2/video_block.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:markdown_widget/widget/markdown_block.dart';
 
 class InsightsPreviewPage extends StatelessWidget {
   final ShowInsightsPageV2Task task;
@@ -30,10 +30,7 @@ class InsightsPreviewPage extends StatelessWidget {
         if (block is TextBlock) {
           return Container(
             padding: const EdgeInsets.all(12),
-            child: Markdown(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                data: block.markdown),
+            child: MarkdownBlock(data: block.markdown),
           );
         } else if (block is ImageBlock) {
           return ClipRRect(

@@ -14,8 +14,8 @@ class Vwap extends Indicator {
 
   // Band properties
   double standardDeviations = 2.0; // Multiplier for bands
-  Color upperBandColor = Colors.purple.withOpacity(0.3);
-  Color lowerBandColor = Colors.purple.withOpacity(0.3);
+  Color upperBandColor = Colors.purple.withAlpha(78);
+  Color lowerBandColor = Colors.purple.withAlpha(78);
   bool showBands = true;
 
   final List<double> vwapValues = [];
@@ -93,7 +93,7 @@ class Vwap extends Indicator {
 
   void _drawBandShading(Canvas canvas) {
     final shadingPaint = Paint()
-      ..color = Colors.green.withOpacity(0.1)
+      ..color = Colors.green.withAlpha(26)
       ..style = PaintingStyle.fill;
 
     final path = Path();

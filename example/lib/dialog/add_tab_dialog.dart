@@ -17,7 +17,8 @@ Future<AddTabTask?> addTabDialog({
           t is ChooseCorrectOptionValueChainTask ||
           t is ShowPayOffGraphTask ||
           t is ShowInsightsPageTask ||
-          t is TableTask)
+          t is TableTask ||
+          t is ShowInsightsPageV2Task)
       .toList();
   String? selectedTaskId;
   String tabTitle = '';
@@ -264,6 +265,38 @@ Future<AddTabTask?> addTabDialog({
                                   ),
                                 );
                               }),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else if (task is ShowInsightsPageV2Task) {
+                      taskType = 'Insights Page V2';
+                      previewWidget = Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(
+                            color: Colors.blue,
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.lightbulb, size: 24),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Insights Page V2',
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                ],
+                              ),
+                              Text('Title: ${task.title}'),
                             ],
                           ),
                         ),

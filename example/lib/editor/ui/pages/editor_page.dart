@@ -8,6 +8,7 @@ import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_bottom_sheet_dialog.dart';
 import 'package:example/dialog/show_insights_page_dialog.dart';
+import 'package:example/dialog/show_insights_pagev2_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
@@ -167,7 +168,7 @@ class _EditorPageState extends State<EditorPage> {
                             fundamentalEvents: fundamentalEvents)
                         .toJson())))
                 .then((_) {
-              if (context.mounted) {
+              if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("recipe to clipboar")));
               }
@@ -263,6 +264,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.clearBucketRows:
           case TaskType.tableTask:
           case TaskType.highlightTableRow:
+          case TaskType.showInsightsV2Page:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -580,6 +582,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.highlightTableRow:
           highlightTableRowPrompt();
           break;
+        case TaskType.showInsightsV2Page:
+          showInsightsPageV2Task();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -650,6 +655,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.highlightTableRow:
         editHighlightTableRowTask(task as HighlightTableRowTask);
+        break;
+      case TaskType.showInsightsV2Page:
+        editInsightsPageV2Task(task as ShowInsightsPageV2Task);
         break;
     }
   }
@@ -1465,6 +1473,26 @@ class _EditorPageState extends State<EditorPage> {
         if (data != null) {
           task.title = data.title;
           task.description = data.description;
+        }
+      });
+    });
+  }
+
+  void showInsightsPageV2Task() async {
+    await showInsightsPageV2Dialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editInsightsPageV2Task(ShowInsightsPageV2Task task) async {
+    await showInsightsPageV2Dialog(context: context, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.title = data.title;
+          task.blocks = data.blocks;
         }
       });
     });

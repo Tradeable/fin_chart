@@ -482,6 +482,24 @@ class _TaskListWidgetState extends State<TaskListWidget> {
             ),
           ],
         );
+      case TaskType.showInsightsV2Page:
+        return Row(
+          children: [
+            Text(
+                "Insights Page V2 ${(task as ShowInsightsPageV2Task).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
     }
   }
 }

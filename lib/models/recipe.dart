@@ -16,8 +16,7 @@ class Recipe {
       required this.tasks,
       required this.chartSettings,
       this.version = packageVersion,
-      this.fundamentalEvents
-      });
+      this.fundamentalEvents});
 
   Map<String, dynamic> toJson() {
     return {
@@ -25,7 +24,8 @@ class Recipe {
       'data': data.map((candle) => candle.toJson()).toList(),
       'chartSettings': chartSettings.toJson(),
       'tasks': tasks.map((task) => task.toJson()).toList(),
-      'fundamentalEvents': fundamentalEvents?.map((event) => event.toJson()).toList(),
+      'fundamentalEvents':
+          fundamentalEvents?.map((event) => event.toJson()).toList(),
     };
   }
 
@@ -40,7 +40,7 @@ class Recipe {
           (json['tasks'] as List).map((task) => Task.fromJson(task)).toList(),
       fundamentalEvents: json.containsKey('fundamentalEvents')
           ? (json['fundamentalEvents'] as List)
-              .map((event) => FundamentalEvent.fromJson(json : event))
+              .map((event) => FundamentalEvent.fromJson(json: event))
               .toList()
           : [],
     );

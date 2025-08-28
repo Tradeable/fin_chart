@@ -55,11 +55,13 @@ class InsightsPreviewPage extends StatelessWidget {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    block.url,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.broken_image, size: 50),
-                  ),
+                      'https://api.allorigins.win/raw?url=${Uri.encodeComponent(block.url)}',
+                      fit: BoxFit.cover, errorBuilder: (_, __, ___) {
+                    print(___);
+                    print(__);
+                    print(block.url);
+                    return const Icon(Icons.broken_image, size: 50);
+                  }),
                 );
               } else if (block is VideoBlock) {
                 return GestureDetector(

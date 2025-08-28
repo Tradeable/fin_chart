@@ -54,12 +54,8 @@ class InsightsPreviewPage extends StatelessWidget {
               } else if (block is ImageBlock) {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                      'https://api.allorigins.win/raw?url=${Uri.encodeComponent(block.url)}',
-                      fit: BoxFit.cover, errorBuilder: (_, __, ___) {
-                    print(___);
-                    print(__);
-                    print(block.url);
+                  child: Image.network(block.url, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) {
                     return const Icon(Icons.broken_image, size: 50);
                   }),
                 );

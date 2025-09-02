@@ -54,6 +54,10 @@ class _ShowInsightsPageV2EditorState extends State<ShowInsightsPageV2Editor> {
       controllers['${block.id}_url'] = TextEditingController(text: block.url);
       controllers['${block.id}_alt'] =
           TextEditingController(text: block.alt ?? '');
+      controllers['${block.id}_height'] =
+          TextEditingController(text: (block.height ?? 0).toString());
+      controllers['${block.id}_width'] =
+          TextEditingController(text: (block.width ?? 0).toString());
     } else if (block is VideoBlock) {
       controllers['${block.id}_url'] = TextEditingController(text: block.url);
     }
@@ -100,6 +104,12 @@ class _ShowInsightsPageV2EditorState extends State<ShowInsightsPageV2Editor> {
           alt: _ctrl('${block.id}_alt').text.trim().isEmpty
               ? null
               : _ctrl('${block.id}_alt').text.trim(),
+          height: _ctrl('${block.id}_height').text.trim().isEmpty
+              ? null
+              : double.parse(_ctrl('${block.id}_height').text.trim()),
+          width: _ctrl('${block.id}_width').text.trim().isEmpty
+              ? null
+              : double.parse(_ctrl('${block.id}_width').text.trim()),
         ));
       } else if (block is VideoBlock) {
         updatedBlocks.add(VideoBlock(
@@ -240,6 +250,20 @@ class _ShowInsightsPageV2EditorState extends State<ShowInsightsPageV2Editor> {
                     controller: _ctrl('${block.id}_alt'),
                     decoration: const InputDecoration(
                         hintText: 'Alt text (optional)',
+                        border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _ctrl('${block.id}_height'),
+                    decoration: const InputDecoration(
+                        hintText: 'Height (optional)',
+                        border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _ctrl('${block.id}_width'),
+                    decoration: const InputDecoration(
+                        hintText: 'Width (optional)',
                         border: OutlineInputBorder()),
                   ),
                   const SizedBox(height: 8),

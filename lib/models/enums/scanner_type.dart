@@ -16,12 +16,16 @@ import 'package:fin_chart/models/scanners/hanging_man.dart';
 import 'package:fin_chart/models/scanners/identical_three_crows.dart';
 import 'package:fin_chart/models/scanners/inverted_hammer.dart';
 import 'package:fin_chart/models/scanners/morning_star.dart';
+import 'package:fin_chart/models/scanners/moving_average_scanner.dart';
+import 'package:fin_chart/models/scanners/oscillator_scanner.dart';
 import 'package:fin_chart/models/scanners/pattern_scanner.dart';
 import 'package:fin_chart/models/scanners/piercing_line.dart';
 import 'package:fin_chart/models/scanners/shooting_star.dart';
 import 'package:fin_chart/models/scanners/three_white_soldiers.dart';
 import 'package:fin_chart/models/scanners/upside_tasuki_gap.dart';
 import 'package:fin_chart/models/scanners/white_marubozu.dart';
+
+enum PriceComparison { above, below }
 
 enum ScannerType {
   hammer,
@@ -47,6 +51,50 @@ enum ScannerType {
   bullishKicker,
   morningStar,
   dragonflyDoji,
+
+  // MFI Scanners
+  mfiOverbought,
+  mfiOversold,
+
+  // SMA Price Above
+  priceAbove5SMA,
+  priceAbove10SMA,
+  priceAbove20SMA,
+  priceAbove30SMA,
+  priceAbove50SMA,
+  priceAbove100SMA,
+  priceAbove150SMA,
+  priceAbove200SMA,
+
+  // EMA Pripce Above
+  priceAbove5EMA,
+  priceAbove10EMA,
+  priceAbove12EMA,
+  priceAbove20EMA,
+  priceAbove26EMA,
+  priceAbove50EMA,
+  priceAbove100EMA,
+  priceAbove200EMA,
+
+  // SMA Price Below
+  priceBelow5SMA,
+  priceBelow10SMA,
+  priceBelow20SMA,
+  priceBelow30SMA,
+  priceBelow50SMA,
+  priceBelow100SMA,
+  priceBelow150SMA,
+  priceBelow200SMA,
+
+  // EMA Price Below
+  priceBelow5EMA,
+  priceBelow10EMA,
+  priceBelow12EMA,
+  priceBelow20EMA,
+  priceBelow26EMA,
+  priceBelow50EMA,
+  priceBelow100EMA,
+  priceBelow200EMA,
 }
 
 extension ScannerTypeExtension on ScannerType {
@@ -98,6 +146,224 @@ extension ScannerTypeExtension on ScannerType {
         return MorningStarScanner();
       case ScannerType.dragonflyDoji:
         return DragonflyDojiScanner();
+
+      // MFI Scanners
+      case ScannerType.mfiOverbought:
+        return OscillatorScanner(
+          oscillatorType: OscillatorType.mFI,
+          period: 14,
+          threshold: 80,
+          comparison: PriceComparison.above,
+          type: this,
+        );
+      case ScannerType.mfiOversold:
+        return OscillatorScanner(
+          oscillatorType: OscillatorType.mFI,
+          period: 14,
+          threshold: 20,
+          comparison: PriceComparison.below,
+          type: this,
+        );
+
+      // SMA Price Above
+      case ScannerType.priceAbove5SMA:
+        return MovingAverageScanner(
+            period: 5,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove10SMA:
+        return MovingAverageScanner(
+            period: 10,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove20SMA:
+        return MovingAverageScanner(
+            period: 20,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove30SMA:
+        return MovingAverageScanner(
+            period: 30,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove50SMA:
+        return MovingAverageScanner(
+            period: 50,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove100SMA:
+        return MovingAverageScanner(
+            period: 100,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove150SMA:
+        return MovingAverageScanner(
+            period: 150,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove200SMA:
+        return MovingAverageScanner(
+            period: 200,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.above,
+            type: this);
+
+      // EMA Price Above
+      case ScannerType.priceAbove5EMA:
+        return MovingAverageScanner(
+            period: 5,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove10EMA:
+        return MovingAverageScanner(
+            period: 10,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove12EMA:
+        return MovingAverageScanner(
+            period: 12,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove20EMA:
+        return MovingAverageScanner(
+            period: 20,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove26EMA:
+        return MovingAverageScanner(
+            period: 26,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove50EMA:
+        return MovingAverageScanner(
+            period: 50,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove100EMA:
+        return MovingAverageScanner(
+            period: 100,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+      case ScannerType.priceAbove200EMA:
+        return MovingAverageScanner(
+            period: 200,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.above,
+            type: this);
+
+      // SMA Price Below
+      case ScannerType.priceBelow5SMA:
+        return MovingAverageScanner(
+            period: 5,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow10SMA:
+        return MovingAverageScanner(
+            period: 10,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow20SMA:
+        return MovingAverageScanner(
+            period: 20,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow30SMA:
+        return MovingAverageScanner(
+            period: 30,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow50SMA:
+        return MovingAverageScanner(
+            period: 50,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow100SMA:
+        return MovingAverageScanner(
+            period: 100,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow150SMA:
+        return MovingAverageScanner(
+            period: 150,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow200SMA:
+        return MovingAverageScanner(
+            period: 200,
+            maType: MovingAverageType.sMA,
+            comparison: PriceComparison.below,
+            type: this);
+
+      // EMA Price Below
+      case ScannerType.priceBelow5EMA:
+        return MovingAverageScanner(
+            period: 5,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow10EMA:
+        return MovingAverageScanner(
+            period: 10,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow12EMA:
+        return MovingAverageScanner(
+            period: 12,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow20EMA:
+        return MovingAverageScanner(
+            period: 20,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow26EMA:
+        return MovingAverageScanner(
+            period: 26,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow50EMA:
+        return MovingAverageScanner(
+            period: 50,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow100EMA:
+        return MovingAverageScanner(
+            period: 100,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
+      case ScannerType.priceBelow200EMA:
+        return MovingAverageScanner(
+            period: 200,
+            maType: MovingAverageType.eMA,
+            comparison: PriceComparison.below,
+            type: this);
     }
   }
 }

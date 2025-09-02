@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:fin_chart/models/enums/trend_detection.dart';
 import 'package:fin_chart/models/i_candle.dart';
+import 'package:fin_chart/models/enums/scanner_display_type.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/scanners/scanner_result.dart';
@@ -38,12 +39,40 @@ class ScannerIndicator extends Indicator {
 
   @override
   void drawIndicator({required Canvas canvas}) {
-    // Loop through each found scanner result
+    if (selectedScannerType == null || activeScanResults.isEmpty) return;
+
+    final scannerInstance = selectedScannerType!.instance;
+
+    if (scannerInstance.displayType == ScannerDisplayType.areaShade) {
+      _drawAreaShade(canvas);
+    } else {
+      _drawLabelBox(canvas);
+    }
+  }
+
+  void _drawAreaShade(Canvas canvas) {
+    for (final result in activeScanResults) {
+      if (result.targetIndex >= candles.length) continue;
+
+      final color = result.highlightColor ?? highlightColor;
+      final paint = Paint()
+        ..color = color.withValues(alpha: (0.15 * 255).toDouble())
+        ..style = PaintingStyle.fill;
+
+      final index = result.targetIndex;
+      final left = toX(index.toDouble()) - (xStepWidth / 2);
+      final right = toX(index.toDouble()) + (xStepWidth / 2);
+
+      final rect = Rect.fromLTRB(left, topPos, right, bottomPos);
+      canvas.drawRect(rect, paint);
+    }
+  }
+
+  void _drawLabelBox(Canvas canvas) {
     for (final result in activeScanResults) {
       final group = result.highlightedIndices;
       if (group.isEmpty) continue;
 
-      // --- 1. Draw the Highlight Box ---
       final highlightPaint = Paint()
         ..color = highlightColor
         ..strokeWidth = 2.0
@@ -52,7 +81,7 @@ class ScannerIndicator extends Indicator {
       final minIndex = group.reduce(min);
       final maxIndex = group.reduce(max);
 
-      if (maxIndex >= candles.length) continue; // Safety check
+      if (maxIndex >= candles.length) continue;
 
       double highestHigh = candles[minIndex].high;
       double lowestLow = candles[minIndex].low;
@@ -74,7 +103,6 @@ class ScannerIndicator extends Indicator {
               highlightRect.inflate(3.0), const Radius.circular(4)),
           highlightPaint);
 
-      // --- 2. Draw the Label and Pointer ---
       final targetCandle = candles[result.targetIndex];
       final targetPoint =
           toCanvas(Offset(result.targetIndex.toDouble(), targetCandle.high));
@@ -83,7 +111,7 @@ class ScannerIndicator extends Indicator {
       const double gap = 5.0;
       final vector = targetPoint - labelBoxPosition;
       final length = vector.distance;
-      if (length == 0) continue; // Avoid division by zero if points overlap
+      if (length == 0) continue;
 
       final newEndPoint =
           labelBoxPosition + (vector * ((length - gap) / length));
@@ -173,7 +201,6 @@ class ScannerIndicator extends Indicator {
     required Function()? onDelete,
     Widget? child,
   }) {
-    // Determine the label text (same logic as before)
     String labelText;
     if (selectedScannerType != null) {
       final scannerName = selectedScannerType!.instance.name;
@@ -183,11 +210,9 @@ class ScannerIndicator extends Indicator {
       labelText = 'Scanner: (Unconfigured)';
     }
 
-    // Build the entire widget, now with matching text styles
     return InkWell(
       onTap: () => onClick?.call(this),
       child: selectedIndicator == this
-          // This is the view for WHEN THE INDICATOR IS SELECTED
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
@@ -198,7 +223,6 @@ class ScannerIndicator extends Indicator {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Use regular weight text when selected
                   Text(labelText.toUpperCase()),
                   const SizedBox(width: 10),
                   IconButton(
@@ -209,11 +233,9 @@ class ScannerIndicator extends Indicator {
                 ],
               ),
             )
-          // This is the view for WHEN THE INDICATOR IS NOT SELECTED
           : Container(
               decoration: const BoxDecoration(color: Colors.white),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              // Use bold text when not selected, to match the original style
               child: Text(
                 labelText.toUpperCase(),
                 style:

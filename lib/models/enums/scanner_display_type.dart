@@ -1,0 +1,4 @@
+enum ScannerDisplayType {
+  labelBox,
+  areaShade,
+}

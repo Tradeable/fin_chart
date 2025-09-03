@@ -31,6 +31,14 @@ enum ScannerType {
   // Oscillator Scanners
   mfiOverbought,
   mfiOversold,
+  dualOverboughtRsiMfi,
+  dualOversoldRsiMfi,
+  macdCrossAboveZero,
+  macdCrossBelowZero,
+  macdCrossAboveSignal,
+  macdCrossBelowSignal,
+  rsiBullish,
+  rsiBearish,
 
   // SMA Price Above
   priceAbove5SMA,

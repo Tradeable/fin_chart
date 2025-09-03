@@ -85,6 +85,88 @@ extension ScannerProperties on ScannerType {
           'threshold': 20.0,
           'comparison': PriceComparison.below
         };
+      case ScannerType.dualOverboughtRsiMfi:
+        return {
+          'name': 'Dual Overbought (RSI & MFI)',
+          'label': 'RSI>70 & MFI>70',
+          'displayType': ScannerDisplayType.areaShade,
+          'rsiPeriod': 14,
+          'mfiPeriod': 14,
+          'rsiThreshold': 70.0,
+          'mfiThreshold': 70.0,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.dualOversoldRsiMfi:
+        return {
+          'name': 'Dual Oversold (RSI & MFI)',
+          'label': 'RSI<30 & MFI<20',
+          'displayType': ScannerDisplayType.areaShade,
+          'rsiPeriod': 14,
+          'mfiPeriod': 14,
+          'rsiThreshold': 20.0,
+          'mfiThreshold': 20.0,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.macdCrossAboveZero:
+        return {
+          'name': 'MACD Crosses Above Zero',
+          'label': 'MACD > 0',
+          'displayType': ScannerDisplayType.areaShade,
+          'fastPeriod': 12,
+          'slowPeriod': 26,
+          'signalPeriod': 9,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.macdCrossBelowZero:
+        return {
+          'name': 'MACD Crosses Below Zero',
+          'label': 'MACD < 0',
+          'displayType': ScannerDisplayType.areaShade,
+          'fastPeriod': 12,
+          'slowPeriod': 26,
+          'signalPeriod': 9,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.macdCrossAboveSignal:
+        return {
+          'name': 'MACD Crosses Above Signal',
+          'label': 'MACD > Signal',
+          'displayType': ScannerDisplayType.areaShade,
+          'fastPeriod': 12,
+          'slowPeriod': 26,
+          'signalPeriod': 9,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.macdCrossBelowSignal:
+        return {
+          'name': 'MACD Crosses Below Signal',
+          'label': 'MACD < Signal',
+          'displayType': ScannerDisplayType.areaShade,
+          'fastPeriod': 12,
+          'slowPeriod': 26,
+          'signalPeriod': 9,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.rsiBullish:
+        return {
+          'name': 'RSI Bullish (Custom)',
+          'label': 'RSI>=80 & Vol*Price>1L',
+          'displayType': ScannerDisplayType.areaShade,
+          'rsiPeriod': 14,
+          'volumePeriod': 5, // For "Week Volume Avg"
+          'rsiThreshold': 80.0,
+          'volumeThreshold': 100000.0,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.rsiBearish:
+        return {
+          'name': 'RSI Bearish (Custom)',
+          'label': 'RSI<=20',
+          'displayType': ScannerDisplayType.areaShade,
+          'rsiPeriod': 14,
+          'rsiThreshold': 20.0,
+          'comparison': PriceComparison.below
+        };
 
       // --- SMA Scanners ---
       case ScannerType.priceAbove5SMA:

@@ -129,16 +129,16 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
       String enumName = '';
       switch (group) {
         case _ScannerGroup.priceAboveSMA:
-          enumName = 'PriceAbove${period}SMA';
+          enumName = 'priceAbove${period}SMA';
           break;
         case _ScannerGroup.priceBelowSMA:
-          enumName = 'PriceBelow${period}SMA';
+          enumName = 'priceBelow${period}SMA';
           break;
         case _ScannerGroup.priceAboveEMA:
-          enumName = 'PriceAbove${period}EMA';
+          enumName = 'priceAbove${period}EMA';
           break;
         case _ScannerGroup.priceBelowEMA:
-          enumName = 'PriceBelow${period}EMA';
+          enumName = 'priceBelow${period}EMA';
           break;
         case _ScannerGroup.candlestick:
         case _ScannerGroup.oscillator:

@@ -29,6 +29,9 @@ _ScannerGroup _getCategoryForType(ScannerType type) {
   if (name.startsWith('priceAboveEMA')) return _ScannerGroup.priceAboveEMA;
   if (name.startsWith('priceBelowEMA')) return _ScannerGroup.priceBelowEMA;
   if (name.startsWith('mfi')) return _ScannerGroup.oscillator;
+  if (name.startsWith('dual')) return _ScannerGroup.oscillator;
+  if (name.startsWith('macd')) return _ScannerGroup.oscillator;
+  if (name.startsWith('rsiB')) return _ScannerGroup.oscillator;
   return _ScannerGroup.candlestick;
 }
 

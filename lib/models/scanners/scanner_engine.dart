@@ -102,6 +102,127 @@ List<double> _calculateMFI(List<ICandle> candles, int period) {
   }
   return mfiValues;
 }
+
+List<double> _calculateRSI(List<ICandle> candles, int period) {
+  List<double> rsiValues = [];
+  if (candles.length <= period) return rsiValues;
+
+  List<double> gains = [];
+  List<double> losses = [];
+
+  // Calculate initial gains and losses
+  for (int i = 1; i <= period; i++) {
+    double change = candles[i].close - candles[i - 1].close;
+    gains.add(change > 0 ? change : 0);
+    losses.add(change < 0 ? -change : 0);
+  }
+
+  // Calculate first RSI value
+  double avgGain = gains.reduce((a, b) => a + b) / period;
+  double avgLoss = losses.reduce((a, b) => a + b) / period;
+
+  if (avgLoss == 0) {
+    rsiValues.add(100);
+  } else {
+    double rs = avgGain / avgLoss;
+    rsiValues.add(100 - (100 / (1 + rs)));
+  }
+
+  // Calculate remaining RSI values
+  for (int i = period + 1; i < candles.length; i++) {
+    double change = candles[i].close - candles[i - 1].close;
+    double currentGain = change > 0 ? change : 0;
+    double currentLoss = change < 0 ? -change : 0;
+
+    avgGain = ((avgGain * (period - 1)) + currentGain) / period;
+    avgLoss = ((avgLoss * (period - 1)) + currentLoss) / period;
+
+    if (avgLoss == 0) {
+      rsiValues.add(100);
+    } else {
+      double rs = avgGain / avgLoss;
+      rsiValues.add(100 - (100 / (1 + rs)));
+    }
+  }
+  return rsiValues;
+}
+
+List<double> _calculateEMAFromValues(List<double> prices, int period) {
+  List<double> emaValues = List.filled(prices.length, 0);
+
+  if (prices.length >= period) {
+    double sum = 0;
+    for (int i = 0; i < period; i++) {
+      sum += prices[i];
+    }
+    emaValues[period - 1] = sum / period;
+
+    double multiplier = 2 / (period + 1);
+
+    for (int i = period; i < prices.length; i++) {
+      emaValues[i] =
+          (prices[i] - emaValues[i - 1]) * multiplier + emaValues[i - 1];
+    }
+  }
+  return emaValues;
+}
+
+List<double> _calculateMacdLine(
+    List<ICandle> candles, int fastPeriod, int slowPeriod) {
+  if (candles.length < slowPeriod) return [];
+
+  final prices = candles.map((c) => c.close).toList();
+  final fastEMA = _calculateEMAFromValues(prices, fastPeriod);
+  final slowEMA = _calculateEMAFromValues(prices, slowPeriod);
+
+  List<double> macdLine = List.filled(candles.length, 0.0);
+  for (int i = slowPeriod - 1; i < candles.length; i++) {
+    if (i < fastEMA.length && i < slowEMA.length) {
+      macdLine[i] = fastEMA[i] - slowEMA[i];
+    }
+  }
+  return macdLine;
+}
+
+({List<double> macdLine, List<double> signalLine}) _calculateMacdAndSignalLines(
+    List<ICandle> candles, int fastPeriod, int slowPeriod, int signalPeriod) {
+  if (candles.length < slowPeriod + signalPeriod) {
+    return (macdLine: [], signalLine: []);
+  }
+
+  final prices = candles.map((c) => c.close).toList();
+  final fastEMA = _calculateEMAFromValues(prices, fastPeriod);
+  final slowEMA = _calculateEMAFromValues(prices, slowPeriod);
+
+  List<double> macdLine = List.filled(candles.length, 0.0);
+  for (int i = slowPeriod - 1; i < candles.length; i++) {
+    if (i < fastEMA.length && i < slowEMA.length) {
+      macdLine[i] = fastEMA[i] - slowEMA[i];
+    }
+  }
+
+  final signalLine = _calculateEMAFromValues(macdLine, signalPeriod);
+
+  return (macdLine: macdLine, signalLine: signalLine);
+}
+
+List<double> _calculateVolumeSMA(List<ICandle> candles, int period) {
+  List<double> smaValues = [];
+  if (candles.length < period) return smaValues;
+
+  for (int i = 0; i < candles.length; i++) {
+    if (i < period - 1) {
+      smaValues.add(0);
+    } else {
+      double sum = 0;
+      for (int j = i - (period - 1); j <= i; j++) {
+        sum += candles[j].volume;
+      }
+      smaValues.add(sum / period);
+    }
+  }
+  return smaValues;
+}
 // #endregion
 
 // #region Consolidated Scan Functions
@@ -175,6 +296,205 @@ List<ScannerResult> _scanOscillator(List<ICandle> candles, ScannerType type) {
   }
   return scanners;
 }
+
+List<ScannerResult> _scanDualOscillator(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  final properties = type.properties;
+  final int rsiPeriod = properties['rsiPeriod'] as int;
+  final int mfiPeriod = properties['mfiPeriod'] as int;
+  final double rsiThreshold = properties['rsiThreshold'] as double;
+  final double mfiThreshold = properties['mfiThreshold'] as double;
+  final PriceComparison comparison =
+      properties['comparison'] as PriceComparison;
+
+  if (candles.length <= math.max(rsiPeriod, mfiPeriod)) return scanners;
+
+  final rsiValues = _calculateRSI(candles, rsiPeriod);
+  final mfiValues = _calculateMFI(candles, mfiPeriod);
+
+  // Align the start indices
+  final rsiStartIndex = rsiPeriod;
+  final mfiStartIndex = mfiPeriod;
+  final commonStartIndex = math.max(rsiStartIndex, mfiStartIndex);
+
+  for (int i = commonStartIndex; i < candles.length; i++) {
+    // Get the correct index for each indicator's value list
+    final rsiValueIndex = i - rsiStartIndex;
+    final mfiValueIndex = i - mfiStartIndex;
+
+    if (rsiValueIndex < 0 ||
+        rsiValueIndex >= rsiValues.length ||
+        mfiValueIndex < 0 ||
+        mfiValueIndex >= mfiValues.length) {
+      continue;
+    }
+
+    final rsi = rsiValues[rsiValueIndex];
+    final mfi = mfiValues[mfiValueIndex];
+
+    bool conditionMet = false;
+    if (comparison == PriceComparison.above) {
+      // Overbought
+      conditionMet = rsi > rsiThreshold && mfi > mfiThreshold;
+    } else {
+      // Oversold
+      conditionMet = rsi < rsiThreshold && mfi < mfiThreshold;
+    }
+
+    if (conditionMet) {
+      scanners.add(ScannerResult(
+        scannerType: type,
+        label: type.label,
+        targetIndex: i,
+        highlightedIndices: [i],
+        highlightColor:
+            comparison == PriceComparison.above ? Colors.red : Colors.green,
+      ));
+    }
+  }
+  return scanners;
+}
+
+List<ScannerResult> _scanMacdCrossover(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  final properties = type.properties;
+  final int fastPeriod = properties['fastPeriod'] as int;
+  final int slowPeriod = properties['slowPeriod'] as int;
+  final PriceComparison comparison =
+      properties['comparison'] as PriceComparison;
+
+  if (candles.length <= slowPeriod) return scanners;
+
+  final macdLine = _calculateMacdLine(candles, fastPeriod, slowPeriod);
+
+  // Start checking from the second valid MACD value
+  for (int i = slowPeriod; i < macdLine.length; i++) {
+    bool conditionMet = false;
+
+    if (comparison == PriceComparison.above) {
+      // Crosses above zero
+      conditionMet = macdLine[i - 1] < 0 && macdLine[i] > 0;
+    } else {
+      // Crosses below zero
+      conditionMet = macdLine[i - 1] > 0 && macdLine[i] < 0;
+    }
+
+    if (conditionMet) {
+      scanners.add(ScannerResult(
+        scannerType: type,
+        label: type.label,
+        targetIndex: i,
+        highlightedIndices: [i],
+        highlightColor:
+            comparison == PriceComparison.above ? Colors.green : Colors.red,
+      ));
+    }
+  }
+  return scanners;
+}
+
+List<ScannerResult> _scanMacdSignalCrossover(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  final properties = type.properties;
+  final int fastPeriod = properties['fastPeriod'] as int;
+  final int slowPeriod = properties['slowPeriod'] as int;
+  final int signalPeriod = properties['signalPeriod'] as int;
+  final PriceComparison comparison =
+      properties['comparison'] as PriceComparison;
+
+  if (candles.length < slowPeriod + signalPeriod) return scanners;
+
+  final (:macdLine, :signalLine) = _calculateMacdAndSignalLines(
+      candles, fastPeriod, slowPeriod, signalPeriod);
+
+  // Start checking from the second valid signal value
+  final startIndex = slowPeriod + signalPeriod - 1;
+  for (int i = startIndex; i < candles.length; i++) {
+    // Ensure we have previous data to compare
+    if (i == 0) continue;
+
+    bool conditionMet = false;
+
+    if (comparison == PriceComparison.above) {
+      // Crosses above signal
+      conditionMet =
+          macdLine[i - 1] < signalLine[i - 1] && macdLine[i] > signalLine[i];
+    } else {
+      // Crosses below signal
+      conditionMet =
+          macdLine[i - 1] > signalLine[i - 1] && macdLine[i] < signalLine[i];
+    }
+
+    if (conditionMet) {
+      scanners.add(ScannerResult(
+        scannerType: type,
+        label: type.label,
+        targetIndex: i,
+        highlightedIndices: [i],
+        highlightColor:
+            comparison == PriceComparison.above ? Colors.green : Colors.red,
+      ));
+    }
+  }
+  return scanners;
+}
+
+List<ScannerResult> _scanRsiConditions(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  final properties = type.properties;
+  final int rsiPeriod = properties['rsiPeriod'] as int;
+  final double rsiThreshold = properties['rsiThreshold'] as double;
+
+  if (candles.length <= rsiPeriod) return scanners;
+
+  final rsiValues = _calculateRSI(candles, rsiPeriod);
+  final rsiStartIndex = rsiPeriod;
+
+  if (type == ScannerType.rsiBullish) {
+    final int volumePeriod = properties['volumePeriod'] as int;
+    final double volumeThreshold = properties['volumeThreshold'] as double;
+    final avgVolume = _calculateVolumeSMA(candles, volumePeriod);
+    final commonStartIndex = math.max(rsiStartIndex, volumePeriod);
+
+    for (int i = commonStartIndex; i < candles.length; i++) {
+      final rsiValueIndex = i - rsiStartIndex;
+      if (rsiValueIndex < 0 || rsiValueIndex >= rsiValues.length) continue;
+
+      final rsi = rsiValues[rsiValueIndex];
+      final avgVol = avgVolume[i];
+      final price = candles[i].close;
+
+      if (rsi >= rsiThreshold && (avgVol * price) > volumeThreshold) {
+        scanners.add(ScannerResult(
+          scannerType: type,
+          label: type.label,
+          targetIndex: i,
+          highlightedIndices: [i],
+          highlightColor: Colors.green,
+        ));
+      }
+    }
+  } else if (type == ScannerType.rsiBearish) {
+    for (int i = 0; i < rsiValues.length; i++) {
+      final candleIndex = rsiStartIndex + i;
+      if (rsiValues[i] <= rsiThreshold) {
+        scanners.add(ScannerResult(
+          scannerType: type,
+          label: type.label,
+          targetIndex: candleIndex,
+          highlightedIndices: [candleIndex],
+          highlightColor: Colors.red,
+        ));
+      }
+    }
+  }
+
+  return scanners;
+}
 // #endregion
 
 /// Main consolidated scanner function.
@@ -186,6 +506,19 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
   }
   if (type.name.startsWith('mfi')) {
     return _scanOscillator(candles, type);
+  }
+  if (type.name.startsWith('dual')) {
+    return _scanDualOscillator(candles, type);
+  }
+  if (type.name.startsWith('macdCross')) {
+    if (type.name.contains('Zero')) {
+      return _scanMacdCrossover(candles, type);
+    } else if (type.name.contains('Signal')) {
+      return _scanMacdSignalCrossover(candles, type);
+    }
+  }
+  if (type.name.startsWith('rsiB')) {
+    return _scanRsiConditions(candles, type);
   }
 
   // Handle individual candlestick patterns

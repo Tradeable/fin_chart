@@ -2,7 +2,7 @@ import 'package:fin_chart/models/enums/scanner_display_type.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
 
 extension ScannerProperties on ScannerType {
-  String get name {
+  String get displayName {
     final props = properties;
     return props['name'] as String;
   }

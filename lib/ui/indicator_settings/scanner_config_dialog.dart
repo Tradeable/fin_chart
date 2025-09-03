@@ -1,5 +1,6 @@
 import 'package:fin_chart/models/enums/trend_detection.dart';
 import 'package:fin_chart/models/indicators/scanner_indicator.dart';
+import 'package:fin_chart/models/scanners/scanner_properties.dart';
 import 'package:fin_chart/ui/color_picker_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +32,8 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Configure "${widget.indicator.selectedScannerType?.name}"'),
+      title: Text(
+          'Configure "${widget.indicator.selectedScannerType?.displayName}"'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

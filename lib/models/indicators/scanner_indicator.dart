@@ -206,7 +206,7 @@ class ScannerIndicator extends Indicator {
     String labelText;
     if (selectedScannerType != null) {
       // Use the new extension to get the scanner name
-      final scannerName = selectedScannerType!.name;
+      final scannerName = selectedScannerType!.displayName;
       final foundCount = activeScanResults.length;
       labelText = 'Scanner: $scannerName ($foundCount)';
     } else {

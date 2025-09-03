@@ -24,10 +24,10 @@ const List<int> _emaPeriods = [5, 10, 12, 20, 26, 50, 100, 200];
 
 _ScannerGroup _getCategoryForType(ScannerType type) {
   String name = type.name;
-  if (name.startsWith('PriceAboveSMA')) return _ScannerGroup.priceAboveSMA;
-  if (name.startsWith('PriceBelowSMA')) return _ScannerGroup.priceBelowSMA;
-  if (name.startsWith('PriceAboveEMA')) return _ScannerGroup.priceAboveEMA;
-  if (name.startsWith('PriceBelowEMA')) return _ScannerGroup.priceBelowEMA;
+  if (name.startsWith('priceAboveSMA')) return _ScannerGroup.priceAboveSMA;
+  if (name.startsWith('priceBelowSMA')) return _ScannerGroup.priceBelowSMA;
+  if (name.startsWith('priceAboveEMA')) return _ScannerGroup.priceAboveEMA;
+  if (name.startsWith('priceBelowEMA')) return _ScannerGroup.priceBelowEMA;
   if (name.startsWith('mfi')) return _ScannerGroup.oscillator;
   return _ScannerGroup.candlestick;
 }
@@ -102,9 +102,8 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
       itemCount: scanners.length,
       itemBuilder: (context, index) {
         final scannerType = scanners[index];
-        final scanner = scannerType.instance;
         return ListTile(
-          title: Text(scanner.name),
+          title: Text(scannerType.name),
           onTap: () {
             widget.onScannerSelected(scannerType);
             Navigator.of(context).pop();

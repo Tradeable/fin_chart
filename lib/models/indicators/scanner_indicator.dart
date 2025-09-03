@@ -4,12 +4,14 @@ import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/enums/scanner_display_type.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
+import 'package:fin_chart/models/scanners/scanner_engine.dart';
 import 'package:fin_chart/models/scanners/scanner_result.dart';
 import 'package:fin_chart/models/scanners/trend_data.dart';
 import 'package:fin_chart/ui/indicator_settings/scanner_config_dialog.dart';
 import 'package:fin_chart/ui/indicator_settings/scanner_selection_dialog.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
+import 'package:fin_chart/models/scanners/scanner_properties.dart';
 
 class ScannerIndicator extends Indicator {
   ScannerType? selectedScannerType;
@@ -41,9 +43,8 @@ class ScannerIndicator extends Indicator {
   void drawIndicator({required Canvas canvas}) {
     if (selectedScannerType == null || activeScanResults.isEmpty) return;
 
-    final scannerInstance = selectedScannerType!.instance;
-
-    if (scannerInstance.displayType == ScannerDisplayType.areaShade) {
+    // Use the new extension directly on the enum type
+    if (selectedScannerType!.displayType == ScannerDisplayType.areaShade) {
       _drawAreaShade(canvas);
     } else {
       _drawLabelBox(canvas);
@@ -162,8 +163,9 @@ class ScannerIndicator extends Indicator {
       trendData = TrendData(sma50: trendData.sma50, sma200: _calculateSMA(200));
     }
 
-    final scanner = selectedScannerType!.instance;
-    activeScanResults = scanner.scan(candles, trendData: trendData);
+    // Use the new centralized scanner function
+    activeScanResults =
+        runScanner(selectedScannerType!, candles, trendData: trendData);
   }
 
   @override
@@ -203,13 +205,15 @@ class ScannerIndicator extends Indicator {
   }) {
     String labelText;
     if (selectedScannerType != null) {
-      final scannerName = selectedScannerType!.instance.name;
+      // Use the new extension to get the scanner name
+      final scannerName = selectedScannerType!.name;
       final foundCount = activeScanResults.length;
       labelText = 'Scanner: $scannerName ($foundCount)';
     } else {
       labelText = 'Scanner: (Unconfigured)';
     }
 
+    // The rest of the method remains the same...
     return InkWell(
       onTap: () => onClick?.call(this),
       child: selectedIndicator == this

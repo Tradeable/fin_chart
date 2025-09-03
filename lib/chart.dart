@@ -408,6 +408,7 @@ class ChartState extends State<Chart>
                     selectedIndicator?.showIndicatorSettings(
                         context: context,
                         onUpdate: (indicator) {
+                          indicator.updateData(currentData);
                           setState(() {
                             selectedIndicator = indicator;
                           });

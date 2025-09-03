@@ -1,0 +1,387 @@
+import 'package:fin_chart/models/enums/scanner_display_type.dart';
+import 'package:fin_chart/models/enums/scanner_type.dart';
+
+extension ScannerProperties on ScannerType {
+  String get displayName {
+    final props = properties;
+    return props['name'] as String;
+  }
+
+  String get label {
+    final props = properties;
+    return props['label'] as String;
+  }
+
+  ScannerDisplayType get displayType {
+    final props = properties;
+    return props['displayType'] as ScannerDisplayType? ??
+        ScannerDisplayType.labelBox;
+  }
+
+  Map<String, dynamic> get properties {
+    switch (this) {
+      // Candlestick
+      case ScannerType.hammer:
+        return {'name': 'Hammer', 'label': 'Hammer'};
+      case ScannerType.whiteMarubozu:
+        return {'name': 'White Marubozu', 'label': 'W Maru'};
+      case ScannerType.blackMarubozu:
+        return {'name': 'Black Marubozu', 'label': 'B Maru'};
+      case ScannerType.bullishHarami:
+        return {'name': 'Bullish Harami', 'label': 'Bu Harami'};
+      case ScannerType.bearishHarami:
+        return {'name': 'Bearish Harami', 'label': 'Be Harami'};
+      case ScannerType.bullishHaramiCross:
+        return {'name': 'Bullish Harami Cross', 'label': 'Bu Harami+'};
+      case ScannerType.bearishHaramiCross:
+        return {'name': 'Bearish Harami Cross', 'label': 'Be Harami+'};
+      case ScannerType.bullishEngulfing:
+        return {'name': 'Bullish Engulfing', 'label': 'Bu Engulf'};
+      case ScannerType.bearishEngulfing:
+        return {'name': 'Bearish Engulfing', 'label': 'Be Engulf'};
+      case ScannerType.piercingLine:
+        return {'name': 'Piercing Line', 'label': 'Piercing'};
+      case ScannerType.darkCloudCover:
+        return {'name': 'Dark Cloud Cover', 'label': 'Dark Cloud'};
+      case ScannerType.upsideTasukiGap:
+        return {'name': 'Upside Tasuki Gap', 'label': 'Up Tasuki'};
+      case ScannerType.downsideTasukiGap:
+        return {'name': 'Downside Tasuki Gap', 'label': 'Down Tasuki'};
+      case ScannerType.invertedHammer:
+        return {'name': 'Inverted Hammer', 'label': 'Inv Hammer'};
+      case ScannerType.shootingStar:
+        return {'name': 'Shooting Star', 'label': 'Shoot Star'};
+      case ScannerType.threeWhiteSoldiers:
+        return {'name': 'Three White Soldiers', 'label': '3 White Sol'};
+      case ScannerType.identicalThreeCrows:
+        return {'name': 'Identical Three Crows', 'label': '3 Ident Crows'};
+      case ScannerType.abandonedBabyBottom:
+        return {'name': 'Abandoned Baby Bottom', 'label': 'Aban Baby Bot'};
+      case ScannerType.abandonedBabyTop:
+        return {'name': 'Abandoned Baby Top', 'label': 'Aban Baby Top'};
+      case ScannerType.hangingMan:
+        return {'name': 'Hanging Man', 'label': 'Hang Man'};
+      case ScannerType.bullishKicker:
+        return {'name': 'Bullish Kicker', 'label': 'Bu Kicker'};
+      case ScannerType.morningStar:
+        return {'name': 'Morning Star', 'label': 'Morning Star'};
+
+      // Oscillators
+      case ScannerType.mfiOverbought:
+        return {
+          'name': 'MFI Overbought',
+          'label': 'MFI > 80',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 14,
+          'threshold': 80.0,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.mfiOversold:
+        return {
+          'name': 'MFI Oversold',
+          'label': 'MFI < 20',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 14,
+          'threshold': 20.0,
+          'comparison': PriceComparison.below
+        };
+
+      // --- SMA Scanners ---
+      case ScannerType.priceAbove5SMA:
+        return {
+          'name': 'Price > 5 SMA',
+          'label': 'P > 5SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 5,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove10SMA:
+        return {
+          'name': 'Price > 10 SMA',
+          'label': 'P > 10SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 10,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove20SMA:
+        return {
+          'name': 'Price > 20 SMA',
+          'label': 'P > 20SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 20,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove30SMA:
+        return {
+          'name': 'Price > 30 SMA',
+          'label': 'P > 30SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 30,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove50SMA:
+        return {
+          'name': 'Price > 50 SMA',
+          'label': 'P > 50SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 50,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove100SMA:
+        return {
+          'name': 'Price > 100 SMA',
+          'label': 'P > 100SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 100,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove150SMA:
+        return {
+          'name': 'Price > 150 SMA',
+          'label': 'P > 150SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 150,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove200SMA:
+        return {
+          'name': 'Price > 200 SMA',
+          'label': 'P > 200SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 200,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.above
+        };
+
+      case ScannerType.priceBelow5SMA:
+        return {
+          'name': 'Price < 5 SMA',
+          'label': 'P < 5SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 5,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow10SMA:
+        return {
+          'name': 'Price < 10 SMA',
+          'label': 'P < 10SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 10,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow20SMA:
+        return {
+          'name': 'Price < 20 SMA',
+          'label': 'P < 20SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 20,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow30SMA:
+        return {
+          'name': 'Price < 30 SMA',
+          'label': 'P < 30SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 30,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow50SMA:
+        return {
+          'name': 'Price < 50 SMA',
+          'label': 'P < 50SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 50,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow100SMA:
+        return {
+          'name': 'Price < 100 SMA',
+          'label': 'P < 100SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 100,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow150SMA:
+        return {
+          'name': 'Price < 150 SMA',
+          'label': 'P < 150SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 150,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow200SMA:
+        return {
+          'name': 'Price < 200 SMA',
+          'label': 'P < 200SMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 200,
+          'maType': MovingAverageType.sMA,
+          'comparison': PriceComparison.below
+        };
+
+      // --- EMA Scanners ---
+      case ScannerType.priceAbove5EMA:
+        return {
+          'name': 'Price > 5 EMA',
+          'label': 'P > 5EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 5,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove10EMA:
+        return {
+          'name': 'Price > 10 EMA',
+          'label': 'P > 10EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 10,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove12EMA:
+        return {
+          'name': 'Price > 12 EMA',
+          'label': 'P > 12EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 12,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove20EMA:
+        return {
+          'name': 'Price > 20 EMA',
+          'label': 'P > 20EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 20,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove26EMA:
+        return {
+          'name': 'Price > 26 EMA',
+          'label': 'P > 26EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 26,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove50EMA:
+        return {
+          'name': 'Price > 50 EMA',
+          'label': 'P > 50EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 50,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove100EMA:
+        return {
+          'name': 'Price > 100 EMA',
+          'label': 'P > 100EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 100,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+      case ScannerType.priceAbove200EMA:
+        return {
+          'name': 'Price > 200 EMA',
+          'label': 'P > 200EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 200,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.above
+        };
+
+      case ScannerType.priceBelow5EMA:
+        return {
+          'name': 'Price < 5 EMA',
+          'label': 'P < 5EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 5,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow10EMA:
+        return {
+          'name': 'Price < 10 EMA',
+          'label': 'P < 10EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 10,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow12EMA:
+        return {
+          'name': 'Price < 12 EMA',
+          'label': 'P < 12EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 12,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow20EMA:
+        return {
+          'name': 'Price < 20 EMA',
+          'label': 'P < 20EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 20,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow26EMA:
+        return {
+          'name': 'Price < 26 EMA',
+          'label': 'P < 26EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 26,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow50EMA:
+        return {
+          'name': 'Price < 50 EMA',
+          'label': 'P < 50EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 50,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow100EMA:
+        return {
+          'name': 'Price < 100 EMA',
+          'label': 'P < 100EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 100,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+      case ScannerType.priceBelow200EMA:
+        return {
+          'name': 'Price < 200 EMA',
+          'label': 'P < 200EMA',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 200,
+          'maType': MovingAverageType.eMA,
+          'comparison': PriceComparison.below
+        };
+
+      default:
+        return {'name': 'Unknown', 'label': 'N/A'};
+    }
+  }
+}

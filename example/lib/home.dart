@@ -33,7 +33,7 @@ class _HomeState extends State<Home> {
     final prefs = await SharedPreferences.getInstance();
     final savedRecipe = prefs.getString(_savedRecipeKey);
 
-    if (savedRecipe != null) {
+    if (savedRecipe != null && mounted) {
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => EditorPage(recipeStr: savedRecipe)));
     }

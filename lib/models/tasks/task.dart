@@ -95,6 +95,8 @@ abstract class Task {
         return TableTask.fromJson(json);
       case 'highlightTableRow':
         return HighlightTableRowTask.fromJson(json);
+      case 'showInsightsV2Page':
+        return ShowInsightsPageV2Task.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

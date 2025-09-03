@@ -189,6 +189,19 @@ class _ChartDemoState extends State<ChartDemo> {
                   "taskId": task.taskId,
                 });
               }
+
+              final insightsV2Tasks = recipe.tasks
+                  .whereType<ShowInsightsPageV2Task>()
+                  .where((t) => t.id == task.taskId)
+                  .toList();
+
+              if (insightsV2Tasks.isNotEmpty) {
+                tabs.add({
+                  "type": "insights_v2",
+                  "title": task.tabTitle,
+                  "taskId": task.taskId,
+                });
+              }
             }
           }
         });
@@ -350,10 +363,15 @@ class _ChartDemoState extends State<ChartDemo> {
               final key = keys[tableIdx];
               key.currentState?.setSelectedRows(rowIndices.toSet());
               userSelectedRows[task.tableTaskId] ??= {};
-              userSelectedRows[task.tableTaskId]![tableIdx] = rowIndices.toSet();
+              userSelectedRows[task.tableTaskId]![tableIdx] =
+                  rowIndices.toSet();
             }
           });
         }
+        setState(() {});
+        onTaskFinish();
+        break;
+      case TaskType.showInsightsV2Page:
         setState(() {});
         onTaskFinish();
         break;
@@ -496,7 +514,8 @@ class _ChartDemoState extends State<ChartDemo> {
                                 .map((entry) {
                               final idx = entry.key;
                               final table = entry.value;
-                              final selectedRows = userSelectedRows[taskId]?[idx] ?? <int>{};
+                              final selectedRows =
+                                  userSelectedRows[taskId]?[idx] ?? <int>{};
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 24),
                                 child: Column(
@@ -527,13 +546,16 @@ class _ChartDemoState extends State<ChartDemo> {
                                       onRowTap: (rowIdx) {
                                         setState(() {
                                           userSelectedRows[taskId] ??= {};
-                                          final selected = userSelectedRows[taskId]![idx] ?? <int>{};
+                                          final selected =
+                                              userSelectedRows[taskId]![idx] ??
+                                                  <int>{};
                                           if (selected.contains(rowIdx)) {
                                             selected.remove(rowIdx);
                                           } else {
                                             selected.add(rowIdx);
                                           }
-                                          userSelectedRows[taskId]![idx] = selected;
+                                          userSelectedRows[taskId]![idx] =
+                                              selected;
                                         });
                                       },
                                     ),
@@ -544,6 +566,12 @@ class _ChartDemoState extends State<ChartDemo> {
                           ],
                         ),
                       );
+                    case "insights_v2":
+                      final taskId = tab["taskId"]!;
+                      final insightsTask = recipe.tasks
+                          .whereType<ShowInsightsPageV2Task>()
+                          .firstWhere((t) => t.id == taskId);
+                      return InsightsPreviewPage(task: insightsTask);
                     default:
                       return Container();
                   }
@@ -599,6 +627,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.clearBucketRows:
       case TaskType.tableTask:
       case TaskType.highlightTableRow:
+      case TaskType.showInsightsV2Page:
         return Container();
     }
   }

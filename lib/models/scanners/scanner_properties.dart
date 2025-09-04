@@ -243,6 +243,32 @@ extension ScannerProperties on ScannerType {
           'timeframe': PivotTimeframe.daily,
         };
 
+      // Price and Volume
+      case ScannerType.recoveryFrom52WeekLow:
+        return {
+          'name': 'Highest Recovery from 52 Week Low',
+          'label': '% from 52w Low > 5',
+          'displayType': ScannerDisplayType.areaShade,
+        };
+      case ScannerType.recoveryFromWeekLow:
+        return {
+          'name': 'Highest Recovery from Week Low',
+          'label': '% from Week Low > 10',
+          'displayType': ScannerDisplayType.areaShade,
+        };
+      case ScannerType.fallFrom52WeekHigh:
+        return {
+          'name': 'Highest Fall from 52 Week High',
+          'label': '% from 52w High > 10',
+          'displayType': ScannerDisplayType.areaShade,
+        };
+      case ScannerType.fallFromWeekHigh:
+        return {
+          'name': 'Highest Fall from Week High',
+          'label': '% from Week High > 5',
+          'displayType': ScannerDisplayType.areaShade,
+        };
+
       // --- SMA Scanners ---
       case ScannerType.priceAbove5SMA:
         return {

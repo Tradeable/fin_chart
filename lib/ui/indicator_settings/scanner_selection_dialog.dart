@@ -5,6 +5,7 @@ enum _ScannerGroup {
   candlestick,
   oscillator,
   pivotPoints,
+  highLowScanners,
   priceAboveSMA,
   priceBelowSMA,
   priceAboveEMA,
@@ -13,12 +14,13 @@ enum _ScannerGroup {
 
 const Map<_ScannerGroup, String> _scannerGroupNames = {
   _ScannerGroup.candlestick: 'Candlestick Patterns',
-  _ScannerGroup.oscillator: 'Oscillator Patterns',
+  _ScannerGroup.oscillator: 'Technical Indicators',
   _ScannerGroup.priceAboveSMA: 'Price Above SMA',
   _ScannerGroup.priceBelowSMA: 'Price Below SMA',
   _ScannerGroup.priceAboveEMA: 'Price Above EMA',
   _ScannerGroup.priceBelowEMA: 'Price Below EMA',
-  _ScannerGroup.pivotPoints: 'Pivot Point Breakouts',
+  _ScannerGroup.pivotPoints: 'Pivot Levels',
+  _ScannerGroup.highLowScanners: 'Price and Volume',
 };
 
 const List<int> _smaPeriods = [5, 10, 20, 30, 50, 100, 150, 200];
@@ -36,6 +38,7 @@ _ScannerGroup _getCategoryForType(ScannerType type) {
   if (name.startsWith('rsiB')) return _ScannerGroup.oscillator;
   if (name.startsWith('rocO')) return _ScannerGroup.oscillator;
   if (name.startsWith('pivot')) return _ScannerGroup.pivotPoints;
+  if (name.contains('Week')) return _ScannerGroup.highLowScanners;
   return _ScannerGroup.candlestick;
 }
 
@@ -88,7 +91,8 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
           onTap: () {
             if (group == _ScannerGroup.candlestick ||
                 group == _ScannerGroup.oscillator ||
-                group == _ScannerGroup.pivotPoints) {
+                group == _ScannerGroup.pivotPoints ||
+                group == _ScannerGroup.highLowScanners) {
               setState(() {
                 _selectedGroup = group;
               });
@@ -149,6 +153,9 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
           break;
         case _ScannerGroup.pivotPoints:
           enumName = 'pivotPoint${period}Breakout';
+          break;
+        case _ScannerGroup.highLowScanners:
+          enumName = '52WeekHighLow';
           break;
         case _ScannerGroup.candlestick:
         case _ScannerGroup.oscillator:

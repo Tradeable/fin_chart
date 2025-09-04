@@ -59,9 +59,9 @@ class ScannerIndicator extends Indicator {
     for (final result in activeScanResults) {
       if (result.targetIndex >= candles.length) continue;
 
-      final color = result.highlightColor ?? highlightColor;
+      // final color = result.highlightColor ?? highlightColor;
       final paint = Paint()
-        ..color = color.withValues(alpha: (0.15 * 255).toDouble())
+        ..color = highlightColor.withValues(alpha: (0.15 * 255).toDouble())
         ..style = PaintingStyle.fill;
 
       final index = result.targetIndex;
@@ -180,6 +180,7 @@ class ScannerIndicator extends Indicator {
         builder: (context) => ScannerSelectionDialog(
           onScannerSelected: (scannerType) {
             selectedScannerType = scannerType;
+            highlightColor = scannerType.properties['defaultColor'] as Color;
             onUpdate(this);
           },
         ),

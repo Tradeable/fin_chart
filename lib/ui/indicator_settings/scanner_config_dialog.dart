@@ -1,3 +1,4 @@
+import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/enums/trend_detection.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/scanner_indicator.dart';
@@ -24,6 +25,32 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
   late TrendDetection trendDetection;
   late PivotTimeframe timeframe;
 
+  final Set<ScannerType> _candlestickScanners = {
+    ScannerType.hammer,
+    ScannerType.whiteMarubozu,
+    ScannerType.blackMarubozu,
+    ScannerType.bullishHarami,
+    ScannerType.bearishHarami,
+    ScannerType.bullishHaramiCross,
+    ScannerType.bearishHaramiCross,
+    ScannerType.bullishEngulfing,
+    ScannerType.bearishEngulfing,
+    ScannerType.upsideTasukiGap,
+    ScannerType.downsideTasukiGap,
+    ScannerType.invertedHammer,
+    ScannerType.shootingStar,
+    ScannerType.threeWhiteSoldiers,
+    ScannerType.identicalThreeCrows,
+    ScannerType.abandonedBabyBottom,
+    ScannerType.abandonedBabyTop,
+    ScannerType.piercingLine,
+    ScannerType.darkCloudCover,
+    ScannerType.hangingMan,
+    ScannerType.bullishKicker,
+    ScannerType.morningStar,
+    ScannerType.dragonflyDoji,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -34,9 +61,12 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedType = widget.indicator.selectedScannerType;
     final isPivotScanner =
         widget.indicator.selectedScannerType?.name.startsWith('pivotPoint') ??
             false;
+    final isCandlestickScanner =
+        selectedType != null && _candlestickScanners.contains(selectedType);
     return AlertDialog(
       title: Text(
           'Configure "${widget.indicator.selectedScannerType?.displayName}"'),
@@ -82,30 +112,32 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
                 },
               ),
             ],
-            const SizedBox(height: 24),
-            const Text('Trend Detection'),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<TrendDetection>(
-              value: trendDetection,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            if (isCandlestickScanner) ...[
+              const SizedBox(height: 24),
+              const Text('Trend Detection'),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<TrendDetection>(
+                value: trendDetection,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: TrendDetection.values.map((trend) {
+                  return DropdownMenuItem<TrendDetection>(
+                    value: trend,
+                    child: Text(trend.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      trendDetection = value;
+                    });
+                  }
+                },
               ),
-              items: TrendDetection.values.map((trend) {
-                return DropdownMenuItem<TrendDetection>(
-                  value: trend,
-                  child: Text(trend.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    trendDetection = value;
-                  });
-                }
-              },
-            ),
+            ],
           ],
         ),
       ),

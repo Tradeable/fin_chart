@@ -28,6 +28,20 @@ const List<int> _emaPeriods = [5, 10, 12, 20, 26, 50, 100, 200];
 
 _ScannerGroup _getCategoryForType(ScannerType type) {
   String name = type.name;
+
+  if (RegExp(r'^priceAbove\d+SMA$').hasMatch(name)) {
+    return _ScannerGroup.priceAboveSMA;
+  }
+  if (RegExp(r'^priceBelow\d+SMA$').hasMatch(name)) {
+    return _ScannerGroup.priceBelowSMA;
+  }
+  if (RegExp(r'^priceAbove\d+EMA$').hasMatch(name)) {
+    return _ScannerGroup.priceAboveEMA;
+  }
+  if (RegExp(r'^priceBelow\d+EMA$').hasMatch(name)) {
+    return _ScannerGroup.priceBelowEMA;
+  }
+
   if (name.startsWith('priceAboveSMA')) return _ScannerGroup.priceAboveSMA;
   if (name.startsWith('priceBelowSMA')) return _ScannerGroup.priceBelowSMA;
   if (name.startsWith('priceAboveEMA')) return _ScannerGroup.priceAboveEMA;

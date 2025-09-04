@@ -658,11 +658,10 @@ List<ScannerResult> _scanRocConditions(
   return scanners;
 }
 
-List<ScannerResult> _scanPivotPoints(List<ICandle> candles, ScannerType type) {
+List<ScannerResult> _scanPivotPoints(
+    List<ICandle> candles, ScannerType type, PivotTimeframe timeframe) {
   final scanners = <ScannerResult>[];
   final properties = type.properties;
-
-  final PivotTimeframe timeframe = properties['timeframe'] as PivotTimeframe;
   final String levelKey = properties['level'] as String;
   final PriceComparison comparison =
       properties['comparison'] as PriceComparison;
@@ -759,7 +758,7 @@ List<ScannerResult> _scanPivotPoints(List<ICandle> candles, ScannerType type) {
 
 /// Main consolidated scanner function.
 List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
-    {TrendData? trendData}) {
+    {TrendData? trendData, PivotTimeframe? pivotTimeframe}) {
   // Handle grouped/parameterized scanner types first
   if (type.name.contains('SMA') || type.name.contains('EMA')) {
     return _scanMovingAverage(candles, type);
@@ -783,8 +782,9 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
   if (type.name.startsWith('rocO')) {
     return _scanRocConditions(candles, type);
   }
-  if (type.name.startsWith('pivot')) {
-    return _scanPivotPoints(candles, type);
+  if (type.name.startsWith('pivotPoint')) {
+    return _scanPivotPoints(
+        candles, type, pivotTimeframe ?? PivotTimeframe.daily);
   }
 
   // Handle individual candlestick patterns

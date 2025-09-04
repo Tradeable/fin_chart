@@ -1,4 +1,5 @@
 import 'package:fin_chart/models/enums/trend_detection.dart';
+import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/scanner_indicator.dart';
 import 'package:fin_chart/models/scanners/scanner_properties.dart';
 import 'package:fin_chart/ui/color_picker_widget.dart';
@@ -21,16 +22,21 @@ class ScannerConfigDialog extends StatefulWidget {
 class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
   late Color highlightColor;
   late TrendDetection trendDetection;
+  late PivotTimeframe timeframe;
 
   @override
   void initState() {
     super.initState();
     highlightColor = widget.indicator.highlightColor;
     trendDetection = widget.indicator.trendDetection;
+    timeframe = widget.indicator.timeframe;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isPivotScanner =
+        widget.indicator.selectedScannerType?.name.startsWith('pivotPoint') ??
+            false;
     return AlertDialog(
       title: Text(
           'Configure "${widget.indicator.selectedScannerType?.displayName}"'),
@@ -49,6 +55,33 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
                 });
               },
             ),
+            if (isPivotScanner) ...[
+              const SizedBox(height: 24),
+              const Text('Pivot Timeframe'),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<PivotTimeframe>(
+                value: timeframe,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: PivotTimeframe.values.map((frame) {
+                  return DropdownMenuItem<PivotTimeframe>(
+                    value: frame,
+                    child: Text(
+                        frame.name[0].toUpperCase() + frame.name.substring(1)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      timeframe = value;
+                    });
+                  }
+                },
+              ),
+            ],
             const SizedBox(height: 24),
             const Text('Trend Detection'),
             const SizedBox(height: 8),
@@ -87,6 +120,7 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
           onPressed: () {
             widget.indicator.highlightColor = highlightColor;
             widget.indicator.trendDetection = trendDetection;
+            widget.indicator.timeframe = timeframe;
             widget.onUpdate(widget.indicator);
             Navigator.of(context).pop();
           },

@@ -15,6 +15,7 @@ import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
+import 'package:example/editor/ui/widget/markdown_textfield.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/enums/mcq_arrangment_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
@@ -823,8 +824,6 @@ class _EditorPageState extends State<EditorPage> {
   Future<AddPromptTask?> showPromptDialog({
     required BuildContext context,
     String title = 'Enter Text',
-    String promptHintText = 'Enter your text here',
-    String hintHintText = 'Hint',
     String okButtonText = 'OK',
     String cancelButtonText = 'Cancel',
     AddPromptTask? initialTask,
@@ -850,31 +849,24 @@ class _EditorPageState extends State<EditorPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(
-                      controller: promptController,
-                      decoration: InputDecoration(
-                        hintText: promptHintText,
-                        border: const OutlineInputBorder(),
-                        filled: true,
-                      ),
-                      maxLines: maxLines,
-                      keyboardType: keyboardType,
-                      textCapitalization: TextCapitalization.sentences,
-                      autofocus: true,
-                    ),
+                    Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MarkdownTextField(
+                              controller: promptController,
+                              hint: "Enter Prompt"),
+                        )),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: hintController,
-                      decoration: InputDecoration(
-                        hintText: hintHintText,
-                        border: const OutlineInputBorder(),
-                        filled: true,
-                      ),
-                      maxLines: 2,
-                      keyboardType: keyboardType,
-                      textCapitalization: TextCapitalization.sentences,
-                      autofocus: true,
-                    ),
+                    Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MarkdownTextField(
+                              controller: hintController, hint: "Enter Hint"),
+                        )),
                     const SizedBox(height: 16),
                     Row(
                       children: [

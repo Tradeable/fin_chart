@@ -1,3 +1,4 @@
+import 'package:example/editor/ui/widget/markdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 
@@ -33,27 +34,24 @@ Future<ShowBottomSheetTask?> showBottomSheetDialog({
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Title',
-                      hintText: 'Enter title',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 1,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
+                  Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MarkdownTextField(
+                            controller: titleController, hint: "Enter title"),
+                      )),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      hintText: 'Enter description',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
+                  Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: MarkdownTextField(
+                            controller: descriptionController,
+                            hint: "Enter description"),
+                      )),
                   const SizedBox(height: 16),
                   Row(
                     children: [

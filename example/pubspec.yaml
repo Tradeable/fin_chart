@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   fin_chart:
     path: ../
+  markdown_widget: ^2.3.2+8
 
 dev_dependencies:
   flutter_test:

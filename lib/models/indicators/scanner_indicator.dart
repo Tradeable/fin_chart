@@ -4,6 +4,7 @@ import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/enums/scanner_display_type.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
+import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/scanners/scanner_engine.dart';
 import 'package:fin_chart/models/scanners/scanner_result.dart';
 import 'package:fin_chart/models/scanners/trend_data.dart';
@@ -17,6 +18,7 @@ class ScannerIndicator extends Indicator {
   ScannerType? selectedScannerType;
   Color highlightColor;
   TrendDetection trendDetection;
+  PivotTimeframe timeframe;
 
   List<ScannerResult> activeScanResults = [];
   final List<ICandle> candles = [];
@@ -25,6 +27,7 @@ class ScannerIndicator extends Indicator {
     this.selectedScannerType,
     this.highlightColor = const Color(0xFFFFA000), // Amber color
     this.trendDetection = TrendDetection.none,
+    this.timeframe = PivotTimeframe.daily,
   }) : super(
             id: generateV4(),
             type: IndicatorType.scanner,
@@ -37,6 +40,7 @@ class ScannerIndicator extends Indicator {
     this.selectedScannerType,
     required this.highlightColor,
     required this.trendDetection,
+    required this.timeframe,
   });
 
   @override
@@ -163,9 +167,8 @@ class ScannerIndicator extends Indicator {
       trendData = TrendData(sma50: trendData.sma50, sma200: _calculateSMA(200));
     }
 
-    // Use the new centralized scanner function
-    activeScanResults =
-        runScanner(selectedScannerType!, candles, trendData: trendData);
+    activeScanResults = runScanner(selectedScannerType!, candles,
+        trendData: trendData, pivotTimeframe: timeframe);
   }
 
   @override
@@ -255,6 +258,7 @@ class ScannerIndicator extends Indicator {
     json['selectedScannerType'] = selectedScannerType?.name;
     json['highlightColor'] = colorToJson(highlightColor);
     json['trendDetection'] = trendDetection.name;
+    json['timeframe'] = timeframe.name;
     return json;
   }
 
@@ -267,6 +271,10 @@ class ScannerIndicator extends Indicator {
       trendDetection: TrendDetection.values.firstWhere(
         (e) => e.name == json['trendDetection'],
         orElse: () => TrendDetection.none,
+      ),
+      timeframe: PivotTimeframe.values.firstWhere(
+        (e) => e.name == json['timeframe'],
+        orElse: () => PivotTimeframe.daily,
       ),
       selectedScannerType: json['selectedScannerType'] != null
           ? ScannerType.values.firstWhere(

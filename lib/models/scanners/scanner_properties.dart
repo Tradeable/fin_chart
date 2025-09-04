@@ -1,6 +1,7 @@
 import 'package:fin_chart/models/enums/scanner_display_type.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
+import 'package:flutter/material.dart';
 
 extension ScannerProperties on ScannerType {
   String get displayName {
@@ -23,49 +24,137 @@ extension ScannerProperties on ScannerType {
     switch (this) {
       // Candlestick
       case ScannerType.hammer:
-        return {'name': 'Hammer', 'label': 'Hammer'};
+        return {
+          'name': 'Hammer',
+          'label': 'Hammer',
+          'defaultColor': Colors.green
+        };
       case ScannerType.whiteMarubozu:
-        return {'name': 'White Marubozu', 'label': 'W Maru'};
+        return {
+          'name': 'White Marubozu',
+          'label': 'W Maru',
+          'defaultColor': Colors.green
+        };
       case ScannerType.blackMarubozu:
-        return {'name': 'Black Marubozu', 'label': 'B Maru'};
+        return {
+          'name': 'Black Marubozu',
+          'label': 'B Maru',
+          'defaultColor': Colors.red
+        };
       case ScannerType.bullishHarami:
-        return {'name': 'Bullish Harami', 'label': 'Bu Harami'};
+        return {
+          'name': 'Bullish Harami',
+          'label': 'Bu Harami',
+          'defaultColor': Colors.green
+        };
       case ScannerType.bearishHarami:
-        return {'name': 'Bearish Harami', 'label': 'Be Harami'};
+        return {
+          'name': 'Bearish Harami',
+          'label': 'Be Harami',
+          'defaultColor': Colors.red
+        };
       case ScannerType.bullishHaramiCross:
-        return {'name': 'Bullish Harami Cross', 'label': 'Bu Harami+'};
+        return {
+          'name': 'Bullish Harami Cross',
+          'label': 'Bu Harami+',
+          'defaultColor': Colors.green
+        };
       case ScannerType.bearishHaramiCross:
-        return {'name': 'Bearish Harami Cross', 'label': 'Be Harami+'};
+        return {
+          'name': 'Bearish Harami Cross',
+          'label': 'Be Harami+',
+          'defaultColor': Colors.red
+        };
       case ScannerType.bullishEngulfing:
-        return {'name': 'Bullish Engulfing', 'label': 'Bu Engulf'};
+        return {
+          'name': 'Bullish Engulfing',
+          'label': 'Bu Engulf',
+          'defaultColor': Colors.green
+        };
       case ScannerType.bearishEngulfing:
-        return {'name': 'Bearish Engulfing', 'label': 'Be Engulf'};
+        return {
+          'name': 'Bearish Engulfing',
+          'label': 'Be Engulf',
+          'defaultColor': Colors.red
+        };
       case ScannerType.piercingLine:
-        return {'name': 'Piercing Line', 'label': 'Piercing'};
+        return {
+          'name': 'Piercing Line',
+          'label': 'Piercing',
+          'defaultColor': Colors.green
+        };
       case ScannerType.darkCloudCover:
-        return {'name': 'Dark Cloud Cover', 'label': 'Dark Cloud'};
+        return {
+          'name': 'Dark Cloud Cover',
+          'label': 'Dark Cloud',
+          'defaultColor': Colors.red
+        };
       case ScannerType.upsideTasukiGap:
-        return {'name': 'Upside Tasuki Gap', 'label': 'Up Tasuki'};
+        return {
+          'name': 'Upside Tasuki Gap',
+          'label': 'Up Tasuki',
+          'defaultColor': Colors.green
+        };
       case ScannerType.downsideTasukiGap:
-        return {'name': 'Downside Tasuki Gap', 'label': 'Down Tasuki'};
+        return {
+          'name': 'Downside Tasuki Gap',
+          'label': 'Down Tasuki',
+          'defaultColor': Colors.red
+        };
       case ScannerType.invertedHammer:
-        return {'name': 'Inverted Hammer', 'label': 'Inv Hammer'};
+        return {
+          'name': 'Inverted Hammer',
+          'label': 'Inv Hammer',
+          'defaultColor': Colors.green
+        };
       case ScannerType.shootingStar:
-        return {'name': 'Shooting Star', 'label': 'Shoot Star'};
+        return {
+          'name': 'Shooting Star',
+          'label': 'Shoot Star',
+          'defaultColor': Colors.red
+        };
       case ScannerType.threeWhiteSoldiers:
-        return {'name': 'Three White Soldiers', 'label': '3 White Sol'};
+        return {
+          'name': 'Three White Soldiers',
+          'label': '3 White Sol',
+          'defaultColor': Colors.green
+        };
       case ScannerType.identicalThreeCrows:
-        return {'name': 'Identical Three Crows', 'label': '3 Ident Crows'};
+        return {
+          'name': 'Identical Three Crows',
+          'label': '3 Ident Crows',
+          'defaultColor': Colors.red
+        };
       case ScannerType.abandonedBabyBottom:
-        return {'name': 'Abandoned Baby Bottom', 'label': 'Aban Baby Bot'};
+        return {
+          'name': 'Abandoned Baby Bottom',
+          'label': 'Aban Baby Bot',
+          'defaultColor': Colors.green
+        };
       case ScannerType.abandonedBabyTop:
-        return {'name': 'Abandoned Baby Top', 'label': 'Aban Baby Top'};
+        return {
+          'name': 'Abandoned Baby Top',
+          'label': 'Aban Baby Top',
+          'defaultColor': Colors.red
+        };
       case ScannerType.hangingMan:
-        return {'name': 'Hanging Man', 'label': 'Hang Man'};
+        return {
+          'name': 'Hanging Man',
+          'label': 'Hang Man',
+          'defaultColor': Colors.red
+        };
       case ScannerType.bullishKicker:
-        return {'name': 'Bullish Kicker', 'label': 'Bu Kicker'};
+        return {
+          'name': 'Bullish Kicker',
+          'label': 'Bu Kicker',
+          'defaultColor': Colors.green
+        };
       case ScannerType.morningStar:
-        return {'name': 'Morning Star', 'label': 'Morning Star'};
+        return {
+          'name': 'Morning Star',
+          'label': 'Morning Star',
+          'defaultColor': Colors.green
+        };
 
       // Oscillators
       case ScannerType.mfiOverbought:
@@ -75,7 +164,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 14,
           'threshold': 80.0,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.red,
         };
       case ScannerType.mfiOversold:
         return {
@@ -84,7 +174,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 14,
           'threshold': 20.0,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.green,
         };
       case ScannerType.dualOverboughtRsiMfi:
         return {
@@ -95,7 +186,8 @@ extension ScannerProperties on ScannerType {
           'mfiPeriod': 14,
           'rsiThreshold': 70.0,
           'mfiThreshold': 70.0,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.red,
         };
       case ScannerType.dualOversoldRsiMfi:
         return {
@@ -106,7 +198,8 @@ extension ScannerProperties on ScannerType {
           'mfiPeriod': 14,
           'rsiThreshold': 20.0,
           'mfiThreshold': 20.0,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.green,
         };
       case ScannerType.macdCrossAboveZero:
         return {
@@ -116,7 +209,8 @@ extension ScannerProperties on ScannerType {
           'fastPeriod': 12,
           'slowPeriod': 26,
           'signalPeriod': 9,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.macdCrossBelowZero:
         return {
@@ -126,7 +220,8 @@ extension ScannerProperties on ScannerType {
           'fastPeriod': 12,
           'slowPeriod': 26,
           'signalPeriod': 9,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.macdCrossAboveSignal:
         return {
@@ -136,7 +231,8 @@ extension ScannerProperties on ScannerType {
           'fastPeriod': 12,
           'slowPeriod': 26,
           'signalPeriod': 9,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.macdCrossBelowSignal:
         return {
@@ -146,7 +242,8 @@ extension ScannerProperties on ScannerType {
           'fastPeriod': 12,
           'slowPeriod': 26,
           'signalPeriod': 9,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.rsiBullish:
         return {
@@ -157,7 +254,8 @@ extension ScannerProperties on ScannerType {
           'volumePeriod': 5, // For "Week Volume Avg"
           'rsiThreshold': 80.0,
           'volumeThreshold': 100000.0,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.rsiBearish:
         return {
@@ -166,7 +264,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'rsiPeriod': 14,
           'rsiThreshold': 20.0,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.rocOversold:
         return {
@@ -176,6 +275,7 @@ extension ScannerProperties on ScannerType {
           'rocPeriod1': 125,
           'rocPeriod2': 21,
           'smaPeriod': 20,
+          'defaultColor': Colors.green,
         };
       case ScannerType.rocOverbought:
         return {
@@ -185,6 +285,7 @@ extension ScannerProperties on ScannerType {
           'rocPeriod1': 125,
           'rocPeriod2': 21,
           'smaPeriod': 20,
+          'defaultColor': Colors.red,
         };
 
       // --- Pivot Point Scanners ---
@@ -196,6 +297,7 @@ extension ScannerProperties on ScannerType {
           'level': 'r1',
           'comparison': PriceComparison.above,
           'timeframe': PivotTimeframe.daily,
+          'defaultColor': Colors.green,
         };
       case ScannerType.pivotPointR2Breakout:
         return {
@@ -205,6 +307,7 @@ extension ScannerProperties on ScannerType {
           'level': 'r2',
           'comparison': PriceComparison.above,
           'timeframe': PivotTimeframe.daily,
+          'defaultColor': Colors.green,
         };
       case ScannerType.pivotPointR3Breakout:
         return {
@@ -214,6 +317,7 @@ extension ScannerProperties on ScannerType {
           'level': 'r3',
           'comparison': PriceComparison.above,
           'timeframe': PivotTimeframe.daily,
+          'defaultColor': Colors.green,
         };
       case ScannerType.pivotPointS1Breakdown:
         return {
@@ -223,6 +327,7 @@ extension ScannerProperties on ScannerType {
           'level': 's1',
           'comparison': PriceComparison.below,
           'timeframe': PivotTimeframe.daily,
+          'defaultColor': Colors.red,
         };
       case ScannerType.pivotPointS2Breakdown:
         return {
@@ -232,6 +337,7 @@ extension ScannerProperties on ScannerType {
           'level': 's2',
           'comparison': PriceComparison.below,
           'timeframe': PivotTimeframe.daily,
+          'defaultColor': Colors.red,
         };
       case ScannerType.pivotPointS3Breakdown:
         return {
@@ -241,6 +347,7 @@ extension ScannerProperties on ScannerType {
           'level': 's3',
           'comparison': PriceComparison.below,
           'timeframe': PivotTimeframe.daily,
+          'defaultColor': Colors.red,
         };
 
       // Price and Volume
@@ -249,24 +356,28 @@ extension ScannerProperties on ScannerType {
           'name': 'Highest Recovery from 52 Week Low',
           'label': '% from 52w Low > 5',
           'displayType': ScannerDisplayType.areaShade,
+          'defaultColor': Colors.green,
         };
       case ScannerType.recoveryFromWeekLow:
         return {
           'name': 'Highest Recovery from Week Low',
           'label': '% from Week Low > 10',
           'displayType': ScannerDisplayType.areaShade,
+          'defaultColor': Colors.green,
         };
       case ScannerType.fallFrom52WeekHigh:
         return {
           'name': 'Highest Fall from 52 Week High',
           'label': '% from 52w High > 10',
           'displayType': ScannerDisplayType.areaShade,
+          'defaultColor': Colors.red,
         };
       case ScannerType.fallFromWeekHigh:
         return {
           'name': 'Highest Fall from Week High',
           'label': '% from Week High > 5',
           'displayType': ScannerDisplayType.areaShade,
+          'defaultColor': Colors.red,
         };
 
       // --- SMA Scanners ---
@@ -277,7 +388,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 5,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove10SMA:
         return {
@@ -286,7 +398,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 10,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove20SMA:
         return {
@@ -295,7 +408,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 20,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove30SMA:
         return {
@@ -304,7 +418,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 30,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove50SMA:
         return {
@@ -313,7 +428,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 50,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove100SMA:
         return {
@@ -322,7 +438,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 100,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove150SMA:
         return {
@@ -331,7 +448,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 150,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove200SMA:
         return {
@@ -340,7 +458,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 200,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
 
       case ScannerType.priceBelow5SMA:
@@ -350,7 +469,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 5,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow10SMA:
         return {
@@ -359,7 +479,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 10,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow20SMA:
         return {
@@ -368,7 +489,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 20,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow30SMA:
         return {
@@ -377,7 +499,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 30,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow50SMA:
         return {
@@ -386,7 +509,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 50,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow100SMA:
         return {
@@ -395,7 +519,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 100,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow150SMA:
         return {
@@ -404,7 +529,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 150,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow200SMA:
         return {
@@ -413,7 +539,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 200,
           'maType': MovingAverageType.sMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
 
       // --- EMA Scanners ---
@@ -424,7 +551,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 5,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove10EMA:
         return {
@@ -433,7 +561,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 10,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove12EMA:
         return {
@@ -442,7 +571,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 12,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove20EMA:
         return {
@@ -451,7 +581,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 20,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove26EMA:
         return {
@@ -460,7 +591,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 26,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove50EMA:
         return {
@@ -469,7 +601,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 50,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove100EMA:
         return {
@@ -478,7 +611,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 100,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
       case ScannerType.priceAbove200EMA:
         return {
@@ -487,7 +621,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 200,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.above
+          'comparison': PriceComparison.above,
+          'defaultColor': Colors.green,
         };
 
       case ScannerType.priceBelow5EMA:
@@ -497,7 +632,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 5,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow10EMA:
         return {
@@ -506,7 +642,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 10,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow12EMA:
         return {
@@ -515,7 +652,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 12,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow20EMA:
         return {
@@ -524,7 +662,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 20,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow26EMA:
         return {
@@ -533,7 +672,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 26,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow50EMA:
         return {
@@ -542,7 +682,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 50,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow100EMA:
         return {
@@ -551,7 +692,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 100,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
       case ScannerType.priceBelow200EMA:
         return {
@@ -560,7 +702,8 @@ extension ScannerProperties on ScannerType {
           'displayType': ScannerDisplayType.areaShade,
           'period': 200,
           'maType': MovingAverageType.eMA,
-          'comparison': PriceComparison.below
+          'comparison': PriceComparison.below,
+          'defaultColor': Colors.red,
         };
 
       default:

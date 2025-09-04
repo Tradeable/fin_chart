@@ -5,7 +5,6 @@ import 'package:fin_chart/models/scanners/scanner_properties.dart';
 import 'package:fin_chart/models/scanners/scanner_result.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/scanners/trend_data.dart';
-import 'package:flutter/material.dart';
 
 // #region Helper Functions & Enums
 
@@ -370,8 +369,6 @@ List<ScannerResult> _scanOscillator(List<ICandle> candles, ScannerType type) {
         label: type.label,
         targetIndex: candleIndex,
         highlightedIndices: [candleIndex],
-        highlightColor:
-            comparison == PriceComparison.above ? Colors.red : Colors.green,
       ));
     }
   }
@@ -406,8 +403,6 @@ List<ScannerResult> _scanMovingAverage(
         label: type.label,
         targetIndex: i,
         highlightedIndices: [i],
-        highlightColor:
-            comparison == PriceComparison.above ? Colors.green : Colors.red,
       ));
     }
   }
@@ -465,8 +460,6 @@ List<ScannerResult> _scanDualOscillator(
         label: type.label,
         targetIndex: i,
         highlightedIndices: [i],
-        highlightColor:
-            comparison == PriceComparison.above ? Colors.red : Colors.green,
       ));
     }
   }
@@ -504,8 +497,6 @@ List<ScannerResult> _scanMacdCrossover(
         label: type.label,
         targetIndex: i,
         highlightedIndices: [i],
-        highlightColor:
-            comparison == PriceComparison.above ? Colors.green : Colors.red,
       ));
     }
   }
@@ -551,8 +542,6 @@ List<ScannerResult> _scanMacdSignalCrossover(
         label: type.label,
         targetIndex: i,
         highlightedIndices: [i],
-        highlightColor:
-            comparison == PriceComparison.above ? Colors.green : Colors.red,
       ));
     }
   }
@@ -591,7 +580,6 @@ List<ScannerResult> _scanRsiConditions(
           label: type.label,
           targetIndex: i,
           highlightedIndices: [i],
-          highlightColor: Colors.green,
         ));
       }
     }
@@ -604,7 +592,6 @@ List<ScannerResult> _scanRsiConditions(
           label: type.label,
           targetIndex: candleIndex,
           highlightedIndices: [candleIndex],
-          highlightColor: Colors.red,
         ));
       }
     }
@@ -650,8 +637,6 @@ List<ScannerResult> _scanRocConditions(
         label: type.label,
         targetIndex: i,
         highlightedIndices: [i],
-        highlightColor:
-            type == ScannerType.rocOversold ? Colors.green : Colors.red,
       ));
     }
   }
@@ -745,8 +730,6 @@ List<ScannerResult> _scanPivotPoints(
           label: type.label,
           targetIndex: i,
           highlightedIndices: [i],
-          highlightColor:
-              comparison == PriceComparison.above ? Colors.green : Colors.red,
         ));
       }
     }
@@ -779,18 +762,17 @@ List<ScannerResult> _scanHighLowRecovery(
               scannerType: type,
               label: type.label,
               targetIndex: i,
-              highlightedIndices: [i],
-              highlightColor: Colors.green));
+              highlightedIndices: [i]));
         }
       } else if (type == ScannerType.fallFrom52WeekHigh) {
         final percentFall = ((high52w - currentClose) / high52w) * 100;
         if (percentFall > 10) {
           scanners.add(ScannerResult(
-              scannerType: type,
-              label: type.label,
-              targetIndex: i,
-              highlightedIndices: [i],
-              highlightColor: Colors.red));
+            scannerType: type,
+            label: type.label,
+            targetIndex: i,
+            highlightedIndices: [i],
+          ));
         }
       }
     }
@@ -824,11 +806,11 @@ List<ScannerResult> _scanHighLowRecovery(
           final percentRecovery = ((currentClose - weekLow) / weekLow) * 100;
           if (percentRecovery > 10) {
             scanners.add(ScannerResult(
-                scannerType: type,
-                label: type.label,
-                targetIndex: i,
-                highlightedIndices: [i],
-                highlightColor: Colors.green));
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i],
+            ));
           }
         }
       } else if (type == ScannerType.fallFromWeekHigh) {
@@ -839,8 +821,7 @@ List<ScannerResult> _scanHighLowRecovery(
                 scannerType: type,
                 label: type.label,
                 targetIndex: i,
-                highlightedIndices: [i],
-                highlightColor: Colors.red));
+                highlightedIndices: [i]));
           }
         }
       }
@@ -1045,6 +1026,238 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
             (_isBullish(second) ? second.open : second.close) < first.close &&
             _isBullish(third) &&
             third.close > firstBodyMidpoint) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i - 1,
+              highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+    case ScannerType.whiteMarubozu:
+      for (int i = 0; i < candles.length; i++) {
+        final candle = candles[i];
+        if (_isBullish(candle) &&
+            _upperShadow(candle) < _totalRange(candle) * 0.05 &&
+            _lowerShadow(candle) < _totalRange(candle) * 0.05) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i]));
+        }
+      }
+      break;
+
+    case ScannerType.blackMarubozu:
+      for (int i = 0; i < candles.length; i++) {
+        final candle = candles[i];
+        if (_isBearish(candle) &&
+            _upperShadow(candle) < _totalRange(candle) * 0.05 &&
+            _lowerShadow(candle) < _totalRange(candle) * 0.05) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i]));
+        }
+      }
+      break;
+
+    case ScannerType.bullishHarami:
+      for (int i = 1; i < candles.length; i++) {
+        final prev = candles[i - 1];
+        final curr = candles[i];
+        if (_isBearish(prev) &&
+            _isBullish(curr) &&
+            curr.open > prev.close &&
+            curr.close < prev.open) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.bearishHarami:
+      for (int i = 1; i < candles.length; i++) {
+        final prev = candles[i - 1];
+        final curr = candles[i];
+        if (_isBullish(prev) &&
+            _isBearish(curr) &&
+            curr.open < prev.close &&
+            curr.close > prev.open) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.bullishHaramiCross:
+      for (int i = 1; i < candles.length; i++) {
+        final prev = candles[i - 1];
+        final curr = candles[i];
+        if (_isBearish(prev) &&
+            _isDoji(curr) &&
+            curr.open > prev.close &&
+            curr.close < prev.open) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.bearishHaramiCross:
+      for (int i = 1; i < candles.length; i++) {
+        final prev = candles[i - 1];
+        final curr = candles[i];
+        if (_isBullish(prev) &&
+            _isDoji(curr) &&
+            curr.open < prev.close &&
+            curr.close > prev.open) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.upsideTasukiGap:
+      for (int i = 2; i < candles.length; i++) {
+        final c1 = candles[i - 2];
+        final c2 = candles[i - 1];
+        final c3 = candles[i];
+        if (_isBullish(c1) &&
+            _isBullish(c2) &&
+            c2.open > c1.close && // Gap up
+            _isBearish(c3) &&
+            c3.open < c2.close &&
+            c3.open > c2.open &&
+            c3.close < c2.open &&
+            c3.close > c1.close) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i - 1,
+              highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.downsideTasukiGap:
+      for (int i = 2; i < candles.length; i++) {
+        final c1 = candles[i - 2];
+        final c2 = candles[i - 1];
+        final c3 = candles[i];
+        if (_isBearish(c1) &&
+            _isBearish(c2) &&
+            c2.open < c1.close && // Gap down
+            _isBullish(c3) &&
+            c3.open > c2.close &&
+            c3.open < c2.open &&
+            c3.close > c2.open &&
+            c3.close < c1.close) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i - 1,
+              highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.threeWhiteSoldiers:
+      for (int i = 2; i < candles.length; i++) {
+        final c1 = candles[i - 2];
+        final c2 = candles[i - 1];
+        final c3 = candles[i];
+        if (_isBullish(c1) &&
+            _isBullish(c2) &&
+            _isBullish(c3) &&
+            c2.open > c1.open &&
+            c2.open < c1.close &&
+            c2.close > c1.close &&
+            c3.open > c2.open &&
+            c3.open < c2.close &&
+            c3.close > c2.close &&
+            _upperShadow(c1) < _bodySize(c1) &&
+            _upperShadow(c2) < _bodySize(c2) &&
+            _upperShadow(c3) < _bodySize(c3)) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i - 1,
+              highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.identicalThreeCrows:
+      for (int i = 2; i < candles.length; i++) {
+        final c1 = candles[i - 2];
+        final c2 = candles[i - 1];
+        final c3 = candles[i];
+        if (_isBearish(c1) &&
+            _isBearish(c2) &&
+            _isBearish(c3) &&
+            c2.open < c1.open &&
+            c2.open > c1.close &&
+            c2.close < c1.close &&
+            c3.open < c2.open &&
+            c3.open > c2.close &&
+            c3.close < c2.close &&
+            _lowerShadow(c1) < _bodySize(c1) &&
+            _lowerShadow(c2) < _bodySize(c2) &&
+            _lowerShadow(c3) < _bodySize(c3)) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i - 1,
+              highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.abandonedBabyBottom:
+      for (int i = 2; i < candles.length; i++) {
+        final c1 = candles[i - 2];
+        final c2 = candles[i - 1];
+        final c3 = candles[i];
+        if (_isBearish(c1) &&
+            _isDoji(c2) &&
+            c2.high < c1.low && // Gap down for doji
+            _isBullish(c3) &&
+            c3.low > c2.high && // Gap up for third candle
+            c3.close > (c1.open + c1.close) / 2) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i - 1,
+              highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.abandonedBabyTop:
+      for (int i = 2; i < candles.length; i++) {
+        final c1 = candles[i - 2];
+        final c2 = candles[i - 1];
+        final c3 = candles[i];
+        if (_isBullish(c1) &&
+            _isDoji(c2) &&
+            c2.low > c1.high && // Gap up for doji
+            _isBearish(c3) &&
+            c3.high < c2.low && // Gap down for third candle
+            c3.close < (c1.open + c1.close) / 2) {
           scanners.add(ScannerResult(
               scannerType: type,
               label: type.label,

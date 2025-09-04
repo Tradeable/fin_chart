@@ -50,6 +50,12 @@ enum ScannerType {
   pivotPointS2Breakdown,
   pivotPointS3Breakdown,
 
+  // Price and Volume
+  recoveryFrom52WeekLow,
+  recoveryFromWeekLow,
+  fallFrom52WeekHigh,
+  fallFromWeekHigh,
+
   // SMA Price Above
   priceAbove5SMA,
   priceAbove10SMA,

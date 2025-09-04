@@ -754,6 +754,101 @@ List<ScannerResult> _scanPivotPoints(
 
   return scanners;
 }
+
+List<ScannerResult> _scanHighLowRecovery(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  if (candles.isEmpty) return scanners;
+
+  // Logic for 52-Week Scanners
+  if (type == ScannerType.recoveryFrom52WeekLow ||
+      type == ScannerType.fallFrom52WeekHigh) {
+    const int week52 = 260; // Approximate trading days in 52 weeks
+    if (candles.length < week52) return scanners;
+
+    for (int i = week52; i < candles.length; i++) {
+      final lookbackCandles = candles.sublist(i - week52, i);
+      final high52w = lookbackCandles.map((c) => c.high).reduce(math.max);
+      final low52w = lookbackCandles.map((c) => c.low).reduce(math.min);
+      final currentClose = candles[i].close;
+
+      if (type == ScannerType.recoveryFrom52WeekLow) {
+        final percentRecovery = ((currentClose - low52w) / low52w) * 100;
+        if (percentRecovery > 5) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i],
+              highlightColor: Colors.green));
+        }
+      } else if (type == ScannerType.fallFrom52WeekHigh) {
+        final percentFall = ((high52w - currentClose) / high52w) * 100;
+        if (percentFall > 10) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i],
+              highlightColor: Colors.red));
+        }
+      }
+    }
+  }
+
+  // Logic for Weekly Scanners
+  if (type == ScannerType.recoveryFromWeekLow ||
+      type == ScannerType.fallFromWeekHigh) {
+    DateTime? currentWeekStart;
+    double weekHigh = double.negativeInfinity;
+    double weekLow = double.infinity;
+
+    for (int i = 0; i < candles.length; i++) {
+      final candleDate = candles[i].date;
+      final periodStart = _getPeriodStart(candleDate, PivotTimeframe.weekly);
+
+      if (currentWeekStart == null ||
+          !_isSamePeriod(
+              currentWeekStart, periodStart, PivotTimeframe.weekly)) {
+        currentWeekStart = periodStart;
+        weekHigh = double.negativeInfinity;
+        weekLow = double.infinity;
+      }
+
+      weekHigh = math.max(weekHigh, candles[i].high);
+      weekLow = math.min(weekLow, candles[i].low);
+      final currentClose = candles[i].close;
+
+      if (type == ScannerType.recoveryFromWeekLow) {
+        if (weekLow > 0) {
+          final percentRecovery = ((currentClose - weekLow) / weekLow) * 100;
+          if (percentRecovery > 10) {
+            scanners.add(ScannerResult(
+                scannerType: type,
+                label: type.label,
+                targetIndex: i,
+                highlightedIndices: [i],
+                highlightColor: Colors.green));
+          }
+        }
+      } else if (type == ScannerType.fallFromWeekHigh) {
+        if (weekHigh > 0) {
+          final percentFall = ((weekHigh - currentClose) / weekHigh) * 100;
+          if (percentFall > 5) {
+            scanners.add(ScannerResult(
+                scannerType: type,
+                label: type.label,
+                targetIndex: i,
+                highlightedIndices: [i],
+                highlightColor: Colors.red));
+          }
+        }
+      }
+    }
+  }
+
+  return scanners;
+}
 // #endregion
 
 /// Main consolidated scanner function.
@@ -785,6 +880,9 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
   if (type.name.startsWith('pivotPoint')) {
     return _scanPivotPoints(
         candles, type, pivotTimeframe ?? PivotTimeframe.daily);
+  }
+  if (type.name.contains('Week')) {
+    return _scanHighLowRecovery(candles, type);
   }
 
   // Handle individual candlestick patterns

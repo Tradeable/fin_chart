@@ -39,6 +39,16 @@ enum ScannerType {
   macdCrossBelowSignal,
   rsiBullish,
   rsiBearish,
+  rocOversold,
+  rocOverbought,
+
+  // Pivot Point Breakouts
+  pivotPointR1Breakout,
+  pivotPointR2Breakout,
+  pivotPointR3Breakout,
+  pivotPointS1Breakdown,
+  pivotPointS2Breakdown,
+  pivotPointS3Breakdown,
 
   // SMA Price Above
   priceAbove5SMA,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 enum _ScannerGroup {
   candlestick,
   oscillator,
+  pivotPoints,
   priceAboveSMA,
   priceBelowSMA,
   priceAboveEMA,
@@ -17,6 +18,7 @@ const Map<_ScannerGroup, String> _scannerGroupNames = {
   _ScannerGroup.priceBelowSMA: 'Price Below SMA',
   _ScannerGroup.priceAboveEMA: 'Price Above EMA',
   _ScannerGroup.priceBelowEMA: 'Price Below EMA',
+  _ScannerGroup.pivotPoints: 'Pivot Point Breakouts',
 };
 
 const List<int> _smaPeriods = [5, 10, 20, 30, 50, 100, 150, 200];
@@ -32,6 +34,8 @@ _ScannerGroup _getCategoryForType(ScannerType type) {
   if (name.startsWith('dual')) return _ScannerGroup.oscillator;
   if (name.startsWith('macd')) return _ScannerGroup.oscillator;
   if (name.startsWith('rsiB')) return _ScannerGroup.oscillator;
+  if (name.startsWith('rocO')) return _ScannerGroup.oscillator;
+  if (name.startsWith('pivot')) return _ScannerGroup.pivotPoints;
   return _ScannerGroup.candlestick;
 }
 
@@ -83,7 +87,8 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             if (group == _ScannerGroup.candlestick ||
-                group == _ScannerGroup.oscillator) {
+                group == _ScannerGroup.oscillator ||
+                group == _ScannerGroup.pivotPoints) {
               setState(() {
                 _selectedGroup = group;
               });
@@ -141,6 +146,9 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
           break;
         case _ScannerGroup.priceBelowEMA:
           enumName = 'priceBelow${period}EMA';
+          break;
+        case _ScannerGroup.pivotPoints:
+          enumName = 'pivotPoint${period}Breakout';
           break;
         case _ScannerGroup.candlestick:
         case _ScannerGroup.oscillator:

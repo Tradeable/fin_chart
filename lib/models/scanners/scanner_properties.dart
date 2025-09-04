@@ -1,5 +1,6 @@
 import 'package:fin_chart/models/enums/scanner_display_type.dart';
 import 'package:fin_chart/models/enums/scanner_type.dart';
+import 'package:fin_chart/models/indicators/pivot_point.dart';
 
 extension ScannerProperties on ScannerType {
   String get displayName {
@@ -166,6 +167,80 @@ extension ScannerProperties on ScannerType {
           'rsiPeriod': 14,
           'rsiThreshold': 20.0,
           'comparison': PriceComparison.below
+        };
+      case ScannerType.rocOversold:
+        return {
+          'name': 'Oversold by ROC',
+          'label': 'ROC Buy Signal',
+          'displayType': ScannerDisplayType.areaShade,
+          'rocPeriod1': 125,
+          'rocPeriod2': 21,
+          'smaPeriod': 20,
+        };
+      case ScannerType.rocOverbought:
+        return {
+          'name': 'Overbought by ROC',
+          'label': 'ROC Sell Signal',
+          'displayType': ScannerDisplayType.areaShade,
+          'rocPeriod1': 125,
+          'rocPeriod2': 21,
+          'smaPeriod': 20,
+        };
+
+      // --- Pivot Point Scanners ---
+      case ScannerType.pivotPointR1Breakout:
+        return {
+          'name': 'Positive Breakout (LTP > R1)',
+          'label': 'LTP > R1',
+          'displayType': ScannerDisplayType.areaShade,
+          'level': 'r1',
+          'comparison': PriceComparison.above,
+          'timeframe': PivotTimeframe.daily,
+        };
+      case ScannerType.pivotPointR2Breakout:
+        return {
+          'name': 'Positive Breakout (LTP > R2)',
+          'label': 'LTP > R2',
+          'displayType': ScannerDisplayType.areaShade,
+          'level': 'r2',
+          'comparison': PriceComparison.above,
+          'timeframe': PivotTimeframe.daily,
+        };
+      case ScannerType.pivotPointR3Breakout:
+        return {
+          'name': 'Positive Breakout (LTP > R3)',
+          'label': 'LTP > R3',
+          'displayType': ScannerDisplayType.areaShade,
+          'level': 'r3',
+          'comparison': PriceComparison.above,
+          'timeframe': PivotTimeframe.daily,
+        };
+      case ScannerType.pivotPointS1Breakdown:
+        return {
+          'name': 'Negative Breakdown (LTP < S1)',
+          'label': 'LTP < S1',
+          'displayType': ScannerDisplayType.areaShade,
+          'level': 's1',
+          'comparison': PriceComparison.below,
+          'timeframe': PivotTimeframe.daily,
+        };
+      case ScannerType.pivotPointS2Breakdown:
+        return {
+          'name': 'Negative Breakdown (LTP < S2)',
+          'label': 'LTP < S2',
+          'displayType': ScannerDisplayType.areaShade,
+          'level': 's2',
+          'comparison': PriceComparison.below,
+          'timeframe': PivotTimeframe.daily,
+        };
+      case ScannerType.pivotPointS3Breakdown:
+        return {
+          'name': 'Negative Breakdown (LTP < S3)',
+          'label': 'LTP < S3',
+          'displayType': ScannerDisplayType.areaShade,
+          'level': 's3',
+          'comparison': PriceComparison.below,
+          'timeframe': PivotTimeframe.daily,
         };
 
       // --- SMA Scanners ---

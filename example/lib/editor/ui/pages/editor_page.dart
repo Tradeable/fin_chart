@@ -23,6 +23,7 @@ import 'package:fin_chart/models/indicators/ev_sales.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
+import 'package:fin_chart/models/indicators/roc.dart';
 import 'package:fin_chart/models/indicators/scanner_indicator.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/models/indicators/vwap.dart';
@@ -1784,6 +1785,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case IndicatorType.scanner:
         indicator = ScannerIndicator();
+      case IndicatorType.roc:
+        indicator = Roc();
+        break;
     }
     _chartKey.currentState?.addIndicator(indicator);
   }

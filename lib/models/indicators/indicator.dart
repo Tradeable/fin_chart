@@ -4,6 +4,7 @@ import 'package:fin_chart/models/indicators/ev_sales.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/indicators/pe.dart';
 import 'package:fin_chart/models/indicators/pb.dart';
+import 'package:fin_chart/models/indicators/roc.dart';
 import 'package:fin_chart/models/indicators/scanner_indicator.dart';
 import 'package:fin_chart/models/indicators/supertrend.dart';
 import 'package:fin_chart/models/indicators/vwap.dart';
@@ -29,6 +30,7 @@ enum IndicatorType {
   evEbitda,
   evSales,
   scanner,
+  roc,
 }
 
 enum DisplayMode { main, panel }
@@ -153,6 +155,8 @@ abstract class Indicator with RegionProp {
         return EvSales.fromJson(json);
       case IndicatorType.scanner:
         return ScannerIndicator.fromJson(json);
+      case IndicatorType.roc:
+        return Roc.fromJson(json);
     }
   }
 

@@ -19,15 +19,17 @@ class ScannerIndicator extends Indicator {
   Color highlightColor;
   TrendDetection trendDetection;
   PivotTimeframe timeframe;
+  Set<int> removedResultIndices;
 
   List<ScannerResult> activeScanResults = [];
   final List<ICandle> candles = [];
 
   ScannerIndicator({
     this.selectedScannerType,
-    this.highlightColor = const Color(0xFFFFA000), // Amber color
+    this.highlightColor = const Color(0xFFFFA000),
     this.trendDetection = TrendDetection.none,
     this.timeframe = PivotTimeframe.daily,
+    this.removedResultIndices = const {},
   }) : super(
             id: generateV4(),
             type: IndicatorType.scanner,
@@ -41,6 +43,7 @@ class ScannerIndicator extends Indicator {
     required this.highlightColor,
     required this.trendDetection,
     required this.timeframe,
+    required this.removedResultIndices,
   });
 
   @override
@@ -167,10 +170,14 @@ class ScannerIndicator extends Indicator {
       trendData = TrendData(sma50: trendData.sma50, sma200: _calculateSMA(200));
     }
 
-    activeScanResults = runScanner(selectedScannerType!, candles,
+    final allResults = runScanner(selectedScannerType!, candles,
         trendData: trendData,
         pivotTimeframe: timeframe,
         trendDetection: trendDetection);
+
+    activeScanResults = allResults
+        .where((result) => !removedResultIndices.contains(result.targetIndex))
+        .toList();
   }
 
   @override
@@ -262,6 +269,7 @@ class ScannerIndicator extends Indicator {
     json['highlightColor'] = colorToJson(highlightColor);
     json['trendDetection'] = trendDetection.name;
     json['timeframe'] = timeframe.name;
+    json['removedResultIndices'] = removedResultIndices.toList();
     return json;
   }
 
@@ -284,6 +292,7 @@ class ScannerIndicator extends Indicator {
               (e) => e.name == json['selectedScannerType'],
             )
           : null,
+      removedResultIndices: Set<int>.from(json['removedResultIndices'] ?? []),
     );
   }
 

@@ -1269,11 +1269,7 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
         }
       }
       break;
-
-    // Fallback for un-migrated candlestick patterns
     default:
-      // You can add the logic for other candlestick patterns here following the same structure.
-      break;
   }
   if (trendDetection != TrendDetection.none && trendData != null) {
     final filteredScanners = <ScannerResult>[];

@@ -24,6 +24,7 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
   late Color highlightColor;
   late TrendDetection trendDetection;
   late PivotTimeframe timeframe;
+  late Set<int> removedIndices;
 
   final Set<ScannerType> _candlestickScanners = {
     ScannerType.hammer,
@@ -57,6 +58,7 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
     highlightColor = widget.indicator.highlightColor;
     trendDetection = widget.indicator.trendDetection;
     timeframe = widget.indicator.timeframe;
+    removedIndices = Set<int>.from(widget.indicator.removedResultIndices);
   }
 
   @override
@@ -67,6 +69,9 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
             false;
     final isCandlestickScanner =
         selectedType != null && _candlestickScanners.contains(selectedType);
+    final displayableResults = widget.indicator.activeScanResults
+        .where((result) => !removedIndices.contains(result.targetIndex))
+        .toList();
     return AlertDialog(
       title: Text(
           'Configure "${widget.indicator.selectedScannerType?.displayName}"'),
@@ -138,6 +143,55 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
                 },
               ),
             ],
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Scanner Results',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                // Add this TextButton to restore removed results
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      removedIndices.clear();
+                    });
+                  },
+                  child: const Text('Restore All'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: displayableResults.isEmpty
+                  ? const Center(child: Text('No results found.'))
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: displayableResults.map((result) {
+                          final candle =
+                              widget.indicator.candles[result.targetIndex];
+                          return ListTile(
+                            dense: true,
+                            title: Text(result.label),
+                            subtitle: Text(
+                                'Date: ${candle.date.toLocal().toString().split(' ')[0]}'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  removedIndices.add(result.targetIndex);
+                                });
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+            ),
           ],
         ),
       ),
@@ -153,6 +207,8 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
             widget.indicator.highlightColor = highlightColor;
             widget.indicator.trendDetection = trendDetection;
             widget.indicator.timeframe = timeframe;
+            widget.indicator.removedResultIndices = removedIndices;
+            widget.indicator.updateData(widget.indicator.candles);
             widget.onUpdate(widget.indicator);
             Navigator.of(context).pop();
           },

@@ -935,6 +935,20 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
       }
       break;
 
+    case ScannerType.gravestoneDoji:
+      for (int i = 0; i < candles.length; i++) {
+        final candle = candles[i];
+        if (_isDoji(candle) &&
+            (_lowerShadow(candle) < _totalRange(candle) * 0.1)) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i]));
+        }
+      }
+      break;
+
     case ScannerType.bullishEngulfing:
       for (int i = 1; i < candles.length; i++) {
         if (_isBearish(candles[i - 1]) &&
@@ -1008,6 +1022,20 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
         if (_isBearish(candles[i - 1]) &&
             _isBullish(candles[i]) &&
             candles[i].open > candles[i - 1].high) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.bearishKicker:
+      for (int i = 1; i < candles.length; i++) {
+        if (_isBullish(candles[i - 1]) &&
+            _isBearish(candles[i]) &&
+            candles[i].open < candles[i - 1].open) {
           scanners.add(ScannerResult(
               scannerType: type,
               label: type.label,
@@ -1266,6 +1294,174 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
               label: type.label,
               targetIndex: i - 1,
               highlightedIndices: [i - 2, i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.tweezerTop:
+      for (int i = 1; i < candles.length; i++) {
+        final c1 = candles[i - 1];
+        final c2 = candles[i];
+        final threshold = c1.high * 0.0025;
+        if (_isBullish(c1) &&
+            _isBearish(c2) &&
+            (c1.high - c2.high).abs() < threshold) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.tweezerBottom:
+      for (int i = 1; i < candles.length; i++) {
+        final c1 = candles[i - 1];
+        final c2 = candles[i];
+        final threshold = c1.low * 0.0025;
+        if (_isBearish(c1) &&
+            _isBullish(c2) &&
+            (c1.low - c2.low).abs() < threshold) {
+          scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i]));
+        }
+      }
+      break;
+
+    case ScannerType.nr4:
+      if (candles.length >= 4) {
+        for (int i = 3; i < candles.length; i++) {
+          final currentRange = _totalRange(candles[i]);
+          bool isNarrowest = true;
+          for (int j = 1; j < 4; j++) {
+            if (currentRange >= _totalRange(candles[i - j])) {
+              isNarrowest = false;
+              break;
+            }
+          }
+          if (isNarrowest) {
+            scanners.add(ScannerResult(
+                scannerType: type,
+                label: type.label,
+                targetIndex: i,
+                highlightedIndices: [i]));
+          }
+        }
+      }
+      break;
+
+    case ScannerType.nr7:
+      if (candles.length >= 7) {
+        for (int i = 6; i < candles.length; i++) {
+          final currentRange = _totalRange(candles[i]);
+          bool isNarrowest = true;
+          for (int j = 1; j < 7; j++) {
+            if (currentRange >= _totalRange(candles[i - j])) {
+              isNarrowest = false;
+              break;
+            }
+          }
+          if (isNarrowest) {
+            scanners.add(ScannerResult(
+                scannerType: type,
+                label: type.label,
+                targetIndex: i,
+                highlightedIndices: [i]));
+          }
+        }
+      }
+      break;
+
+    case ScannerType.strongClose:
+      for (int i = 0; i < candles.length; i++) {
+        final candle = candles[i];
+        final totalRange = _totalRange(candle);
+        if (totalRange > 0 &&
+            ((candle.high - candle.close) / totalRange) < 0.25) {
+          scanners.add(ScannerResult(
+            scannerType: type,
+            label: type.label,
+            targetIndex: i,
+            highlightedIndices: [i],
+          ));
+        }
+      }
+      break;
+
+    case ScannerType.weakClose:
+      for (int i = 0; i < candles.length; i++) {
+        final candle = candles[i];
+        final totalRange = _totalRange(candle);
+        if (totalRange > 0 &&
+            ((candle.close - candle.low) / totalRange) < 0.25) {
+          scanners.add(ScannerResult(
+            scannerType: type,
+            label: type.label,
+            targetIndex: i,
+            highlightedIndices: [i],
+          ));
+        }
+      }
+      break;
+
+    case ScannerType.risingWindow:
+      for (int i = 1; i < candles.length; i++) {
+        if (candles[i].low > candles[i - 1].high) {
+          scanners.add(ScannerResult(
+            scannerType: type,
+            label: type.label,
+            targetIndex: i,
+            highlightedIndices: [i - 1, i],
+          ));
+        }
+      }
+      break;
+
+    case ScannerType.fallingWindow:
+      for (int i = 1; i < candles.length; i++) {
+        if (candles[i].high < candles[i - 1].low) {
+          scanners.add(ScannerResult(
+            scannerType: type,
+            label: type.label,
+            targetIndex: i,
+            highlightedIndices: [i - 1, i],
+          ));
+        }
+      }
+      break;
+
+    case ScannerType.marketStructureHigh:
+      if (candles.length >= 3) {
+        for (int i = 1; i < candles.length - 1; i++) {
+          if (candles[i].high > candles[i - 1].high &&
+              candles[i].high > candles[i + 1].high) {
+            scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i, i + 1],
+            ));
+          }
+        }
+      }
+      break;
+
+    case ScannerType.marketStructureLow:
+      if (candles.length >= 3) {
+        for (int i = 1; i < candles.length - 1; i++) {
+          if (candles[i].low < candles[i - 1].low &&
+              candles[i].low < candles[i + 1].low) {
+            scanners.add(ScannerResult(
+              scannerType: type,
+              label: type.label,
+              targetIndex: i,
+              highlightedIndices: [i - 1, i, i + 1],
+            ));
+          }
         }
       }
       break;

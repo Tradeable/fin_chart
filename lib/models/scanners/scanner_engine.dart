@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:fin_chart/models/enums/trend_detection.dart';
 import 'package:fin_chart/models/i_candle.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:fin_chart/models/scanners/scanner_properties.dart';
@@ -834,7 +835,9 @@ List<ScannerResult> _scanHighLowRecovery(
 
 /// Main consolidated scanner function.
 List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
-    {TrendData? trendData, PivotTimeframe? pivotTimeframe}) {
+    {TrendData? trendData,
+    PivotTimeframe? pivotTimeframe,
+    TrendDetection trendDetection = TrendDetection.none}) {
   // Handle grouped/parameterized scanner types first
   if (type.name.contains('SMA') || type.name.contains('EMA')) {
     return _scanMovingAverage(candles, type);
@@ -1272,5 +1275,54 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
       // You can add the logic for other candlestick patterns here following the same structure.
       break;
   }
+  if (trendDetection != TrendDetection.none && trendData != null) {
+    final filteredScanners = <ScannerResult>[];
+    for (final result in scanners) {
+      final sentiment = result.scannerType.sentiment;
+      if (sentiment == ScannerSentiment.neutral) {
+        filteredScanners.add(result);
+        continue;
+      }
+
+      final index = result.targetIndex;
+      if (index >= candles.length) continue;
+
+      final candle = candles[index];
+      bool trendConditionMet = false;
+
+      if (trendDetection == TrendDetection.sma50) {
+        if (index < trendData.sma50.length && trendData.sma50[index] > 0) {
+          if (sentiment == ScannerSentiment.bullish &&
+              candle.close > trendData.sma50[index]) {
+            trendConditionMet = true;
+          } else if (sentiment == ScannerSentiment.bearish &&
+              candle.close < trendData.sma50[index]) {
+            trendConditionMet = true;
+          }
+        }
+      } else if (trendDetection == TrendDetection.sma50sma200) {
+        if (index < trendData.sma50.length &&
+            trendData.sma50[index] > 0 &&
+            index < trendData.sma200.length &&
+            trendData.sma200[index] > 0) {
+          if (sentiment == ScannerSentiment.bullish &&
+              candle.close > trendData.sma50[index] &&
+              trendData.sma50[index] > trendData.sma200[index]) {
+            trendConditionMet = true;
+          } else if (sentiment == ScannerSentiment.bearish &&
+              candle.close < trendData.sma50[index] &&
+              trendData.sma50[index] < trendData.sma200[index]) {
+            trendConditionMet = true;
+          }
+        }
+      }
+
+      if (trendConditionMet) {
+        filteredScanners.add(result);
+      }
+    }
+    return filteredScanners;
+  }
+
   return scanners;
 }

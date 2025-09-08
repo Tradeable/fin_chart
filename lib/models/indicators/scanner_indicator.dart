@@ -168,7 +168,9 @@ class ScannerIndicator extends Indicator {
     }
 
     activeScanResults = runScanner(selectedScannerType!, candles,
-        trendData: trendData, pivotTimeframe: timeframe);
+        trendData: trendData,
+        pivotTimeframe: timeframe,
+        trendDetection: trendDetection);
   }
 
   @override

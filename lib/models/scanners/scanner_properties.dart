@@ -3,6 +3,8 @@ import 'package:fin_chart/models/enums/scanner_type.dart';
 import 'package:fin_chart/models/indicators/pivot_point.dart';
 import 'package:flutter/material.dart';
 
+enum ScannerSentiment { bullish, bearish, neutral }
+
 extension ScannerProperties on ScannerType {
   String get displayName {
     final props = properties;
@@ -18,6 +20,114 @@ extension ScannerProperties on ScannerType {
     final props = properties;
     return props['displayType'] as ScannerDisplayType? ??
         ScannerDisplayType.labelBox;
+  }
+
+  ScannerSentiment get sentiment {
+    switch (this) {
+      // Bullish Candlestick
+      case ScannerType.hammer:
+      case ScannerType.whiteMarubozu:
+      case ScannerType.bullishHarami:
+      case ScannerType.bullishHaramiCross:
+      case ScannerType.bullishEngulfing:
+      case ScannerType.upsideTasukiGap:
+      case ScannerType.invertedHammer:
+      case ScannerType.threeWhiteSoldiers:
+      case ScannerType.abandonedBabyBottom:
+      case ScannerType.piercingLine:
+      case ScannerType.bullishKicker:
+      case ScannerType.morningStar:
+      case ScannerType.dragonflyDoji:
+        return ScannerSentiment.bullish;
+
+      // Bearish Candlestick
+      case ScannerType.blackMarubozu:
+      case ScannerType.bearishHarami:
+      case ScannerType.bearishHaramiCross:
+      case ScannerType.bearishEngulfing:
+      case ScannerType.downsideTasukiGap:
+      case ScannerType.shootingStar:
+      case ScannerType.identicalThreeCrows:
+      case ScannerType.abandonedBabyTop:
+      case ScannerType.darkCloudCover:
+      case ScannerType.hangingMan:
+        return ScannerSentiment.bearish;
+
+      // Bullish Oscillators
+      case ScannerType.mfiOversold:
+      case ScannerType.dualOversoldRsiMfi:
+      case ScannerType.macdCrossAboveZero:
+      case ScannerType.macdCrossAboveSignal:
+      case ScannerType.rsiBullish:
+      case ScannerType.rocOversold:
+        return ScannerSentiment.bullish;
+
+      // Bearish Oscillators
+      case ScannerType.mfiOverbought:
+      case ScannerType.dualOverboughtRsiMfi:
+      case ScannerType.macdCrossBelowZero:
+      case ScannerType.macdCrossBelowSignal:
+      case ScannerType.rsiBearish:
+      case ScannerType.rocOverbought:
+        return ScannerSentiment.bearish;
+
+      // Bullish Pivots
+      case ScannerType.pivotPointR1Breakout:
+      case ScannerType.pivotPointR2Breakout:
+      case ScannerType.pivotPointR3Breakout:
+        return ScannerSentiment.bullish;
+
+      // Bearish Pivots
+      case ScannerType.pivotPointS1Breakdown:
+      case ScannerType.pivotPointS2Breakdown:
+      case ScannerType.pivotPointS3Breakdown:
+        return ScannerSentiment.bearish;
+
+      // Price and Volume
+      case ScannerType.recoveryFrom52WeekLow:
+      case ScannerType.recoveryFromWeekLow:
+        return ScannerSentiment.bullish;
+      case ScannerType.fallFrom52WeekHigh:
+      case ScannerType.fallFromWeekHigh:
+        return ScannerSentiment.bearish;
+
+      // SMA/EMA Scanners
+      case ScannerType.priceAbove5SMA:
+      case ScannerType.priceAbove10SMA:
+      case ScannerType.priceAbove20SMA:
+      case ScannerType.priceAbove30SMA:
+      case ScannerType.priceAbove50SMA:
+      case ScannerType.priceAbove100SMA:
+      case ScannerType.priceAbove150SMA:
+      case ScannerType.priceAbove200SMA:
+      case ScannerType.priceAbove5EMA:
+      case ScannerType.priceAbove10EMA:
+      case ScannerType.priceAbove12EMA:
+      case ScannerType.priceAbove20EMA:
+      case ScannerType.priceAbove26EMA:
+      case ScannerType.priceAbove50EMA:
+      case ScannerType.priceAbove100EMA:
+      case ScannerType.priceAbove200EMA:
+        return ScannerSentiment.bullish;
+
+      case ScannerType.priceBelow5SMA:
+      case ScannerType.priceBelow10SMA:
+      case ScannerType.priceBelow20SMA:
+      case ScannerType.priceBelow30SMA:
+      case ScannerType.priceBelow50SMA:
+      case ScannerType.priceBelow100SMA:
+      case ScannerType.priceBelow150SMA:
+      case ScannerType.priceBelow200SMA:
+      case ScannerType.priceBelow5EMA:
+      case ScannerType.priceBelow10EMA:
+      case ScannerType.priceBelow12EMA:
+      case ScannerType.priceBelow20EMA:
+      case ScannerType.priceBelow26EMA:
+      case ScannerType.priceBelow50EMA:
+      case ScannerType.priceBelow100EMA:
+      case ScannerType.priceBelow200EMA:
+        return ScannerSentiment.bearish;
+    }
   }
 
   Map<String, dynamic> get properties {

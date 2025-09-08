@@ -38,6 +38,10 @@ extension ScannerProperties on ScannerType {
       case ScannerType.bullishKicker:
       case ScannerType.morningStar:
       case ScannerType.dragonflyDoji:
+      case ScannerType.tweezerBottom:
+      case ScannerType.strongClose:
+      case ScannerType.risingWindow:
+      case ScannerType.marketStructureLow:
         return ScannerSentiment.bullish;
 
       // Bearish Candlestick
@@ -51,7 +55,18 @@ extension ScannerProperties on ScannerType {
       case ScannerType.abandonedBabyTop:
       case ScannerType.darkCloudCover:
       case ScannerType.hangingMan:
+      case ScannerType.gravestoneDoji:
+      case ScannerType.bearishKicker:
+      case ScannerType.tweezerTop:
+      case ScannerType.weakClose:
+      case ScannerType.fallingWindow:
+      case ScannerType.marketStructureHigh:
         return ScannerSentiment.bearish;
+
+      // Neutral Candlestick
+      case ScannerType.nr4:
+      case ScannerType.nr7:
+        return ScannerSentiment.neutral;
 
       // Bullish Oscillators
       case ScannerType.mfiOversold:
@@ -259,11 +274,89 @@ extension ScannerProperties on ScannerType {
           'label': 'Bu Kicker',
           'defaultColor': Colors.green
         };
+      case ScannerType.bearishKicker:
+        return {
+          'name': 'Bearish Kicker',
+          'label': 'Be Kicker',
+          'defaultColor': Colors.red
+        };
       case ScannerType.morningStar:
         return {
           'name': 'Morning Star',
           'label': 'Morning Star',
           'defaultColor': Colors.green
+        };
+      case ScannerType.dragonflyDoji:
+        return {
+          'name': 'Dragonfly Doji',
+          'label': 'Dragonfly',
+          'defaultColor': Colors.green
+        };
+      case ScannerType.gravestoneDoji:
+        return {
+          'name': 'Gravestone Doji',
+          'label': 'Gravestone',
+          'defaultColor': Colors.red
+        };
+      case ScannerType.tweezerBottom:
+        return {
+          'name': 'Tweezer Bottom',
+          'label': 'Tweezer Bot',
+          'defaultColor': Colors.green
+        };
+      case ScannerType.tweezerTop:
+        return {
+          'name': 'Tweezer Top',
+          'label': 'Tweezer Top',
+          'defaultColor': Colors.red
+        };
+      case ScannerType.nr4:
+        return {
+          'name': 'Narrow Range 4',
+          'label': 'NR4',
+          'defaultColor': Colors.blueGrey,
+        };
+      case ScannerType.nr7:
+        return {
+          'name': 'Narrow Range 7',
+          'label': 'NR7',
+          'defaultColor': Colors.orangeAccent,
+        };
+      case ScannerType.strongClose:
+        return {
+          'name': 'Strong Close',
+          'label': 'Strong Close',
+          'defaultColor': Colors.green,
+        };
+      case ScannerType.weakClose:
+        return {
+          'name': 'Weak Close',
+          'label': 'Weak Close',
+          'defaultColor': Colors.red,
+        };
+      case ScannerType.risingWindow:
+        return {
+          'name': 'Rising Window',
+          'label': 'Rising Window',
+          'defaultColor': Colors.green,
+        };
+      case ScannerType.fallingWindow:
+        return {
+          'name': 'Falling Window',
+          'label': 'Falling Window',
+          'defaultColor': Colors.red,
+        };
+      case ScannerType.marketStructureLow:
+        return {
+          'name': 'Market Structure Low',
+          'label': 'MS Low',
+          'defaultColor': Colors.green,
+        };
+      case ScannerType.marketStructureHigh:
+        return {
+          'name': 'Market Structure High',
+          'label': 'MS High',
+          'defaultColor': Colors.red,
         };
 
       // Oscillators
@@ -815,9 +908,6 @@ extension ScannerProperties on ScannerType {
           'comparison': PriceComparison.below,
           'defaultColor': Colors.red,
         };
-
-      default:
-        return {'name': 'Unknown', 'label': 'N/A'};
     }
   }
 }

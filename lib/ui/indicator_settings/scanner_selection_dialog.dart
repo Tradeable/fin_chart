@@ -51,6 +51,10 @@ _ScannerGroup _getCategoryForType(ScannerType type) {
   if (name.startsWith('macd')) return _ScannerGroup.oscillator;
   if (name.startsWith('rsiB')) return _ScannerGroup.oscillator;
   if (name.startsWith('rocO')) return _ScannerGroup.oscillator;
+  if (name.startsWith('weakeningTechnicals')) return _ScannerGroup.oscillator;
+  if (name.startsWith('bollingerBand')) return _ScannerGroup.oscillator;
+  if (name.startsWith('goldenCrossover')) return _ScannerGroup.oscillator;
+  if (name.startsWith('deathCrossover')) return _ScannerGroup.oscillator;
   if (name.startsWith('pivot')) return _ScannerGroup.pivotPoints;
   if (name.contains('Week')) return _ScannerGroup.highLowScanners;
   return _ScannerGroup.candlestick;

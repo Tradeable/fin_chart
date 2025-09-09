@@ -278,6 +278,26 @@ List<double> _calculateROC(List<ICandle> candles, int period) {
   return rocValues;
 }
 
+({List<double> upper, List<double> lower}) _calculateBollingerBands(
+    List<ICandle> candles, int period, double stdDev) {
+  if (candles.length < period) return (upper: [], lower: []);
+
+  final smaValues = _calculateSMA(candles, period);
+  final upperBand = List.filled(candles.length, 0.0);
+  final lowerBand = List.filled(candles.length, 0.0);
+
+  for (int i = period - 1; i < candles.length; i++) {
+    double variance = 0;
+    for (int j = i - (period - 1); j <= i; j++) {
+      variance += math.pow(candles[j].close - smaValues[i], 2);
+    }
+    final double standardDeviation = math.sqrt(variance / period);
+    upperBand[i] = smaValues[i] + (stdDev * standardDeviation);
+    lowerBand[i] = smaValues[i] - (stdDev * standardDeviation);
+  }
+  return (upper: upperBand, lower: lowerBand);
+}
+
 DateTime _getPeriodStart(DateTime date, PivotTimeframe timeframe) {
   switch (timeframe) {
     case PivotTimeframe.daily:
@@ -831,6 +851,82 @@ List<ScannerResult> _scanHighLowRecovery(
 
   return scanners;
 }
+
+List<ScannerResult> _scanBollingerBandBreakout(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  final properties = type.properties;
+  final int period = properties['period'] as int;
+  final double stdDev = properties['stdDev'] as double;
+
+  if (candles.length < period) return scanners;
+
+  final (:upper, :lower) = _calculateBollingerBands(candles, period, stdDev);
+
+  for (int i = period - 1; i < candles.length; i++) {
+    bool conditionMet = false;
+    if (type == ScannerType.bollingerBandBreakoutBullish) {
+      if (upper[i] > 0) {
+        // Ensure band has been calculated
+        conditionMet = candles[i].close > upper[i];
+      }
+    } else {
+      // Bearish
+      if (lower[i] > 0) {
+        // Ensure band has been calculated
+        conditionMet = candles[i].close < lower[i];
+      }
+    }
+
+    if (conditionMet) {
+      scanners.add(ScannerResult(
+        scannerType: type,
+        label: type.label,
+        targetIndex: i,
+        highlightedIndices: [i],
+      ));
+    }
+  }
+  return scanners;
+}
+
+List<ScannerResult> _scanMovingAverageCrossover(
+    List<ICandle> candles, ScannerType type) {
+  final scanners = <ScannerResult>[];
+  final properties = type.properties;
+  final int shortPeriod = properties['shortPeriod'] as int;
+  final int longPeriod = properties['longPeriod'] as int;
+
+  if (candles.length < longPeriod) return scanners;
+
+  final shortSMA = _calculateSMA(candles, shortPeriod);
+  final longSMA = _calculateSMA(candles, longPeriod);
+
+  for (int i = longPeriod; i < candles.length; i++) {
+    bool conditionMet = false;
+    // Ensure we have previous data to compare
+    if (i > 0) {
+      if (type == ScannerType.goldenCrossover) {
+        conditionMet =
+            shortSMA[i - 1] < longSMA[i - 1] && shortSMA[i] > longSMA[i];
+      } else {
+        // deathCrossover
+        conditionMet =
+            shortSMA[i - 1] > longSMA[i - 1] && shortSMA[i] < longSMA[i];
+      }
+    }
+
+    if (conditionMet) {
+      scanners.add(ScannerResult(
+        scannerType: type,
+        label: type.label,
+        targetIndex: i,
+        highlightedIndices: [i],
+      ));
+    }
+  }
+  return scanners;
+}
 // #endregion
 
 /// Main consolidated scanner function.
@@ -868,9 +964,84 @@ List<ScannerResult> runScanner(ScannerType type, List<ICandle> candles,
   if (type.name.contains('Week')) {
     return _scanHighLowRecovery(candles, type);
   }
+  if (type.name.contains('Bollinger')) {
+    return _scanBollingerBandBreakout(candles, type);
+  }
+  if (type.name.contains('Crossover')) {
+    return _scanMovingAverageCrossover(candles, type);
+  }
 
   // Handle individual candlestick patterns
   final scanners = <ScannerResult>[];
+
+  if (type == ScannerType.weakeningTechnicals) {
+    final scanners = <ScannerResult>[];
+    const rsiPeriod = 14;
+    const mfiPeriod = 14;
+    const fastPeriod = 12;
+    const slowPeriod = 26;
+    const signalPeriod = 9;
+    const weekPeriod = 5;
+
+    final requiredCandles = [
+      rsiPeriod,
+      mfiPeriod,
+      slowPeriod + signalPeriod,
+      weekPeriod
+    ].reduce(math.max);
+    if (candles.length <= requiredCandles) return scanners;
+
+    final rsiValues = _calculateRSI(candles, rsiPeriod);
+    final mfiValues = _calculateMFI(candles, mfiPeriod);
+    final (:macdLine, :signalLine) = _calculateMacdAndSignalLines(
+        candles, fastPeriod, slowPeriod, signalPeriod);
+
+    const rsiStartIndex = rsiPeriod;
+    const mfiStartIndex = mfiPeriod;
+    const macdStartIndex = slowPeriod + signalPeriod - 1;
+    final commonStartIndex = [
+      rsiStartIndex,
+      mfiStartIndex,
+      macdStartIndex,
+      weekPeriod
+    ].reduce(math.max);
+
+    for (int i = commonStartIndex; i < candles.length; i++) {
+      final rsiValueIndex = i - rsiStartIndex;
+      final mfiValueIndex = i - mfiStartIndex;
+
+      if (rsiValueIndex >= rsiValues.length ||
+          mfiValueIndex >= mfiValues.length) {
+        continue;
+      }
+
+      final rsi = rsiValues[rsiValueIndex];
+      final mfi = mfiValues[mfiValueIndex];
+      final macd = macdLine[i];
+      final signal = signalLine[i];
+
+      final dayChange =
+          ((candles[i].close - candles[i - 1].close) / candles[i - 1].close) *
+              100;
+      final weekChange = ((candles[i].close - candles[i - weekPeriod].close) /
+              candles[i - weekPeriod].close) *
+          100;
+
+      if (rsi < 35 &&
+          weekChange < 0 &&
+          macd < signal &&
+          mfi < 40 &&
+          dayChange < 3) {
+        scanners.add(ScannerResult(
+          scannerType: type,
+          label: type.label,
+          targetIndex: i,
+          highlightedIndices: [i],
+        ));
+      }
+    }
+    return scanners;
+  }
 
   switch (type) {
     case ScannerType.hammer:

@@ -39,6 +39,8 @@ enum ScannerType {
   fallingWindow,
   marketStructureLow,
   marketStructureHigh,
+  goldenCrossover,
+  deathCrossover,
 
   // Oscillator Scanners
   mfiOverbought,
@@ -53,6 +55,11 @@ enum ScannerType {
   rsiBearish,
   rocOversold,
   rocOverbought,
+  weakeningTechnicals,
+
+  // Bollinger Band Scanners
+  bollingerBandBreakoutBullish,
+  bollingerBandBreakoutBearish,
 
   // Pivot Point Breakouts
   pivotPointR1Breakout,

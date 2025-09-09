@@ -42,6 +42,7 @@ extension ScannerProperties on ScannerType {
       case ScannerType.strongClose:
       case ScannerType.risingWindow:
       case ScannerType.marketStructureLow:
+      case ScannerType.goldenCrossover:
         return ScannerSentiment.bullish;
 
       // Bearish Candlestick
@@ -61,6 +62,7 @@ extension ScannerProperties on ScannerType {
       case ScannerType.weakClose:
       case ScannerType.fallingWindow:
       case ScannerType.marketStructureHigh:
+      case ScannerType.deathCrossover:
         return ScannerSentiment.bearish;
 
       // Neutral Candlestick
@@ -75,6 +77,7 @@ extension ScannerProperties on ScannerType {
       case ScannerType.macdCrossAboveSignal:
       case ScannerType.rsiBullish:
       case ScannerType.rocOversold:
+      case ScannerType.bollingerBandBreakoutBullish:
         return ScannerSentiment.bullish;
 
       // Bearish Oscillators
@@ -84,6 +87,8 @@ extension ScannerProperties on ScannerType {
       case ScannerType.macdCrossBelowSignal:
       case ScannerType.rsiBearish:
       case ScannerType.rocOverbought:
+      case ScannerType.weakeningTechnicals:
+      case ScannerType.bollingerBandBreakoutBearish:
         return ScannerSentiment.bearish;
 
       // Bullish Pivots
@@ -358,6 +363,18 @@ extension ScannerProperties on ScannerType {
           'label': 'MS High',
           'defaultColor': Colors.red,
         };
+      case ScannerType.goldenCrossover:
+        return {
+          'name': 'Golden Crossover',
+          'label': 'Golden Cross',
+          'defaultColor': Colors.green,
+        };
+      case ScannerType.deathCrossover:
+        return {
+          'name': 'Death Crossover',
+          'label': 'Death Cross',
+          'defaultColor': Colors.red,
+        };
 
       // Oscillators
       case ScannerType.mfiOverbought:
@@ -488,6 +505,31 @@ extension ScannerProperties on ScannerType {
           'rocPeriod1': 125,
           'rocPeriod2': 21,
           'smaPeriod': 20,
+          'defaultColor': Colors.red,
+        };
+      case ScannerType.weakeningTechnicals:
+        return {
+          'name': 'Red Flags: Weakening Technicals',
+          'label': 'Red Flags',
+          'displayType': ScannerDisplayType.areaShade,
+          'defaultColor': Colors.red,
+        };
+      case ScannerType.bollingerBandBreakoutBullish:
+        return {
+          'name': 'Bollinger Band Breakout (Bullish)',
+          'label': 'BB Breakout',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 20,
+          'stdDev': 2.0,
+          'defaultColor': Colors.green,
+        };
+      case ScannerType.bollingerBandBreakoutBearish:
+        return {
+          'name': 'Bollinger Band Breakout (Bearish)',
+          'label': 'BB Breakdown',
+          'displayType': ScannerDisplayType.areaShade,
+          'period': 20,
+          'stdDev': 2.0,
           'defaultColor': Colors.red,
         };
 

@@ -21,7 +21,8 @@ enum TaskType {
   clearBucketRows,
   tableTask,
   highlightTableRow,
-  showInsightsV2Page
+  showInsightsV2Page,
+  showSideNav
 }
 
 // extension TaskTypeExtension on TaskType {

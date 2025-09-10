@@ -38,6 +38,7 @@ import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
+import 'package:fin_chart/models/tasks/show_sidenav.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
@@ -266,6 +267,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.tableTask:
           case TaskType.highlightTableRow:
           case TaskType.showInsightsV2Page:
+          case TaskType.showSideNav:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -586,6 +588,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.showInsightsV2Page:
           showInsightsPageV2Task();
           break;
+        case TaskType.showSideNav:
+          showSideNavTask();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -659,6 +664,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.showInsightsV2Page:
         editInsightsPageV2Task(task as ShowInsightsPageV2Task);
+        break;
+      case TaskType.showSideNav:
+        editShowSideNavTask(task as ShowSideNavTask);
         break;
     }
   }
@@ -1497,6 +1505,197 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
+  }
+
+  void showSideNavTask() async {
+    await showSideNavDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editShowSideNavTask(ShowSideNavTask task) async {
+    await showSideNavDialog(context: context, initialTask: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.title = data.title;
+          task.primaryDescription = data.primaryDescription;
+          task.secondaryDescription = data.secondaryDescription;
+          task.primaryButtonText = data.primaryButtonText;
+          task.secondaryButtonText = data.secondaryButtonText;
+        }
+      });
+    });
+  }
+
+  Future<ShowSideNavTask?> showSideNavDialog({
+    required BuildContext context,
+    ShowSideNavTask? initialTask,
+  }) async {
+    final TextEditingController titleController =
+        TextEditingController(text: initialTask?.title ?? '');
+    final TextEditingController primaryDescriptionController =
+        TextEditingController(text: initialTask?.primaryDescription ?? '');
+    final TextEditingController secondaryDescriptionController =
+        TextEditingController(text: initialTask?.secondaryDescription ?? '');
+    final TextEditingController primaryBtnController = TextEditingController(
+        text: initialTask?.primaryButtonText ?? 'Continue');
+    final TextEditingController secondaryBtnController =
+        TextEditingController(text: initialTask?.secondaryButtonText ?? '');
+
+    return showDialog<ShowSideNavTask>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Side Nav'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.star,
+                              color: Colors.blue.shade700, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Primary Action',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: primaryBtnController,
+                        decoration: const InputDecoration(
+                          labelText: 'Primary Button Text',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.touch_app),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: primaryDescriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Primary Description',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.description),
+                        ),
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.star_border,
+                              color: Colors.grey.shade600, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Secondary Action (Optional)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: secondaryBtnController,
+                        decoration: const InputDecoration(
+                          labelText: 'Secondary Button Text',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.touch_app),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: secondaryDescriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Secondary Description',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.description),
+                        ),
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final title = titleController.text.trim();
+                final primaryDesc = primaryDescriptionController.text.trim();
+                final secondaryDesc =
+                    secondaryDescriptionController.text.trim();
+                final primary = primaryBtnController.text.trim();
+                final secondary = secondaryBtnController.text.trim();
+
+                if (title.isEmpty || primaryDesc.isEmpty || primary.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please fill required fields')),
+                  );
+                  return;
+                }
+
+                Navigator.of(context).pop(ShowSideNavTask(
+                  title: title,
+                  primaryButtonText: primary,
+                  secondaryButtonText: secondary.isNotEmpty ? secondary : '',
+                  primaryDescription: primaryDesc,
+                  secondaryDescription:
+                      secondaryDesc.isNotEmpty ? secondaryDesc : '',
+                ));
+              },
+              child: Text(initialTask != null ? 'Update' : 'Create'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void showChooseBucketRows() async {

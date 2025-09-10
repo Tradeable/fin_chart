@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
@@ -21,6 +20,7 @@ import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:example/editor/ui/widget/table_display_widget.dart';
+import 'package:example/editor/ui/widgets/side_nav_panel.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -50,6 +50,10 @@ class _ChartDemoState extends State<ChartDemo> {
   int currentPageIndex = 0;
   Map<String, List<GlobalKey<TableDisplayWidgetState>>> tableWidgetKeys = {};
   Map<String, Map<int, Set<int>>> userSelectedRows = {};
+  List<ShowSideNavTask> sideNavTasks = [];
+  bool isSideNavVisible = false;
+  Map<String, String?> sideNavSelectedDesc = {};
+  String? expandedSideNavId;
 
   @override
   void initState() {
@@ -330,6 +334,16 @@ class _ChartDemoState extends State<ChartDemo> {
         });
         setState(() {});
         break;
+      case TaskType.showSideNav:
+        final task = currentTask as ShowSideNavTask;
+        setState(() {
+          if (!sideNavTasks.any((t) => t.id == task.id)) {
+            sideNavTasks.add(task);
+          }
+          isSideNavVisible = true;
+          expandedSideNavId = task.id;
+        });
+        break;
       case TaskType.showInsightsPage:
         setState(() {});
         onTaskFinish();
@@ -405,183 +419,228 @@ class _ChartDemoState extends State<ChartDemo> {
         title: const Text("Finance Charts Demo"),
       ),
       body: SafeArea(
-          child: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: FittedBox(
-              fit: BoxFit.none,
-              child: Container(
-                width: MediaQuery.of(context).size.width - 20,
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                ),
-                child: Column(
-                  children: [
-                    Text(promptText),
-                    hintText.isNotEmpty ? Text(hintText) : Container()
-                  ],
-                ),
-              ),
+          child: Stack(children: [
+        if (currentTask.taskType == TaskType.showSideNav && isSideNavVisible)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                closeSideNav(moveToNextNode: true);
+              },
+              child: Container(color: Colors.transparent),
             ),
           ),
-          Text(tabs.toString()),
-          Expanded(
-            flex: 6,
-            child: PageView.builder(
-                controller: controller,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: tabs.length,
-                itemBuilder: (context, index) {
-                  final tab = tabs[index];
-                  switch (tab["type"]) {
-                    case "chart":
-                      return Chart.from(
-                          key: _chartKey,
-                          recipe: recipe,
-                          onInteraction: (p0, p1) {});
-                    case "option_chain":
-                      final taskId = tab["taskId"]!;
-                      final chooseTask = recipe.tasks
-                          .whereType<ChooseCorrectOptionValueChainTask>()
-                          .firstWhere((t) => t.taskId == taskId);
-
-                      final optionChainTask = optionChainTasks.firstWhere(
-                        (t) => t.optionChainId == chooseTask.taskId,
-                        orElse: () => optionChainTasks.first,
-                      );
-
-                      return PreviewScreen.from(
-                          key: previewScreenKeys[taskId] ?? _previewScreenKey,
-                          task: optionChainTask,
-                          isEditorMode: false,
-                          maxSelectableRows: chooseTask.maxSelectableRows);
-                    case "payoff":
-                      final taskId = tab["taskId"]!;
-                      final payoffTask = payoffGraphTasks.firstWhere(
-                        (t) => t.id == taskId,
-                        orElse: () => payoffGraphTasks.first,
-                      );
-                      return Container(
-                        color: Colors.blue,
-                        child: Center(
-                          child: Text("Payoff Graph View for ${payoffTask.id}"),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: FittedBox(
+                      fit: BoxFit.none,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width - 20,
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
-                      );
-                    case "insights":
-                      final taskId = tab["taskId"]!;
-                      final insightsTask = recipe.tasks
-                          .whereType<ShowInsightsPageTask>()
-                          .firstWhere((t) => t.id == taskId);
-                      return Container(
-                        padding: const EdgeInsets.all(16),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              insightsTask.title,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              insightsTask.description,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
+                            Text(promptText),
+                            hintText.isNotEmpty ? Text(hintText) : Container()
                           ],
                         ),
-                      );
-                    case "table":
-                      final taskId = tab["taskId"]!;
-                      final tableTask = recipe.tasks
-                          .whereType<TableTask>()
-                          .firstWhere((t) => t.id == taskId);
-                      if (!tableWidgetKeys.containsKey(taskId)) {
-                        tableWidgetKeys[taskId] = List.generate(
-                          tableTask.tables.tables.length,
-                          (_) => GlobalKey<TableDisplayWidgetState>(),
-                        );
-                      }
-                      return SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ...tableTask.tables.tables
-                                .asMap()
-                                .entries
-                                .map((entry) {
-                              final idx = entry.key;
-                              final table = entry.value;
-                              final selectedRows =
-                                  userSelectedRows[taskId]?[idx] ?? <int>{};
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 24),
+                      ),
+                    ),
+                  ),
+                  Text(tabs.toString()),
+                  Expanded(
+                    flex: 6,
+                    child: PageView.builder(
+                        controller: controller,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: tabs.length,
+                        itemBuilder: (context, index) {
+                          final tab = tabs[index];
+                          switch (tab["type"]) {
+                            case "chart":
+                              return Chart.from(
+                                  key: _chartKey,
+                                  recipe: recipe,
+                                  onInteraction: (p0, p1) {});
+                            case "option_chain":
+                              final taskId = tab["taskId"]!;
+                              final chooseTask = recipe.tasks
+                                  .whereType<
+                                      ChooseCorrectOptionValueChainTask>()
+                                  .firstWhere((t) => t.taskId == taskId);
+
+                              final optionChainTask =
+                                  optionChainTasks.firstWhere(
+                                (t) => t.optionChainId == chooseTask.taskId,
+                                orElse: () => optionChainTasks.first,
+                              );
+
+                              return PreviewScreen.from(
+                                  key: previewScreenKeys[taskId] ??
+                                      _previewScreenKey,
+                                  task: optionChainTask,
+                                  isEditorMode: false,
+                                  maxSelectableRows:
+                                      chooseTask.maxSelectableRows);
+                            case "payoff":
+                              final taskId = tab["taskId"]!;
+                              final payoffTask = payoffGraphTasks.firstWhere(
+                                (t) => t.id == taskId,
+                                orElse: () => payoffGraphTasks.first,
+                              );
+                              return Container(
+                                color: Colors.blue,
+                                child: Center(
+                                  child: Text(
+                                      "Payoff Graph View for ${payoffTask.id}"),
+                                ),
+                              );
+                            case "insights":
+                              final taskId = tab["taskId"]!;
+                              final insightsTask = recipe.tasks
+                                  .whereType<ShowInsightsPageTask>()
+                                  .firstWhere((t) => t.id == taskId);
+                              return Container(
+                                padding: const EdgeInsets.all(16),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      table.tableTitle,
+                                      insightsTask.title,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleLarge,
+                                          .headlineMedium,
                                     ),
-                                    if (table.tableDescription.isNotEmpty)
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8.0),
-                                        child: Text(
-                                          table.tableDescription,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium,
-                                        ),
-                                      ),
-                                    TableDisplayWidget(
-                                      key: tableWidgetKeys[taskId]![idx],
-                                      columns: table.columns,
-                                      rows: table.rows,
-                                      selectedRowIndices: selectedRows,
-                                      onRowTap: (rowIdx) {
-                                        setState(() {
-                                          userSelectedRows[taskId] ??= {};
-                                          final selected =
-                                              userSelectedRows[taskId]![idx] ??
-                                                  <int>{};
-                                          if (selected.contains(rowIdx)) {
-                                            selected.remove(rowIdx);
-                                          } else {
-                                            selected.add(rowIdx);
-                                          }
-                                          userSelectedRows[taskId]![idx] =
-                                              selected;
-                                        });
-                                      },
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      insightsTask.description,
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
                                     ),
                                   ],
                                 ),
                               );
-                            }),
-                          ],
-                        ),
-                      );
-                    case "insights_v2":
-                      final taskId = tab["taskId"]!;
-                      final insightsTask = recipe.tasks
-                          .whereType<ShowInsightsPageV2Task>()
-                          .firstWhere((t) => t.id == taskId);
-                      return InsightsPreviewPage(task: insightsTask);
-                    default:
-                      return Container();
-                  }
-                }),
-          ),
-          Expanded(
-              flex: 1,
-              child: FittedBox(fit: BoxFit.none, child: userActionContainer()))
-        ],
-      )),
+                            case "table":
+                              final taskId = tab["taskId"]!;
+                              final tableTask = recipe.tasks
+                                  .whereType<TableTask>()
+                                  .firstWhere((t) => t.id == taskId);
+                              if (!tableWidgetKeys.containsKey(taskId)) {
+                                tableWidgetKeys[taskId] = List.generate(
+                                  tableTask.tables.tables.length,
+                                  (_) => GlobalKey<TableDisplayWidgetState>(),
+                                );
+                              }
+                              return SingleChildScrollView(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ...tableTask.tables.tables
+                                        .asMap()
+                                        .entries
+                                        .map((entry) {
+                                      final idx = entry.key;
+                                      final table = entry.value;
+                                      final selectedRows =
+                                          userSelectedRows[taskId]?[idx] ??
+                                              <int>{};
+                                      return Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 24),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              table.tableTitle,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge,
+                                            ),
+                                            if (table
+                                                .tableDescription.isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 8.0),
+                                                child: Text(
+                                                  table.tableDescription,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium,
+                                                ),
+                                              ),
+                                            TableDisplayWidget(
+                                              key:
+                                                  tableWidgetKeys[taskId]![idx],
+                                              columns: table.columns,
+                                              rows: table.rows,
+                                              selectedRowIndices: selectedRows,
+                                              onRowTap: (rowIdx) {
+                                                setState(() {
+                                                  userSelectedRows[taskId] ??=
+                                                      {};
+                                                  final selected =
+                                                      userSelectedRows[taskId]![
+                                                              idx] ??
+                                                          <int>{};
+                                                  if (selected
+                                                      .contains(rowIdx)) {
+                                                    selected.remove(rowIdx);
+                                                  } else {
+                                                    selected.add(rowIdx);
+                                                  }
+                                                  userSelectedRows[taskId]![
+                                                      idx] = selected;
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              );
+                            case "insights_v2":
+                              final taskId = tab["taskId"]!;
+                              final insightsTask = recipe.tasks
+                                  .whereType<ShowInsightsPageV2Task>()
+                                  .firstWhere((t) => t.id == taskId);
+                              return InsightsPreviewPage(task: insightsTask);
+                            default:
+                              return Container();
+                          }
+                        }),
+                  ),
+                  Expanded(
+                      flex: 1,
+                      child: FittedBox(
+                          fit: BoxFit.none, child: userActionContainer()))
+                ],
+              ),
+            ),
+            if (currentTask.taskType == TaskType.showSideNav &&
+                isSideNavVisible)
+              Container(
+                width: 320,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(left: BorderSide(color: Colors.grey.shade300)),
+                ),
+                child: _buildSideNavPanel(),
+              )
+          ],
+        )
+      ])),
     );
   }
 
@@ -628,7 +687,36 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.tableTask:
       case TaskType.highlightTableRow:
       case TaskType.showInsightsV2Page:
+      case TaskType.showSideNav:
         return Container();
     }
+  }
+
+  void closeSideNav({bool moveToNextNode = false}) {
+    if (!isSideNavVisible) return;
+    setState(() {
+      isSideNavVisible = false;
+    });
+    if (moveToNextNode) {
+      onTaskFinish();
+    }
+  }
+
+  Widget _buildSideNavPanel() {
+    return SideNavPanel(
+      tasks: sideNavTasks,
+      expandedId: expandedSideNavId,
+      onExpandedChange: (id) {
+        setState(() {
+          expandedSideNavId = id;
+        });
+      },
+      selectedDescriptions: sideNavSelectedDesc,
+      onDescriptionSelect: (taskId, desc) {
+        setState(() {
+          sideNavSelectedDesc[taskId] = desc;
+        });
+      },
+    );
   }
 }

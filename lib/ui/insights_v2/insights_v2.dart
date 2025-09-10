@@ -41,6 +41,12 @@ class InsightsPreviewPage extends StatelessWidget {
                         shrinkWrap: true,
                         data: block.markdown,
                         config: MarkdownConfig(configs: [
+                          TableConfig(
+                            wrapper: (table) => SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: table,
+                            ),
+                          ),
                           LinkConfig(
                             style: const TextStyle(
                               color: Colors.blue,

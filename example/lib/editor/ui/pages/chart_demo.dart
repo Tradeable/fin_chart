@@ -21,6 +21,7 @@ import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:example/editor/ui/widget/table_display_widget.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -246,10 +247,10 @@ class _ChartDemoState extends State<ChartDemo> {
               builder: (context) {
                 ShowPopupTask task = currentTask as ShowPopupTask;
                 return AlertDialog(
-                  title: Text(task.title),
+                  title: MarkdownWidget(data: task.title),
                   content: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(task.description),
+                    child: MarkdownWidget(data: task.title),
                   ),
                   actions: [
                     TextButton(
@@ -283,12 +284,22 @@ class _ChartDemoState extends State<ChartDemo> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            task.title,
-                            style: Theme.of(context).textTheme.titleLarge,
+                          MarkdownWidget(
+                            data: task.title,
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            config: MarkdownConfig(configs: [
+                              H1Config(
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold)),
+                            ]),
                           ),
                           const SizedBox(height: 8),
-                          Text(task.description),
+                          MarkdownWidget(
+                              data: task.description,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true),
                           if (task.showImage) ...[
                             const SizedBox(height: 16),
                             Container(
@@ -420,7 +431,10 @@ class _ChartDemoState extends State<ChartDemo> {
                 ),
                 child: Column(
                   children: [
-                    Text(promptText),
+                    MarkdownWidget(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        data: promptText),
                     hintText.isNotEmpty ? Text(hintText) : Container()
                   ],
                 ),
@@ -480,15 +494,22 @@ class _ChartDemoState extends State<ChartDemo> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              insightsTask.title,
-                              style: Theme.of(context).textTheme.headlineMedium,
+                            MarkdownWidget(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              data: insightsTask.title,
+                              config: MarkdownConfig(configs: [
+                                H1Config(
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold)),
+                              ]),
                             ),
                             const SizedBox(height: 16),
-                            Text(
-                              insightsTask.description,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
+                            MarkdownWidget(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                data: insightsTask.description),
                           ],
                         ),
                       );

@@ -459,7 +459,10 @@ class _ChartDemoState extends State<ChartDemo> {
                         ),
                         child: Column(
                           children: [
-                            Text(promptText),
+                            MarkdownWidget(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                data: promptText),
                             hintText.isNotEmpty ? Text(hintText) : Container()
                           ],
                         ),
@@ -524,18 +527,24 @@ class _ChartDemoState extends State<ChartDemo> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      insightsTask.title,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineMedium,
+                                    MarkdownWidget(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      data: insightsTask.title,
+                                      config: MarkdownConfig(configs: [
+                                        H1Config(
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold)),
+                                      ]),
                                     ),
                                     const SizedBox(height: 16),
-                                    Text(
-                                      insightsTask.description,
-                                      style:
-                                          Theme.of(context).textTheme.bodyLarge,
-                                    ),
+                                    MarkdownWidget(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        shrinkWrap: true,
+                                        data: insightsTask.description),
                                   ],
                                 ),
                               );

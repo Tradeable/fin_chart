@@ -13,6 +13,7 @@ import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
+import 'package:example/dialog/side_nav_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:example/editor/ui/widget/markdown_textfield.dart';
@@ -267,6 +268,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.tableTask:
           case TaskType.highlightTableRow:
           case TaskType.showInsightsV2Page:
+          case TaskType.showSideNav:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -587,6 +589,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.showInsightsV2Page:
           showInsightsPageV2Task();
           break;
+        case TaskType.showSideNav:
+          showSideNavTask();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -660,6 +665,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.showInsightsV2Page:
         editInsightsPageV2Task(task as ShowInsightsPageV2Task);
+        break;
+      case TaskType.showSideNav:
+        editShowSideNavTask(task as ShowSideNavTask);
         break;
     }
   }
@@ -1486,6 +1494,28 @@ class _EditorPageState extends State<EditorPage> {
         if (data != null) {
           task.title = data.title;
           task.blocks = data.blocks;
+        }
+      });
+    });
+  }
+
+  void showSideNavTask() async {
+    await showSideNavDialog(context: context).then((data) {
+      if (data != null) {
+        _updateTaskList(data);
+      }
+    });
+  }
+
+  void editShowSideNavTask(ShowSideNavTask task) async {
+    await showSideNavDialog(context: context, initialTask: task).then((data) {
+      setState(() {
+        if (data != null) {
+          task.title = data.title;
+          task.primaryDescription = data.primaryDescription;
+          task.secondaryDescription = data.secondaryDescription;
+          task.primaryButtonText = data.primaryButtonText;
+          task.secondaryButtonText = data.secondaryButtonText;
         }
       });
     });

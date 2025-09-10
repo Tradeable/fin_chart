@@ -500,6 +500,23 @@ class _TaskListWidgetState extends State<TaskListWidget> {
             ),
           ],
         );
+      case TaskType.showSideNav:
+        return Row(
+          children: [
+            Text("Show Sidenav ${(task as ShowSideNavTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
     }
   }
 }

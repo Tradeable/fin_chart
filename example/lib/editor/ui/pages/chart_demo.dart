@@ -20,6 +20,7 @@ import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:example/editor/ui/widget/table_display_widget.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 import 'package:example/editor/ui/widgets/side_nav_panel.dart';
 
 class ChartDemo extends StatefulWidget {
@@ -250,10 +251,10 @@ class _ChartDemoState extends State<ChartDemo> {
               builder: (context) {
                 ShowPopupTask task = currentTask as ShowPopupTask;
                 return AlertDialog(
-                  title: Text(task.title),
+                  title: MarkdownWidget(data: task.title),
                   content: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(task.description),
+                    child: MarkdownWidget(data: task.title),
                   ),
                   actions: [
                     TextButton(
@@ -287,12 +288,22 @@ class _ChartDemoState extends State<ChartDemo> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            task.title,
-                            style: Theme.of(context).textTheme.titleLarge,
+                          MarkdownWidget(
+                            data: task.title,
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            config: MarkdownConfig(configs: [
+                              H1Config(
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold)),
+                            ]),
                           ),
                           const SizedBox(height: 8),
-                          Text(task.description),
+                          MarkdownWidget(
+                              data: task.description,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true),
                           if (task.showImage) ...[
                             const SizedBox(height: 16),
                             Container(

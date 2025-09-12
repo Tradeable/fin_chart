@@ -3,14 +3,13 @@ import 'package:example/dialog/add_tab_dialog.dart';
 import 'package:example/dialog/choose_bucket_rows_dialog.dart';
 import 'package:example/dialog/edit_added_tab_dialog.dart';
 import 'package:example/dialog/edit_move_tab_dialog.dart';
-import 'package:example/dialog/edit_payoff_graph_dialog.dart';
+import 'package:example/dialog/pay_off_graph_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_bottom_sheet_dialog.dart';
 import 'package:example/dialog/show_insights_page_dialog.dart';
 import 'package:example/dialog/show_insights_pagev2_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
-import 'package:example/dialog/show_payoff_graph_dialog.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
@@ -791,7 +790,7 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void showPayoffGraphTemplate() async {
-    final payOffData = await showPayOffGraphDialog(context: context);
+    final payOffData = await showOrEditPayOffGraphDialog(context: context);
     if (payOffData != null) {
       _updateTaskList(payOffData);
     }
@@ -1375,7 +1374,8 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void editPayoffGraph(ShowPayOffGraphTask task) async {
-    await editPayoffGraphDialog(context: context, task: task).then((data) {
+    print("1${task.id}");
+    await showOrEditPayOffGraphDialog(context: context, task: task).then((data) {
       setState(() {
         if (data != null) {
           task.quantity = data.quantity;
@@ -1385,6 +1385,7 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
+    print("2${task.id}");
   }
 
   void editMoveToTab(MoveTabTask task) async {

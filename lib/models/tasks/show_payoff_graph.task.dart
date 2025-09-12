@@ -14,8 +14,9 @@ class ShowPayOffGraphTask extends Task {
     this.spotPrice = 0,
     this.spotPriceDayDelta = 0,
     this.spotPriceDayDeltaPer = 0,
+    String? id,
   }) : super(
-          id: generateV4(),
+          id: id ?? generateV4(),
           actionType: ActionType.empty,
           taskType: TaskType.showPayOffGraph,
         );
@@ -36,6 +37,7 @@ class ShowPayOffGraphTask extends Task {
       spotPrice: (json['spotPrice'] ?? 0).toDouble(),
       spotPriceDayDelta: (json['spotPriceDayDelta'] ?? 0).toDouble(),
       spotPriceDayDeltaPer: (json['spotPriceDayDeltaPer'] ?? 0).toDouble(),
+      id: json['id'],
     );
   }
 }

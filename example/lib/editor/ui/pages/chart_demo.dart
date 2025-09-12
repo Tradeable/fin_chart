@@ -248,27 +248,68 @@ class _ChartDemoState extends State<ChartDemo> {
               context: context,
               builder: (context) {
                 ShowPopupTask task = currentTask as ShowPopupTask;
-                return AlertDialog(
-                  title: MarkdownWidget(
-                      data: task.title,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true),
-                  content: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MarkdownWidget(
-                      data: task.description,
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                    ),
+                return Dialog(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 10),
+                        child: MarkdownWidget(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          data: task.title,
+                          config: MarkdownConfig(configs: [
+                            H1Config(
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                          ]),
+                        ),
+                      ),
+                      Flexible(
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              child: MarkdownWidget(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  data: task.description),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(task.buttonText),
+                      ),
+                    ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(task.buttonText),
-                    ),
-                  ],
+                  // title: Text(task.title),
+                  // content: Padding(
+                  //     padding: const EdgeInsets.all(8.0),
+                  //     child: SizedBox(
+                  //       height: 200,
+                  //       width: 200,
+                  //       child: MarkdownWidget(
+                  //         data: task.description,
+                  //         shrinkWrap: true,
+                  //         physics: NeverScrollableScrollPhysics(),
+                  //       ),
+                  //     )),
+                  // actions: [
+                  //   TextButton(
+                  //     onPressed: () {
+                  //       Navigator.of(context).pop();
+                  //     },
+                  //     child: Text(task.buttonText),
+                  //   ),
+                  // ],
                 );
               }).then((_) {
             onTaskFinish();

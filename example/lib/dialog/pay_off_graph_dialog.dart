@@ -1,13 +1,20 @@
 import 'package:fin_chart/fin_chart.dart';
 import 'package:flutter/material.dart';
 
-Future<ShowPayOffGraphTask?> showPayOffGraphDialog({
+Future<ShowPayOffGraphTask?> showOrEditPayOffGraphDialog({
   required BuildContext context,
+  ShowPayOffGraphTask? task,
 }) async {
-  final quantityController = TextEditingController();
-  final spotPriceController = TextEditingController();
-  final spotPriceDayDeltaController = TextEditingController();
-  final spotPriceDayDeltaPerController = TextEditingController();
+  final quantityController =
+  TextEditingController(text: task?.quantity.toString() ?? '');
+  final spotPriceController =
+  TextEditingController(text: task?.spotPrice.toString() ?? '');
+  final spotPriceDayDeltaController =
+  TextEditingController(text: task?.spotPriceDayDelta.toString() ?? '');
+  final spotPriceDayDeltaPerController =
+  TextEditingController(text: task?.spotPriceDayDeltaPer.toString() ?? '');
+
+  final isEditing = task != null;
 
   return showDialog<ShowPayOffGraphTask>(
     context: context,
@@ -20,9 +27,9 @@ Future<ShowPayOffGraphTask?> showPayOffGraphDialog({
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Payoff Graph Details',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  isEditing ? 'Edit Payoff Graph Details' : 'Payoff Graph Details',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -38,14 +45,12 @@ Future<ShowPayOffGraphTask?> showPayOffGraphDialog({
                 TextField(
                   controller: spotPriceDayDeltaController,
                   keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(labelText: 'Spot Price Day Delta'),
+                  decoration: const InputDecoration(labelText: 'Spot Price Day Delta'),
                 ),
                 TextField(
                   controller: spotPriceDayDeltaPerController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      labelText: 'Spot Price Day Delta %'),
+                  decoration: const InputDecoration(labelText: 'Spot Price Day Delta %'),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -61,27 +66,23 @@ Future<ShowPayOffGraphTask?> showPayOffGraphDialog({
                         if (quantityController.text.trim().isEmpty ||
                             spotPriceController.text.trim().isEmpty ||
                             spotPriceDayDeltaController.text.trim().isEmpty ||
-                            spotPriceDayDeltaPerController.text
-                                .trim()
-                                .isEmpty) {
+                            spotPriceDayDeltaPerController.text.trim().isEmpty) {
                           return;
                         }
 
-                        final task = ShowPayOffGraphTask(
+                        final result = ShowPayOffGraphTask(
                           quantity: int.tryParse(quantityController.text) ?? 0,
-                          spotPrice:
-                              double.tryParse(spotPriceController.text) ?? 0,
-                          spotPriceDayDelta: double.tryParse(
-                                  spotPriceDayDeltaController.text) ??
-                              0,
-                          spotPriceDayDeltaPer: double.tryParse(
-                                  spotPriceDayDeltaPerController.text) ??
-                              0,
+                          spotPrice: double.tryParse(spotPriceController.text) ?? 0,
+                          spotPriceDayDelta:
+                          double.tryParse(spotPriceDayDeltaController.text) ?? 0,
+                          spotPriceDayDeltaPer:
+                          double.tryParse(spotPriceDayDeltaPerController.text) ?? 0,
+                          id: task?.id,
                         );
 
-                        Navigator.of(context).pop(task);
+                        Navigator.of(context).pop(result);
                       },
-                      child: const Text('Submit'),
+                      child: Text(isEditing ? 'Save' : 'Submit'),
                     ),
                   ],
                 )

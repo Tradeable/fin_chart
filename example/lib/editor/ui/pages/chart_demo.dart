@@ -249,24 +249,16 @@ class _ChartDemoState extends State<ChartDemo> {
               builder: (context) {
                 ShowPopupTask task = currentTask as ShowPopupTask;
                 return AlertDialog(
-                  title: SizedBox(
-                    width: double.maxFinite,
-                    height: MediaQuery.of(context).size.height * 0.2,
+                  title: MarkdownWidget(
+                      data: task.title,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true),
+                  content: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: MarkdownWidget(
-                        data: task.title,
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true),
-                  ),
-                  content: SizedBox(
-                    width: double.maxFinite,
-                    height: MediaQuery.of(context).size.height * 0.6,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: MarkdownWidget(
-                        data: task.description,
-                        physics: NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                      ),
+                      data: task.description,
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
                     ),
                   ),
                   actions: [

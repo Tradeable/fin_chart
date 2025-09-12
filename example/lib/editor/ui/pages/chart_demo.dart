@@ -160,54 +160,56 @@ class _ChartDemoState extends State<ChartDemo> {
               "title": task.tabTitle,
               "taskId": task.taskId
             });
-          } else {
-            final payoffTasks =
-                recipe.tasks.whereType<ShowPayOffGraphTask>().toList();
+          }
 
-            if (payoffTasks.isNotEmpty) {
-              tabs.add({
-                "type": "payoff",
-                "title": task.tabTitle,
-                "taskId": task.taskId
-              });
-            } else {
-              final insightsTasks = recipe.tasks
-                  .whereType<ShowInsightsPageTask>()
-                  .where((t) => t.id == task.taskId)
-                  .toList();
+          final payoffTasks = recipe.tasks
+              .whereType<ShowPayOffGraphTask>()
+              .where((t) => t.id == task.taskId)
+              .toList();
 
-              if (insightsTasks.isNotEmpty) {
-                tabs.add({
-                  "type": "insights",
-                  "title": task.tabTitle,
-                  "taskId": task.taskId,
-                });
-              }
-              final tableTasks = recipe.tasks
-                  .whereType<TableTask>()
-                  .where((t) => t.id == task.taskId)
-                  .toList();
-              if (tableTasks.isNotEmpty) {
-                tabs.add({
-                  "type": "table",
-                  "title": task.tabTitle,
-                  "taskId": task.taskId,
-                });
-              }
+          if (payoffTasks.isNotEmpty) {
+            tabs.add({
+              "type": "payoff",
+              "title": task.tabTitle,
+              "taskId": task.taskId
+            });
+          }
 
-              final insightsV2Tasks = recipe.tasks
-                  .whereType<ShowInsightsPageV2Task>()
-                  .where((t) => t.id == task.taskId)
-                  .toList();
+          final insightsTasks = recipe.tasks
+              .whereType<ShowInsightsPageTask>()
+              .where((t) => t.id == task.taskId)
+              .toList();
 
-              if (insightsV2Tasks.isNotEmpty) {
-                tabs.add({
-                  "type": "insights_v2",
-                  "title": task.tabTitle,
-                  "taskId": task.taskId,
-                });
-              }
-            }
+          if (insightsTasks.isNotEmpty) {
+            tabs.add({
+              "type": "insights",
+              "title": task.tabTitle,
+              "taskId": task.taskId,
+            });
+          }
+          final tableTasks = recipe.tasks
+              .whereType<TableTask>()
+              .where((t) => t.id == task.taskId)
+              .toList();
+          if (tableTasks.isNotEmpty) {
+            tabs.add({
+              "type": "table",
+              "title": task.tabTitle,
+              "taskId": task.taskId,
+            });
+          }
+
+          final insightsV2Tasks = recipe.tasks
+              .whereType<ShowInsightsPageV2Task>()
+              .where((t) => t.id == task.taskId)
+              .toList();
+
+          if (insightsV2Tasks.isNotEmpty) {
+            tabs.add({
+              "type": "insights_v2",
+              "title": task.tabTitle,
+              "taskId": task.taskId,
+            });
           }
         });
         onTaskFinish();
@@ -251,10 +253,25 @@ class _ChartDemoState extends State<ChartDemo> {
               builder: (context) {
                 ShowPopupTask task = currentTask as ShowPopupTask;
                 return AlertDialog(
-                  title: MarkdownWidget(data: task.title),
-                  content: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MarkdownWidget(data: task.title),
+                  title: SizedBox(
+                    width: double.maxFinite,
+                    height: MediaQuery.of(context).size.height * 0.2,
+                    child: MarkdownWidget(
+                        data: task.title,
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true),
+                  ),
+                  content: SizedBox(
+                    width: double.maxFinite,
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: MarkdownWidget(
+                        data: task.description,
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                      ),
+                    ),
                   ),
                   actions: [
                     TextButton(

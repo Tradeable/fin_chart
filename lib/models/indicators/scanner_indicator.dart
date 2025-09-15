@@ -20,6 +20,7 @@ class ScannerIndicator extends Indicator {
   TrendDetection trendDetection;
   PivotTimeframe timeframe;
   Set<int> removedResultIndices;
+  ScannerResult? selectedResult;
 
   List<ScannerResult> activeScanResults = [];
   final List<ICandle> candles = [];
@@ -46,6 +47,71 @@ class ScannerIndicator extends Indicator {
     required this.removedResultIndices,
   });
 
+  Rect? _getResultBoundingBox(ScannerResult result) {
+    if (result.targetIndex >= candles.length) return null;
+
+    if (result.scannerType.displayType == ScannerDisplayType.areaShade) {
+      final index = result.targetIndex;
+      final left = toX(index.toDouble()) - (xStepWidth / 2);
+      final right = toX(index.toDouble()) + (xStepWidth / 2);
+      return Rect.fromLTRB(left, topPos, right, bottomPos);
+    } else {
+      // labelBox
+      final group = result.highlightedIndices;
+      if (group.isEmpty) return null;
+
+      final targetCandle = candles[result.targetIndex];
+      final targetPoint =
+          toCanvas(Offset(result.targetIndex.toDouble(), targetCandle.high));
+      final labelBoxPosition = Offset(targetPoint.dx, targetPoint.dy - 30);
+
+      final textPainter = TextPainter(
+        text: TextSpan(
+            text: result.label,
+            style: const TextStyle(color: Colors.white, fontSize: 12)),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      return Rect.fromCenter(
+          center: labelBoxPosition,
+          width: textPainter.width + 16, // Add padding for easier tapping
+          height: textPainter.height + 12);
+    }
+  }
+
+  @override
+  void onTapDown({required TapDownDetails details}) {
+    // if (isLocked) return;
+
+    ScannerResult? tappedResult;
+    // Iterate in reverse to select the top-most result if they overlap
+    for (final result in activeScanResults.reversed) {
+      final rect = _getResultBoundingBox(result);
+      if (rect != null && rect.contains(details.localPosition)) {
+        tappedResult = result;
+        break;
+      }
+    }
+
+    if (tappedResult != selectedResult) {
+      selectedResult?.isSelected = false;
+      selectedResult = tappedResult;
+      selectedResult?.isSelected = true;
+    }
+  }
+
+  void removeSelectedResult() {
+    if (selectedResult != null) {
+      final newSet = Set<int>.from(removedResultIndices);
+      newSet.add(selectedResult!.targetIndex);
+      removedResultIndices = newSet;
+
+      selectedResult!.isSelected = false;
+      selectedResult = null;
+    }
+  }
+
   @override
   void drawIndicator({required Canvas canvas}) {
     if (selectedScannerType == null || activeScanResults.isEmpty) return;
@@ -62,9 +128,10 @@ class ScannerIndicator extends Indicator {
     for (final result in activeScanResults) {
       if (result.targetIndex >= candles.length) continue;
 
-      // final color = result.highlightColor ?? highlightColor;
       final paint = Paint()
-        ..color = highlightColor.withValues(alpha: (0.15 * 255).toDouble())
+        // Change color and opacity when selected
+        ..color = (result.isSelected ? Colors.yellow : highlightColor)
+            .withAlpha(result.isSelected ? 100 : 50)
         ..style = PaintingStyle.fill;
 
       final index = result.targetIndex;
@@ -81,11 +148,15 @@ class ScannerIndicator extends Indicator {
       final group = result.highlightedIndices;
       if (group.isEmpty) continue;
 
+      // Use a different color and thicker stroke for selected items
+      final paintColor =
+          result.isSelected ? Colors.yellowAccent : highlightColor;
       final highlightPaint = Paint()
-        ..color = highlightColor
-        ..strokeWidth = 2.0
+        ..color = paintColor
+        ..strokeWidth = result.isSelected ? 3.0 : 2.0
         ..style = PaintingStyle.stroke;
 
+      // ... (rest of the geometry calculation is the same)
       final minIndex = group.reduce(min);
       final maxIndex = group.reduce(max);
 
@@ -124,7 +195,7 @@ class ScannerIndicator extends Indicator {
       final newEndPoint =
           labelBoxPosition + (vector * ((length - gap) / length));
       final linePaint = Paint()
-        ..color = highlightColor
+        ..color = paintColor
         ..strokeWidth = 1.5;
       canvas.drawLine(labelBoxPosition, newEndPoint, linePaint);
 
@@ -145,7 +216,7 @@ class ScannerIndicator extends Indicator {
 
       canvas.drawRRect(rrect.shift(const Offset(1, 1)),
           Paint()..color = Colors.black.withAlpha((0.5 * 255).toInt()));
-      canvas.drawRRect(rrect, Paint()..color = highlightColor);
+      canvas.drawRRect(rrect, Paint()..color = paintColor);
 
       textPainter.paint(canvas, labelRect.topLeft + const Offset(6, 4));
     }

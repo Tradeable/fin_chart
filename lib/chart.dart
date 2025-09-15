@@ -5,11 +5,13 @@ import 'package:fin_chart/models/enums/data_fit_type.dart';
 import 'package:fin_chart/models/enums/layer_type.dart';
 import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
+import 'package:fin_chart/models/indicators/scanner_indicator.dart';
 import 'package:fin_chart/models/layers/layer.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/panel_plot_region.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
 import 'package:fin_chart/models/settings/x_axis_settings.dart';
 import 'package:fin_chart/utils/calculations.dart';
 import 'package:fin_chart/utils/constants.dart';
@@ -28,6 +30,7 @@ class Chart extends StatefulWidget {
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
   final ChartType chartType;
+  final Function(ScannerResult?)? onScannerResultSelect;
 
   const Chart({
     super.key,
@@ -42,6 +45,7 @@ class Chart extends StatefulWidget {
     this.xAxisSettings = const XAxisSettings(),
     this.recipe,
     this.chartType = ChartType.candlestick,
+    this.onScannerResultSelect,
   });
 
   factory Chart.from(
@@ -49,6 +53,7 @@ class Chart extends StatefulWidget {
       required Recipe recipe,
       Function(Offset, Offset)? onInteraction,
       Function(PlotRegion region, Layer layer)? onLayerSelect,
+      Function(ScannerResult?)? onScannerResultSelect,
       final Function(PlotRegion region)? onRegionSelect,
       final Function(Indicator indicator)? onIndicatorSelect}) {
     return Chart(
@@ -64,6 +69,7 @@ class Chart extends StatefulWidget {
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
       chartType: recipe.chartSettings.chartType,
+      onScannerResultSelect: onScannerResultSelect,
     );
   }
 
@@ -120,6 +126,8 @@ class ChartState extends State<Chart>
   double? eventSelectionPosition;
 
   late ChartType chartType;
+
+  ScannerResult? _selectedScannerResult;
 
   @override
   void initState() {
@@ -203,6 +211,25 @@ class ChartState extends State<Chart>
     _swipeAnimationController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void removeSelectedScannerResult() {
+    setState(() {
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          for (var indicator in region.indicators) {
+            if (indicator is ScannerIndicator &&
+                indicator.selectedResult != null) {
+              indicator.removeSelectedResult();
+              indicator.updateData(currentData);
+              _selectedScannerResult = null;
+              widget.onScannerResultSelect?.call(null);
+              return;
+            }
+          }
+        }
+      }
+    });
   }
 
   void addIndicator(Indicator indicator) {
@@ -598,55 +625,76 @@ class ChartState extends State<Chart>
     });
   }
 
-  _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails details) {
     setState(() {
       isUserInteracting = true;
-      for (PlotRegion region in regions) {
-        if (region is MainPlotRegion) {
-          region.handleEventTap(details.localPosition);
-        }
-      }
 
+      // --- Deselect everything first ---
+      _selectedScannerResult = null;
+      widget.onScannerResultSelect?.call(null);
+      selectedLayer?.isSelected = false;
+      selectedLayer = null;
       selectedEvent = null;
-      selectedIndicator = null;
-
-      for (PlotRegion region in regions) {
-        if (selectedRegionForResize.length < 2) {
-          if (region.isRegionReadyForResize(details.localPosition) != null) {
-            selectedRegionForResize.add(region);
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          for (var event in region.fundamentalEvents) {
+            event.isSelected = false;
+          }
+          // Also deselect scanner results in all indicators
+          for (var indicator in region.indicators) {
+            if (indicator is ScannerIndicator) {
+              indicator.selectedResult?.isSelected = false;
+              indicator.selectedResult = null;
+            }
           }
         }
       }
 
-      if (selectedRegionForResize.length == 2) {
-        selectedLayer?.isSelected = false;
-        selectedLayer = null;
-        return;
-      }
-
-      selectedLayer = null;
-      selectedRegion = null;
+      // --- Hit test regions from top to bottom ---
       for (PlotRegion region in regions) {
-        selectedRegion ??= region.regionSelect(details.localPosition);
+        if (region.isPointInside(details.localPosition)) {
+          // Priority 1: Check for indicator hits (like scanner results)
+          region.handleIndicatorTap(details.localPosition, details);
 
-        if (selectedRegion != null) {
+          if (region is MainPlotRegion) {
+            for (var indicator in region.indicators) {
+              if (indicator is ScannerIndicator &&
+                  indicator.selectedResult != null) {
+                _selectedScannerResult = indicator.selectedResult;
+                widget.onScannerResultSelect?.call(_selectedScannerResult);
+                return; // Stop processing tap, a scanner result was selected
+              }
+            }
+          }
+
+          // Priority 2: Check for layer hits
+          for (Layer layer in region.layers) {
+            selectedLayer = layer.onTapDown(details: details);
+            if (selectedLayer != null) {
+              widget.onLayerSelect?.call(region, selectedLayer!);
+              return; // Stop processing tap, a layer was selected
+            }
+          }
+
+          // Priority 3: Check for fundamental event hits
+          if (region is MainPlotRegion) {
+            region.handleEventTap(details.localPosition);
+            if (region.selectedEvent != null) {
+              selectedEvent = region.selectedEvent;
+              // Add a callback for EditorPage if needed
+              return; // Stop processing tap, an event was selected
+            }
+          }
+
+          // If nothing inside the region was hit, it's a general interaction
+          selectedRegion = region;
           widget.onRegionSelect?.call(selectedRegion!);
           if (isLayerGettingAdded || isWaitingForEventPosition) {
             widget.onInteraction?.call(
                 selectedRegion!.getRealCoordinates(details.localPosition),
                 details.localPosition);
-          } else {
-            for (Layer layer in region.layers) {
-              if (selectedLayer == null) {
-                selectedLayer = layer.onTapDown(details: details);
-                if (selectedLayer != null && selectedRegion != null) {
-                  widget.onLayerSelect?.call(selectedRegion!, selectedLayer!);
-                }
-              } else {
-                layer.isSelected = false;
-              }
-            }
           }
+          return;
         }
       }
     });

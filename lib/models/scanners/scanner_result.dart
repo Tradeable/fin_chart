@@ -5,11 +5,13 @@ class ScannerResult {
   final String label;
   final int targetIndex;
   final List<int> highlightedIndices;
+  bool isSelected;
 
   ScannerResult({
     required this.scannerType,
     required this.label,
     required this.targetIndex,
     required this.highlightedIndices,
+    this.isSelected = false,
   });
 }

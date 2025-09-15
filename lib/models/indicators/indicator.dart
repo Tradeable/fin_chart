@@ -41,6 +41,7 @@ abstract class Indicator with RegionProp {
   final DisplayMode displayMode;
   late List<double> yValues;
   late Size yLabelSize;
+  void onTapDown({required TapDownDetails details}) {}
 
   Indicator(
       {required this.id,

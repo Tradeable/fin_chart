@@ -13,6 +13,7 @@ abstract class PlotRegion with RegionProp {
   late Size yLabelSize;
   late List<double> yValues;
   bool isSelected = false;
+  void handleIndicatorTap(Offset localPosition, TapDownDetails details);
 
   PlotRegion(
       {required this.id,
@@ -98,4 +99,11 @@ abstract class PlotRegion with RegionProp {
   void drawBaseLayer(Canvas canvas);
 
   void updateData(List<ICandle> data);
+
+  bool isPointInside(Offset point) {
+    return point.dx >= leftPos &&
+        point.dx <= rightPos &&
+        point.dy >= topPos &&
+        point.dy <= bottomPos;
+  }
 }

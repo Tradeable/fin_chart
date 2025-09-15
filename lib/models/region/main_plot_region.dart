@@ -364,4 +364,11 @@ class MainPlotRegion extends PlotRegion {
   void updateFundamentalEvents(List<FundamentalEvent> newEvents) {
     fundamentalEvents.addAll(newEvents);
   }
+
+  @override
+  void handleIndicatorTap(Offset localPosition, TapDownDetails details) {
+    for (final indicator in indicators) {
+      indicator.onTapDown(details: details);
+    }
+  }
 }

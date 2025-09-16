@@ -160,38 +160,38 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: displayableResults.isEmpty
-                  ? const Center(child: Text('No results found.'))
-                  : SingleChildScrollView(
-                      child: Column(
-                        children: displayableResults.map((result) {
-                          final candle =
-                              widget.indicator.candles[result.targetIndex];
-                          return ListTile(
-                            dense: true,
-                            title: Text(result.label),
-                            subtitle: Text(
-                                'Date: ${candle.date.toLocal().toString().split(' ')[0]}'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                setState(() {
-                                  removedIndices.add(result.targetIndex);
-                                });
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-            ),
+            // const SizedBox(height: 8),
+            // Container(
+            //   height: 200,
+            //   decoration: BoxDecoration(
+            //     border: Border.all(color: Colors.grey.shade300),
+            //     borderRadius: BorderRadius.circular(4),
+            //   ),
+            //   child: displayableResults.isEmpty
+            //       ? const Center(child: Text('No results found.'))
+            //       : SingleChildScrollView(
+            //           child: Column(
+            //             children: displayableResults.map((result) {
+            //               final candle =
+            //                   widget.indicator.candles[result.targetIndex];
+            //               return ListTile(
+            //                 dense: true,
+            //                 title: Text(result.label),
+            //                 subtitle: Text(
+            //                     'Date: ${candle.date.toLocal().toString().split(' ')[0]}'),
+            //                 trailing: IconButton(
+            //                   icon: const Icon(Icons.delete, color: Colors.red),
+            //                   onPressed: () {
+            //                     setState(() {
+            //                       removedIndices.add(result.targetIndex);
+            //                     });
+            //                   },
+            //                 ),
+            //               );
+            //             }).toList(),
+            //           ),
+            //         ),
+            // ),
           ],
         ),
       ),

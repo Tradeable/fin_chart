@@ -2,6 +2,7 @@ import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
+import 'package:fin_chart/option_chain/models/option_chain_state.dart';
 import 'package:flutter/material.dart';
 
 Future<EditColumnVisibilityTask?> showEditColumnVisibilityDialog({
@@ -23,16 +24,13 @@ Future<EditColumnVisibilityTask?> showEditColumnVisibilityDialog({
   return showDialog<EditColumnVisibilityTask>(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext context) {
-      List<ColumnConfig>? workingColumns;
+    builder: (context) {
+      List<ColumnConfig> workingColumns = [];
 
       CreateOptionChainTask? findChain(String id) {
-        final createTasks = tasks.whereType<CreateOptionChainTask>();
-        try {
-          return createTasks.firstWhere((t) => t.optionChainId == id);
-        } catch (_) {
-          return null;
-        }
+        return tasks
+            .whereType<CreateOptionChainTask>()
+            .firstWhere((t) => t.optionChainId == id);
       }
 
       return StatefulBuilder(builder: (context, setState) {
@@ -44,9 +42,17 @@ Future<EditColumnVisibilityTask?> showEditColumnVisibilityDialog({
           );
         }
 
-        workingColumns ??= chain.columns
-            .map((c) => ColumnConfig.fromJson(c.toJson()))
-            .toList();
+        final state = rebuildOptionChainState(
+          tasks: tasks,
+          taskIndex: initialTask != null
+              ? tasks.indexOf(initialTask) + 1
+              : tasks.length,
+          optionChainId: selectedOptionChainId,
+        );
+
+        if (workingColumns.isEmpty) {
+          workingColumns = [...state.columns];
+        }
 
         return AlertDialog(
           title: Row(
@@ -65,10 +71,14 @@ Future<EditColumnVisibilityTask?> showEditColumnVisibilityDialog({
                   if (value != null) {
                     setState(() {
                       selectedOptionChainId = value;
-                      final newChain = findChain(value);
-                      workingColumns = newChain?.columns
-                          .map((c) => ColumnConfig.fromJson(c.toJson()))
-                          .toList();
+                      final newState = rebuildOptionChainState(
+                        tasks: tasks,
+                        taskIndex: initialTask != null
+                            ? tasks.indexOf(initialTask) + 1
+                            : tasks.length,
+                        optionChainId: value,
+                      );
+                      workingColumns = [...newState.columns];
                     });
                   }
                 },
@@ -79,15 +89,15 @@ Future<EditColumnVisibilityTask?> showEditColumnVisibilityDialog({
             width: MediaQuery.of(context).size.width * 0.6,
             height: MediaQuery.of(context).size.height * 0.5,
             child: ListView.builder(
-              itemCount: workingColumns!.length,
+              itemCount: workingColumns.length,
               itemBuilder: (context, index) {
-                final col = workingColumns![index];
+                final col = workingColumns[index];
                 return CheckboxListTile(
                   title: Text(col.columnTitle),
                   value: col.isColumnVisible,
                   onChanged: (val) {
                     setState(() {
-                      workingColumns![index] =
+                      workingColumns[index] =
                           ColumnConfig.fromJson(col.toJson())
                             ..isColumnVisible = val ?? false;
                     });
@@ -107,7 +117,7 @@ Future<EditColumnVisibilityTask?> showEditColumnVisibilityDialog({
                   context,
                   EditColumnVisibilityTask(
                     optionChainId: selectedOptionChainId,
-                    updatedColumns: List.from(workingColumns!),
+                    updatedColumns: List.from(workingColumns),
                   ),
                 );
               },

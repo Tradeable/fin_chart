@@ -23,7 +23,8 @@ enum TaskType {
   highlightTableRow,
   showInsightsV2Page,
   showSideNav,
-  editOptionRow
+  editOptionRow,
+  editColumnVisibility
 }
 
 // extension TaskTypeExtension on TaskType {

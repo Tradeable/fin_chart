@@ -7,6 +7,7 @@ import 'package:example/dialog/pay_off_graph_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_bottom_sheet_dialog.dart';
+import 'package:example/dialog/show_edit_optionchain_visibility_dialog.dart';
 import 'package:example/dialog/show_insights_page_dialog.dart';
 import 'package:example/dialog/show_insights_pagev2_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
@@ -37,6 +38,7 @@ import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
@@ -256,7 +258,6 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.clearTask:
           case TaskType.createOptionChain:
           case TaskType.addOptionChain:
-          case TaskType.editOptionRow:
           case TaskType.highlightCorrectOptionChainValue:
           case TaskType.showPayOffGraph:
           case TaskType.addTab:
@@ -271,6 +272,8 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.highlightTableRow:
           case TaskType.showInsightsV2Page:
           case TaskType.showSideNav:
+          case TaskType.editOptionRow:
+          case TaskType.editColumnVisibility:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -597,6 +600,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.editOptionRow:
           showEditOptionRow();
           break;
+        case TaskType.editColumnVisibility:
+          showColumnVisiblityDialog();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -676,6 +682,8 @@ class _EditorPageState extends State<EditorPage> {
       case TaskType.editOptionRow:
         editEditOptionRowTask(task as EditOptionRowTask);
         break;
+      case TaskType.editColumnVisibility:
+        editColumnVisibilityTask(task as EditColumnVisibilityTask);
     }
   }
 
@@ -1540,20 +1548,45 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void showEditOptionRow() async {
-    final editTask = await showEditOptionRowDialog(context: context, tasks: tasks);
+    final editTask =
+        await showEditOptionRowDialog(context: context, tasks: tasks);
     if (editTask != null) {
       _updateTaskList(editTask);
     }
   }
 
   Future<void> editEditOptionRowTask(EditOptionRowTask task) async {
-    await showEditOptionRowDialog(context: context, tasks: tasks, initialTask: task)
+    final taskIndex = tasks.indexOf(task);
+    if (taskIndex == -1) return;
+
+    final data = await showEditOptionRowDialog(
+        context: context, tasks: tasks, initialTask: task);
+
+    if (data != null) {
+      setState(() {
+        task.optionChainId = data.optionChainId;
+        task.rowIndex = data.rowIndex;
+        task.updatedRow = data.updatedRow;
+      });
+    }
+  }
+
+  void showColumnVisiblityDialog() async {
+    final editTask =
+        await showEditColumnVisibilityDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editColumnVisibilityTask(EditColumnVisibilityTask task) async {
+    await showEditColumnVisibilityDialog(
+            context: context, tasks: tasks, initialTask: task)
         .then((data) {
       setState(() {
         if (data != null) {
           task.optionChainId = data.optionChainId;
-          task.rowIndex = data.rowIndex;
-          task.updatedRow = data.updatedRow;
+          task.updatedColumns = data.updatedColumns;
         }
       });
     });

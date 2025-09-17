@@ -5,6 +5,7 @@ import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
@@ -22,7 +23,6 @@ import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:example/editor/ui/widget/table_display_widget.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:example/editor/ui/widgets/side_nav_panel.dart';
-import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -426,21 +426,6 @@ class _ChartDemoState extends State<ChartDemo> {
         previewKey.currentState?.clearBucketSelections();
         onTaskFinish();
         break;
-      case TaskType.editOptionRow:
-        final task = currentTask as EditOptionRowTask;
-        final createChains = recipe.tasks.whereType<CreateOptionChainTask>().toList();
-        final chainIdx = createChains.indexWhere((t) => t.optionChainId == task.optionChainId);
-        if (chainIdx != -1 && task.updatedRow != null) {
-          final chain = createChains[chainIdx];
-          if (task.rowIndex >= 0 && task.rowIndex < chain.data.length) {
-            setState(() {
-              chain.data[task.rowIndex] = task.updatedRow!;
-            });
-          }
-        }
-        setState(() {});
-        onTaskFinish();
-        break;
       case TaskType.tableTask:
         setState(() {});
         onTaskFinish();
@@ -464,6 +449,43 @@ class _ChartDemoState extends State<ChartDemo> {
         break;
       case TaskType.showInsightsV2Page:
         setState(() {});
+        onTaskFinish();
+        break;
+      case TaskType.editOptionRow:
+        final task = currentTask as EditOptionRowTask;
+        final createChains =
+            recipe.tasks.whereType<CreateOptionChainTask>().toList();
+        final chainIdx = createChains
+            .indexWhere((t) => t.optionChainId == task.optionChainId);
+        if (chainIdx != -1 && task.updatedRow != null) {
+          final chain = createChains[chainIdx];
+          if (task.rowIndex >= 0 && task.rowIndex < chain.data.length) {
+            setState(() {
+              chain.data[task.rowIndex] = task.updatedRow!;
+            });
+          }
+        }
+        setState(() {});
+        onTaskFinish();
+        break;
+      case TaskType.editColumnVisibility:
+        final task = currentTask as EditColumnVisibilityTask;
+        final createChains =
+            recipe.tasks.whereType<CreateOptionChainTask>().toList();
+        final chainIdx = createChains
+            .indexWhere((t) => t.optionChainId == task.optionChainId);
+        if (chainIdx != -1 && task.updatedColumns.isNotEmpty) {
+          final chain = createChains[chainIdx];
+          setState(() {
+            for (final updated in task.updatedColumns) {
+              final idx = chain.columns
+                  .indexWhere((c) => c.columnType == updated.columnType);
+              if (idx != -1) {
+                chain.columns[idx].isColumnVisible = updated.isColumnVisible;
+              }
+            }
+          });
+        }
         onTaskFinish();
         break;
     }
@@ -772,6 +794,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.highlightTableRow:
       case TaskType.showInsightsV2Page:
       case TaskType.showSideNav:
+      case TaskType.editColumnVisibility:
         return Container();
     }
   }

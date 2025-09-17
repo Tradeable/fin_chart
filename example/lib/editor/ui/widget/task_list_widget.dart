@@ -5,6 +5,7 @@ import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
@@ -525,6 +526,26 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Edit Row in ${t.optionChainId} @ ${t.rowIndex}'),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.editColumnVisibility:
+        final t = task as EditColumnVisibilityTask;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Edited visibility in ${t.optionChainId}'),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {

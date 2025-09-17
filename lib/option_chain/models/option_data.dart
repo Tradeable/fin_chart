@@ -85,3 +85,49 @@ enum OptionChainVisibility {
 
   const OptionChainVisibility(this.name);
 }
+
+extension OptionDataEditable on OptionData {
+  Map<String, dynamic> toEditableMap() {
+    return {
+      'strike': strike,
+      'callOi': callOi,
+      'callPremium': callPremium,
+      'putOi': putOi,
+      'putPremium': putPremium,
+      'callDelta': callDelta,
+      'callGamma': callGamma,
+      'callVega': callVega,
+      'callTheta': callTheta,
+      'callIV': callIV,
+      'putDelta': putDelta,
+      'putGamma': putGamma,
+      'putVega': putVega,
+      'putTheta': putTheta,
+      'putIV': putIV,
+      'callVolume': callVolume,
+      'putVolume': putVolume,
+    };
+  }
+
+  OptionData copyWithMap(Map<String, dynamic> map) {
+    return OptionData(
+      strike: (map['strike'] as num).toDouble(),
+      callOi: map['callOi'] as int,
+      callPremium: (map['callPremium'] as num).toDouble(),
+      putOi: map['putOi'] as int,
+      putPremium: (map['putPremium'] as num).toDouble(),
+      callDelta: (map['callDelta'] as num).toDouble(),
+      callGamma: (map['callGamma'] as num).toDouble(),
+      callVega: (map['callVega'] as num).toDouble(),
+      callTheta: (map['callTheta'] as num).toDouble(),
+      callIV: (map['callIV'] as num).toDouble(),
+      putDelta: (map['putDelta'] as num).toDouble(),
+      putGamma: (map['putGamma'] as num).toDouble(),
+      putVega: (map['putVega'] as num).toDouble(),
+      putTheta: (map['putTheta'] as num).toDouble(),
+      putIV: (map['putIV'] as num).toDouble(),
+      callVolume: (map['callVolume'] as num).toDouble(),
+      putVolume: (map['putVolume'] as num).toDouble(),
+    );
+  }
+}

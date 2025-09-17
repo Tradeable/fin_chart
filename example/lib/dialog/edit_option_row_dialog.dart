@@ -1,7 +1,9 @@
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
+import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
+import 'package:fin_chart/option_chain/models/option_chain_state.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -24,17 +26,14 @@ Future<EditOptionRowTask?> showEditOptionRowDialog({
   return showDialog<EditOptionRowTask>(
     context: context,
     barrierDismissible: false,
-    builder: (BuildContext context) {
+    builder: (context) {
       final Map<int, OptionData> editedRows = {};
       List<OptionData> workingData = [];
 
       CreateOptionChainTask? findChain(String id) {
-        final createTasks = tasks.whereType<CreateOptionChainTask>();
-        try {
-          return createTasks.firstWhere((t) => t.optionChainId == id);
-        } catch (_) {
-          return null;
-        }
+        return tasks
+            .whereType<CreateOptionChainTask>()
+            .firstWhere((t) => t.optionChainId == id);
       }
 
       return StatefulBuilder(builder: (context, setState) {
@@ -46,16 +45,29 @@ Future<EditOptionRowTask?> showEditOptionRowDialog({
           );
         }
 
+        final state = rebuildOptionChainState(
+          tasks: tasks,
+          taskIndex: initialTask != null
+              ? tasks.indexOf(initialTask) + 1
+              : tasks.length,
+          optionChainId: selectedOptionChainId,
+        );
+
         if (workingData.isEmpty) {
-          workingData = [...chain.data];
+          workingData = [...state.data];
         }
 
-        void openEditForm(OptionData row, int rowIndex) async {
-          final result = await _showRowForm(context: context, row: row);
+        void openEditForm(
+            OptionData row, int rowIndex, List<ColumnConfig> columns) async {
+          final result = await _showRowForm(
+            context: context,
+            row: row,
+            columns: columns,
+          );
           if (result != null) {
             setState(() {
-              editedRows[rowIndex] = result;
               workingData[rowIndex] = result;
+              editedRows[rowIndex] = result;
             });
           }
         }
@@ -77,8 +89,15 @@ Future<EditOptionRowTask?> showEditOptionRowDialog({
                   if (value != null) {
                     setState(() {
                       selectedOptionChainId = value;
+                      final newState = rebuildOptionChainState(
+                        tasks: tasks,
+                        taskIndex: initialTask != null
+                            ? tasks.indexOf(initialTask) + 1
+                            : tasks.length,
+                        optionChainId: value,
+                      );
                       editedRows.clear();
-                      workingData = [...?findChain(value)?.data];
+                      workingData = [...newState.data];
                     });
                   }
                 },
@@ -102,7 +121,7 @@ Future<EditOptionRowTask?> showEditOptionRowDialog({
               ),
               isEditorMode: true,
               onRowEditRequested: (rowIndex) {
-                openEditForm(workingData[rowIndex], rowIndex);
+                openEditForm(workingData[rowIndex], rowIndex, state.columns);
               },
             ),
           ),
@@ -138,86 +157,61 @@ Future<EditOptionRowTask?> showEditOptionRowDialog({
 Future<OptionData?> _showRowForm({
   required BuildContext context,
   required OptionData row,
+  required List<ColumnConfig> columns,
 }) async {
-  final strikeCtrl = TextEditingController(text: row.strike.toString());
-  final callOiCtrl = TextEditingController(text: row.callOi.toString());
-  final callPremCtrl = TextEditingController(text: row.callPremium.toString());
-  final putOiCtrl = TextEditingController(text: row.putOi.toString());
-  final putPremCtrl = TextEditingController(text: row.putPremium.toString());
+  final visibleCols =
+      columns.where((c) => c.isColumnVisible).map((c) => c.columnType).toList();
+
+  final fullMap = row.toEditableMap();
+  final filteredMap = {
+    for (final col in visibleCols) col.name: fullMap[col.name],
+  };
+
+  final controllers = <String, TextEditingController>{};
+  filteredMap.forEach((k, v) {
+    controllers[k] = TextEditingController(text: v.toString());
+  });
 
   return showDialog<OptionData>(
     context: context,
-    builder: (context) {
+    builder: (ctx) {
       return AlertDialog(
-        title: const Text('Edit Row Values'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _numField(label: 'Strike', controller: strikeCtrl),
-              _numField(label: 'Call OI', controller: callOiCtrl, isInt: true),
-              _numField(label: 'Call Premium', controller: callPremCtrl),
-              _numField(label: 'Put OI', controller: putOiCtrl, isInt: true),
-              _numField(label: 'Put Premium', controller: putPremCtrl),
-            ],
+        title: Text('Edit Row'),
+        content: SizedBox(
+          width: MediaQuery.of(ctx).size.width * 0.6,
+          height: MediaQuery.of(ctx).size.height * 0.6,
+          child: ListView(
+            children: filteredMap.keys.map((key) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: TextField(
+                  controller: controllers[key],
+                  decoration: InputDecoration(labelText: key),
+                  keyboardType: TextInputType.number,
+                ),
+              );
+            }).toList(),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
-              try {
-                final updated = OptionData(
-                  strike: double.parse(strikeCtrl.text),
-                  callOi: int.parse(callOiCtrl.text),
-                  callPremium: double.parse(callPremCtrl.text),
-                  putOi: int.parse(putOiCtrl.text),
-                  putPremium: double.parse(putPremCtrl.text),
-                  callDelta: row.callDelta,
-                  callGamma: row.callGamma,
-                  callVega: row.callVega,
-                  callTheta: row.callTheta,
-                  callIV: row.callIV,
-                  putDelta: row.putDelta,
-                  putGamma: row.putGamma,
-                  putVega: row.putVega,
-                  putTheta: row.putTheta,
-                  putIV: row.putIV,
-                  callVolume: row.callVolume,
-                  putVolume: row.putVolume,
-                );
-                Navigator.pop(context, updated);
-              } catch (_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Enter valid numbers')),
-                );
+              final updatedMap = Map<String, dynamic>.from(fullMap);
+              for (var key in filteredMap.keys) {
+                final val = controllers[key]!.text;
+                updatedMap[key] =
+                    double.tryParse(val) ?? int.tryParse(val) ?? 0;
               }
+              Navigator.pop(ctx, row.copyWithMap(updatedMap));
             },
-            child: const Text('Save'),
+            child: Text('Save'),
           ),
         ],
       );
     },
-  );
-}
-
-Widget _numField({
-  required String label,
-  required TextEditingController controller,
-  bool isInt = false,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-    ),
   );
 }

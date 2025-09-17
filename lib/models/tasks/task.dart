@@ -9,6 +9,7 @@ import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
@@ -104,6 +105,8 @@ abstract class Task {
         return ShowSideNavTask.fromJson(json);
       case 'editOptionRow':
         return EditOptionRowTask.fromJson(json);
+      case 'editColumnVisibility':
+        return EditColumnVisibilityTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

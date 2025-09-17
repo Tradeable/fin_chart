@@ -1,4 +1,4 @@
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
@@ -15,8 +15,8 @@ import 'package:intl/intl.dart';
 
 class OptionChainPage extends StatefulWidget {
   final bool isDialog;
-  final Function(AddOptionChainTask)? onSave;
-  final AddOptionChainTask? initialTask;
+  final Function(CreateOptionChainTask)? onSave;
+  final CreateOptionChainTask? initialTask;
 
   const OptionChainPage({
     super.key,
@@ -473,7 +473,7 @@ class _OptionChainPageState extends State<OptionChainPage> {
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
-                    final task = AddOptionChainTask(
+                    final task = CreateOptionChainTask(
                         strikePrice: _strikePrice,
                         columns: _columns,
                         data: _optionData,

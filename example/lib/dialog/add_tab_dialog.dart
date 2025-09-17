@@ -3,8 +3,8 @@ import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/task.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 
@@ -14,7 +14,7 @@ Future<AddTabTask?> addTabDialog({
 }) async {
   final filteredTasks = tasks
       .where((t) =>
-          t is ChooseCorrectOptionValueChainTask ||
+          t is AddOptionChainTask ||
           t is ShowPayOffGraphTask ||
           t is ShowInsightsPageTask ||
           t is TableTask ||
@@ -23,9 +23,9 @@ Future<AddTabTask?> addTabDialog({
   String? selectedTaskId;
   String tabTitle = '';
 
-  AddOptionChainTask? getOptionChainDetails(String taskId) {
+  CreateOptionChainTask? getOptionChainDetails(String taskId) {
     return tasks
-        .whereType<AddOptionChainTask>()
+        .whereType<CreateOptionChainTask>()
         .firstWhere((task) => task.optionChainId == taskId);
   }
 
@@ -58,7 +58,7 @@ Future<AddTabTask?> addTabDialog({
                     Widget previewWidget;
                     String taskType;
 
-                    if (task is ChooseCorrectOptionValueChainTask) {
+                    if (task is AddOptionChainTask) {
                       final optionChain = getOptionChainDetails(task.taskId);
                       taskType = 'Option Chain';
                       if (optionChain != null) {
@@ -316,7 +316,7 @@ Future<AddTabTask?> addTabDialog({
                       child: InkWell(
                         onTap: () {
                           selectedTaskId =
-                              task is ChooseCorrectOptionValueChainTask
+                              task is AddOptionChainTask
                                   ? task.taskId
                                   : task.id;
                           showDialog(

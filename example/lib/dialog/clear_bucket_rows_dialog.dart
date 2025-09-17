@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
@@ -11,7 +11,7 @@ Future<ClearBucketRowsTask?> showClearBucketRowsDialog({
   ClearBucketRowsTask? initialTask,
 }) async {
   // Get all AddOptionChainTasks
-  final optionChainTasks = tasks.whereType<AddOptionChainTask>().toList();
+  final optionChainTasks = tasks.whereType<CreateOptionChainTask>().toList();
   
   if (optionChainTasks.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -28,7 +28,7 @@ Future<ClearBucketRowsTask?> showClearBucketRowsDialog({
     if (currentPage == -1) currentPage = 0;
   }
 
-  final selectedTask = await showDialog<AddOptionChainTask>(
+  final selectedTask = await showDialog<CreateOptionChainTask>(
     context: context,
     builder: (BuildContext dialogContext) {
       return Dialog(

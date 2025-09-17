@@ -6,7 +6,7 @@ import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
@@ -16,12 +16,13 @@ import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:example/editor/ui/widget/table_display_widget.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:example/editor/ui/widgets/side_nav_panel.dart';
+import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
 
 class ChartDemo extends StatefulWidget {
   final String recipeDataJson;
@@ -45,7 +46,7 @@ class _ChartDemoState extends State<ChartDemo> {
   String hintText = "";
   Widget? chart;
   PageController controller = PageController();
-  List<AddOptionChainTask> optionChainTasks = [];
+  List<CreateOptionChainTask> optionChainTasks = [];
   List<ShowPayOffGraphTask> payoffGraphTasks = [];
   List<Map<String, String>> tabs = [];
   int currentPageIndex = 0;
@@ -117,12 +118,12 @@ class _ChartDemoState extends State<ChartDemo> {
         _chartKey.currentState?.clearChart();
         onTaskFinish();
         break;
-      case TaskType.addOptionChain:
-        AddOptionChainTask task = currentTask as AddOptionChainTask;
+      case TaskType.createOptionChain:
+        CreateOptionChainTask task = currentTask as CreateOptionChainTask;
         optionChainTasks.add(task);
         onTaskFinish();
         break;
-      case TaskType.chooseCorrectOptionChainValue:
+      case TaskType.addOptionChain:
         onTaskFinish();
         break;
       case TaskType.highlightCorrectOptionChainValue:
@@ -150,7 +151,7 @@ class _ChartDemoState extends State<ChartDemo> {
           previewScreenKeys[task.taskId] = GlobalKey<PreviewScreenState>();
 
           final optionChainTasks = recipe.tasks
-              .whereType<ChooseCorrectOptionValueChainTask>()
+              .whereType<AddOptionChainTask>()
               .where((t) => t.taskId == task.taskId)
               .toList();
 
@@ -425,6 +426,21 @@ class _ChartDemoState extends State<ChartDemo> {
         previewKey.currentState?.clearBucketSelections();
         onTaskFinish();
         break;
+      case TaskType.editOptionRow:
+        final task = currentTask as EditOptionRowTask;
+        final createChains = recipe.tasks.whereType<CreateOptionChainTask>().toList();
+        final chainIdx = createChains.indexWhere((t) => t.optionChainId == task.optionChainId);
+        if (chainIdx != -1 && task.updatedRow != null) {
+          final chain = createChains[chainIdx];
+          if (task.rowIndex >= 0 && task.rowIndex < chain.data.length) {
+            setState(() {
+              chain.data[task.rowIndex] = task.updatedRow!;
+            });
+          }
+        }
+        setState(() {});
+        onTaskFinish();
+        break;
       case TaskType.tableTask:
         setState(() {});
         onTaskFinish();
@@ -537,8 +553,7 @@ class _ChartDemoState extends State<ChartDemo> {
                             case "option_chain":
                               final taskId = tab["taskId"]!;
                               final chooseTask = recipe.tasks
-                                  .whereType<
-                                      ChooseCorrectOptionValueChainTask>()
+                                  .whereType<AddOptionChainTask>()
                                   .firstWhere((t) => t.taskId == taskId);
 
                               final optionChainTask =
@@ -551,9 +566,7 @@ class _ChartDemoState extends State<ChartDemo> {
                                   key: previewScreenKeys[taskId] ??
                                       _previewScreenKey,
                                   task: optionChainTask,
-                                  isEditorMode: false,
-                                  maxSelectableRows:
-                                      chooseTask.maxSelectableRows);
+                                  isEditorMode: false);
                             case "payoff":
                               final taskId = tab["taskId"]!;
                               final payoffTask = payoffGraphTasks.firstWhere(
@@ -742,8 +755,9 @@ class _ChartDemoState extends State<ChartDemo> {
               onTaskFinish();
             },
             child: Text((currentTask as WaitTask).btnText));
+      case TaskType.createOptionChain:
       case TaskType.addOptionChain:
-      case TaskType.chooseCorrectOptionChainValue:
+      case TaskType.editOptionRow:
       case TaskType.highlightCorrectOptionChainValue:
       case TaskType.showPayOffGraph:
       case TaskType.addTab:

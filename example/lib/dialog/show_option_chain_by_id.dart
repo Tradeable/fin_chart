@@ -1,18 +1,18 @@
 import 'dart:math' as math;
 
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/preview_data.dart';
 import 'package:fin_chart/option_chain/screens/preview_screen.dart';
 import 'package:flutter/material.dart';
 
-Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
+Future<AddOptionChainTask?> showOptionChainById({
   required BuildContext context,
   required List<Task> tasks,
-  ChooseCorrectOptionValueChainTask? initialTask,
+  AddOptionChainTask? initialTask,
 }) async {
-  final optionChainTasks = tasks.whereType<AddOptionChainTask>().toList();
+  final optionChainTasks = tasks.whereType<CreateOptionChainTask>().toList();
 
   if (optionChainTasks.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -28,7 +28,7 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
     if (currentPage == -1) currentPage = 0;
   }
 
-  final selectedTask = await showDialog<AddOptionChainTask>(
+  final selectedTask = await showDialog<CreateOptionChainTask>(
     context: context,
     builder: (BuildContext dialogContext) {
       final pageController = PageController(initialPage: currentPage);
@@ -123,9 +123,7 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
                                                 columns: task.columns,
                                                 visibility: task.visibility,
                                                 settings: task.settings,
-                                                isEditorMode: true,
-                                                maxSelectableRows: initialTask
-                                                    ?.maxSelectableRows),
+                                                isEditorMode: true),
                                           ),
                                         ),
                                       ],
@@ -188,56 +186,5 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
 
   if (selectedTask == null) return null;
 
-  // Show dialog to get maxSelectableRows input
-  final maxRows = await showDialog<int>(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      final controller = TextEditingController(
-        text: initialTask?.maxSelectableRows?.toString() ?? '',
-      );
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Enter Maximum Selectable Rows'),
-            content: TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Maximum Selectable Rows',
-                hintText: 'Enter a number',
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (!context.mounted) return;
-                  final rows = int.tryParse(controller.text);
-                  if (rows != null && rows > 0) {
-                    Navigator.pop(dialogContext, rows);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Please enter a valid number greater than 0'),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-
-  if (maxRows == null || !context.mounted) return null;
-
-  return ChooseCorrectOptionValueChainTask(
-      taskId: selectedTask.optionChainId, maxSelectableRows: maxRows);
+  return AddOptionChainTask(taskId: selectedTask.optionChainId);
 }

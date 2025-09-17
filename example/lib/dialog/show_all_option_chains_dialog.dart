@@ -1,5 +1,4 @@
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
@@ -13,9 +12,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
   required BuildContext context,
   required List<Task> tasks,
 }) async {
-  final optionChainTasks = tasks.whereType<AddOptionChainTask>().toList();
-  final chooseCorrectTasks =
-      tasks.whereType<ChooseCorrectOptionValueChainTask>().toList();
+  final optionChainTasks = tasks.whereType<CreateOptionChainTask>().toList();
 
   if (optionChainTasks.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -24,18 +21,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
     return null;
   }
 
-  int? getMaxSelectableRows(String optionChainId) {
-    try {
-      final task = chooseCorrectTasks.firstWhere(
-        (task) => task.taskId == optionChainId,
-      );
-      return task.maxSelectableRows;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  final selectedOptionChain = await showDialog<AddOptionChainTask>(
+  final selectedOptionChain = await showDialog<CreateOptionChainTask>(
     context: context,
     builder: (BuildContext dialogContext) {
       return Dialog(
@@ -106,9 +92,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                                       columns: task.columns,
                                       visibility: task.visibility,
                                       settings: task.settings,
-                                      isEditorMode: true,
-                                      maxSelectableRows: getMaxSelectableRows(
-                                          task.optionChainId)),
+                                      isEditorMode: true),
                                 ),
                               ),
                             ],
@@ -171,11 +155,10 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                         optionData: selectedOptionChain.data,
                         columns: selectedOptionChain.columns,
                         visibility: selectedOptionChain.visibility,
-                        settings: (selectedOptionChain.settings ?? OptionChainSettings())
+                        settings: (selectedOptionChain.settings ??
+                            OptionChainSettings())
                           ..isBuySellVisible = false,
-                        isEditorMode: false,
-                        maxSelectableRows: getMaxSelectableRows(
-                            selectedOptionChain.optionChainId)),
+                        isEditorMode: false),
                   ),
                 ),
               ),
@@ -194,7 +177,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
                         final selectionMode =
                             selectedOptionChain.settings?.selectionMode ??
                                 SelectionMode.entireRow;
-                        
+
                         if (selectionMode == SelectionMode.bucketRow) {
                           final bucketRows =
                               previewKey.currentState?.getBucketRows();
@@ -237,7 +220,7 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
   if (selectedRowIndex != null) {
     final selectionMode =
         selectedOptionChain.settings?.selectionMode ?? SelectionMode.entireRow;
-    
+
     if (selectionMode == SelectionMode.bucketRow) {
       final bucketRows = selectedRowIndex as List<OptionLeg>;
       return HighlightCorrectOptionChainValueTask(

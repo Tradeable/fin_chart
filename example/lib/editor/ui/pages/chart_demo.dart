@@ -488,6 +488,20 @@ class _ChartDemoState extends State<ChartDemo> {
         }
         onTaskFinish();
         break;
+      case TaskType.setMaxSelectableRows:
+        final task = currentTask as SetMaxSelectableRowsTask;
+        final createChains =
+            recipe.tasks.whereType<CreateOptionChainTask>().toList();
+        final chainIdx = createChains
+            .indexWhere((t) => t.optionChainId == task.optionChainId);
+        if (chainIdx != -1) {
+          final chain = createChains[chainIdx];
+          setState(() {
+            chain.settings?.maxSelectableRows = task.maxSelectableRows;
+          });
+        }
+        onTaskFinish();
+        break;
     }
   }
 
@@ -795,6 +809,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.showInsightsV2Page:
       case TaskType.showSideNav:
       case TaskType.editColumnVisibility:
+      case TaskType.setMaxSelectableRows:
         return Container();
     }
   }

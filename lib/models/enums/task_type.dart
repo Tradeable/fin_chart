@@ -24,7 +24,8 @@ enum TaskType {
   showInsightsV2Page,
   showSideNav,
   editOptionRow,
-  editColumnVisibility
+  editColumnVisibility,
+  setMaxSelectableRows
 }
 
 // extension TaskTypeExtension on TaskType {

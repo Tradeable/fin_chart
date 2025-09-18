@@ -4,6 +4,7 @@ import 'package:example/dialog/choose_bucket_rows_dialog.dart';
 import 'package:example/dialog/edit_added_tab_dialog.dart';
 import 'package:example/dialog/edit_move_tab_dialog.dart';
 import 'package:example/dialog/pay_off_graph_dialog.dart';
+import 'package:example/dialog/set_maxselectable_rows_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_bottom_sheet_dialog.dart';
@@ -274,6 +275,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.showSideNav:
           case TaskType.editOptionRow:
           case TaskType.editColumnVisibility:
+          case TaskType.setMaxSelectableRows:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -603,6 +605,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.editColumnVisibility:
           showColumnVisiblityDialog();
           break;
+        case TaskType.setMaxSelectableRows:
+          showMaxSelectableRowsDialog();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -684,6 +689,10 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.editColumnVisibility:
         editColumnVisibilityTask(task as EditColumnVisibilityTask);
+        break;
+      case TaskType.setMaxSelectableRows:
+        editMaxSelectableRowsDialog(task as SetMaxSelectableRowsTask);
+        break;
     }
   }
 
@@ -1587,6 +1596,28 @@ class _EditorPageState extends State<EditorPage> {
         if (data != null) {
           task.optionChainId = data.optionChainId;
           task.updatedColumns = data.updatedColumns;
+        }
+      });
+    });
+  }
+
+  void showMaxSelectableRowsDialog() async {
+    final editTask =
+        await showSetMaxSelectableRowsDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editMaxSelectableRowsDialog(
+      SetMaxSelectableRowsTask task) async {
+    await showSetMaxSelectableRowsDialog(
+            context: context, tasks: tasks, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
+          task.maxSelectableRows = data.maxSelectableRows;
         }
       });
     });

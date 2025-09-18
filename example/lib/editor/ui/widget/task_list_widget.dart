@@ -8,6 +8,7 @@ import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
+import 'package:fin_chart/models/tasks/set_maxselectable_rows.task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
@@ -546,6 +547,26 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Edited visibility in ${t.optionChainId}'),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.setMaxSelectableRows:
+        final t = task as SetMaxSelectableRowsTask;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${t.maxSelectableRows} Max selectable in ${t.optionChainId}'),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {

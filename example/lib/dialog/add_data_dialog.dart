@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 
 class AddDataDialog extends StatelessWidget {
   final Function(List<ICandle>) onDataUpdate;
-  const AddDataDialog({super.key, required this.onDataUpdate});
+  final List<ICandle>? exsistingData;
+  const AddDataDialog(
+      {super.key, this.exsistingData, required this.onDataUpdate});
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +25,12 @@ class AddDataDialog extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text("Add Data"),
-              CandleStickGenerator(onCandleDataGenerated: (data) {
-                iCandleData.clear();
-                iCandleData.addAll(data);
-              }),
+              CandleStickGenerator(
+                  existingCandles: exsistingData,
+                  onCandleDataGenerated: (data) {
+                    iCandleData.clear();
+                    iCandleData.addAll(data);
+                  }),
               Align(
                 alignment: Alignment.bottomRight,
                 child: ElevatedButton(

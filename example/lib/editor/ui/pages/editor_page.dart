@@ -1383,7 +1383,8 @@ class _EditorPageState extends State<EditorPage> {
 
   void editPayoffGraph(ShowPayOffGraphTask task) async {
     print("1${task.id}");
-    await showOrEditPayOffGraphDialog(context: context, task: task).then((data) {
+    await showOrEditPayOffGraphDialog(context: context, task: task)
+        .then((data) {
       setState(() {
         if (data != null) {
           task.quantity = data.quantity;
@@ -1697,7 +1698,11 @@ class _EditorPageState extends State<EditorPage> {
             ),
             const SizedBox(width: 20),
             ElevatedButton(
-                onPressed: _showAddDataDialog, child: const Text("Add Data")),
+                onPressed: () {
+                  _showAddDataDialog(
+                      exsistingData: _chartKey.currentState?.currentData);
+                },
+                child: const Text("Add Data")),
             const SizedBox(width: 20),
             IndicatorTypeDropdown(
                 selectedType: _selectedIndicatorType,
@@ -1720,16 +1725,18 @@ class _EditorPageState extends State<EditorPage> {
     );
   }
 
-  void _showAddDataDialog() {
+  void _showAddDataDialog({List<ICandle>? exsistingData}) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AddDataDialog(onDataUpdate: (data) {
-            setState(() {
-              candleData.addAll(data);
-            });
-            _chartKey.currentState?.addData(data);
-          });
+          return AddDataDialog(
+              exsistingData: exsistingData,
+              onDataUpdate: (data) {
+                setState(() {
+                  candleData.addAll(data);
+                });
+                _chartKey.currentState?.addData(data);
+              });
         });
   }
 

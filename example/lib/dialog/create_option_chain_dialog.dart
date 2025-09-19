@@ -1,12 +1,12 @@
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/option_chain/screens/option_chain_config.dart';
 import 'package:flutter/material.dart';
 
-Future<AddOptionChainTask?> showOptionChainDialog({
+Future<CreateOptionChainTask?> showOptionChainDialog({
   required BuildContext context,
-  AddOptionChainTask? initialTask,
+  CreateOptionChainTask? initialTask,
 }) async {
-  return showDialog<AddOptionChainTask>(
+  return showDialog<CreateOptionChainTask>(
     context: context,
     builder: (BuildContext context) {
       return Dialog(

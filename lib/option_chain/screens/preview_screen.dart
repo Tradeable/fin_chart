@@ -1,4 +1,4 @@
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
 import 'package:fin_chart/option_chain/models/option_leg.dart';
@@ -9,35 +9,41 @@ import 'package:flutter/material.dart';
 class PreviewScreen extends StatefulWidget {
   final PreviewData previewData;
   final Function(int rowIndex, bool isCallSide)? onBuySellSelected;
+  final void Function(int rowIndex)? onRowEditRequested;
 
   const PreviewScreen({
     super.key,
     required this.previewData,
     this.onBuySellSelected,
+    this.onRowEditRequested,
   });
 
-  factory PreviewScreen.from(
-      {required GlobalKey key,
-      required AddOptionChainTask task,
-      List<int>? selectedRowIndex,
-      List<int>? correctRowIndex,
-      Function(int rowIndex, bool isCallSide)? onBuySellSelected,
-      required bool isEditorMode,
-      int? maxSelectableRows}) {
+  factory PreviewScreen.from({
+    required Key key,
+    List<int>? selectedRowIndex,
+    List<int>? correctRowIndex,
+    Function(int rowIndex, bool isCallSide)? onBuySellSelected,
+    Function(int rowIndex)? onRowEditRequested,
+    required bool isEditorMode,
+    int? maxSelectableRows,
+    required CreateOptionChainTask task,
+  }) {
     return PreviewScreen(
       key: key,
       previewData: PreviewData(
-          strikePrice: task.strikePrice,
-          expiryDate: task.expiryDate,
-          optionData: task.data,
-          columns: task.columns.where((c) => c.isColumnVisible).toList(),
-          visibility: task.visibility,
-          settings: task.settings,
-          selectedRowIndices: selectedRowIndex ?? [],
-          correctRowIndices: correctRowIndex ?? [],
-          isEditorMode: isEditorMode,
-          maxSelectableRows: maxSelectableRows),
+        strikePrice: task.strikePrice,
+        expiryDate: task.expiryDate,
+        optionData: task.data,
+        columns: task.columns.where((c) => c.isColumnVisible).toList(),
+        visibility: task.visibility,
+        settings: task.settings,
+        selectedRowIndices: selectedRowIndex ?? [],
+        correctRowIndices: correctRowIndex ?? [],
+        isEditorMode: isEditorMode,
+        maxSelectableRows: maxSelectableRows,
+      ),
       onBuySellSelected: onBuySellSelected,
+      onRowEditRequested: onRowEditRequested,
     );
   }
 
@@ -402,6 +408,10 @@ class PreviewScreenState extends State<PreviewScreen> {
                           rowIndex, columnIndex, strikeColumnIndex);
                     } else {
                       _handleCellTap(rowIndex);
+                      if (widget.previewData.isEditorMode &&
+                          widget.onRowEditRequested != null) {
+                        widget.onRowEditRequested!.call(rowIndex);
+                      }
                     }
                   }
                 : null,

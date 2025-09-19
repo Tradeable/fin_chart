@@ -4,15 +4,18 @@ import 'package:example/dialog/choose_bucket_rows_dialog.dart';
 import 'package:example/dialog/edit_added_tab_dialog.dart';
 import 'package:example/dialog/edit_move_tab_dialog.dart';
 import 'package:example/dialog/pay_off_graph_dialog.dart';
+import 'package:example/dialog/set_maxselectable_rows_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
 import 'package:example/dialog/show_bottom_sheet_dialog.dart';
+import 'package:example/dialog/show_edit_optionchain_visibility_dialog.dart';
 import 'package:example/dialog/show_insights_page_dialog.dart';
 import 'package:example/dialog/show_insights_pagev2_dialog.dart';
 import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/dialog/side_nav_dialog.dart';
+import 'package:example/dialog/toggle_buysell_visibility_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:example/editor/ui/widget/markdown_textfield.dart';
@@ -32,11 +35,12 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/recipe.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
@@ -63,10 +67,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'package:example/dialog/add_option_chain_dialog.dart';
+import 'package:example/dialog/create_option_chain_dialog.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:example/dialog/clear_bucket_rows_dialog.dart';
 import 'package:example/dialog/show_highlight_table_row_dialog.dart';
+import 'package:example/dialog/edit_option_row_dialog.dart';
+import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
 
 class EditorPage extends StatefulWidget {
   final String? recipeStr;
@@ -252,8 +258,8 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.waitTask:
           case TaskType.addMcq:
           case TaskType.clearTask:
+          case TaskType.createOptionChain:
           case TaskType.addOptionChain:
-          case TaskType.chooseCorrectOptionChainValue:
           case TaskType.highlightCorrectOptionChainValue:
           case TaskType.showPayOffGraph:
           case TaskType.addTab:
@@ -268,6 +274,10 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.highlightTableRow:
           case TaskType.showInsightsV2Page:
           case TaskType.showSideNav:
+          case TaskType.editOptionRow:
+          case TaskType.editColumnVisibility:
+          case TaskType.setMaxSelectableRows:
+          case TaskType.toggleBuySellVisibility:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -543,10 +553,10 @@ class _EditorPageState extends State<EditorPage> {
           }
           _updateTaskList(ClearTask());
           break;
-        case TaskType.addOptionChain:
+        case TaskType.createOptionChain:
           optionChainPrompt();
           break;
-        case TaskType.chooseCorrectOptionChainValue:
+        case TaskType.addOptionChain:
           showOptionChain();
           break;
         case TaskType.highlightCorrectOptionChainValue:
@@ -591,6 +601,18 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.showSideNav:
           showSideNavTask();
           break;
+        case TaskType.editOptionRow:
+          showEditOptionRow();
+          break;
+        case TaskType.editColumnVisibility:
+          showColumnVisiblityDialog();
+          break;
+        case TaskType.setMaxSelectableRows:
+          showMaxSelectableRowsDialog();
+          break;
+        case TaskType.toggleBuySellVisibility:
+          showBuySellToggleDialog();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -620,12 +642,11 @@ class _EditorPageState extends State<EditorPage> {
       case TaskType.addMcq:
         editMcqPrompt(task as AddMcqTask);
         break;
-      case TaskType.addOptionChain:
-        editOptionChain(task as AddOptionChainTask);
+      case TaskType.createOptionChain:
+        editOptionChain(task as CreateOptionChainTask);
         break;
-      case TaskType.chooseCorrectOptionChainValue:
-        editHighlightedOptionChainData(
-            task as ChooseCorrectOptionValueChainTask);
+      case TaskType.addOptionChain:
+        editHighlightedOptionChainData(task as AddOptionChainTask);
         break;
       case TaskType.highlightCorrectOptionChainValue:
         selectOptionChainToHighlight();
@@ -667,6 +688,18 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.showSideNav:
         editShowSideNavTask(task as ShowSideNavTask);
+        break;
+      case TaskType.editOptionRow:
+        editEditOptionRowTask(task as EditOptionRowTask);
+        break;
+      case TaskType.editColumnVisibility:
+        editColumnVisibilityTask(task as EditColumnVisibilityTask);
+        break;
+      case TaskType.setMaxSelectableRows:
+        editMaxSelectableRowsDialog(task as SetMaxSelectableRowsTask);
+        break;
+      case TaskType.toggleBuySellVisibility:
+        editBuySellToggleDialog(task as ToggleBuySellVisibilityTask);
         break;
     }
   }
@@ -748,7 +781,7 @@ class _EditorPageState extends State<EditorPage> {
     });
   }
 
-  Future<void> editOptionChain(AddOptionChainTask task) async {
+  Future<void> editOptionChain(CreateOptionChainTask task) async {
     await showOptionChainDialog(context: context, initialTask: task)
         .then((data) {
       setState(() {
@@ -804,8 +837,7 @@ class _EditorPageState extends State<EditorPage> {
     }
   }
 
-  Future<void> editHighlightedOptionChainData(
-      ChooseCorrectOptionValueChainTask task) async {
+  Future<void> editHighlightedOptionChainData(AddOptionChainTask task) async {
     await showOptionChainById(
       context: context,
       tasks: tasks,
@@ -814,7 +846,6 @@ class _EditorPageState extends State<EditorPage> {
       setState(() {
         if (data != null) {
           task.taskId = data.taskId;
-          task.maxSelectableRows = data.maxSelectableRows;
         }
       });
     });
@@ -1382,8 +1413,8 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void editPayoffGraph(ShowPayOffGraphTask task) async {
-    print("1${task.id}");
-    await showOrEditPayOffGraphDialog(context: context, task: task).then((data) {
+    await showOrEditPayOffGraphDialog(context: context, task: task)
+        .then((data) {
       setState(() {
         if (data != null) {
           task.quantity = data.quantity;
@@ -1393,7 +1424,6 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
-    print("2${task.id}");
   }
 
   void editMoveToTab(MoveTabTask task) async {
@@ -1530,6 +1560,94 @@ class _EditorPageState extends State<EditorPage> {
     if (bucketRowsTask != null) {
       _updateTaskList(bucketRowsTask);
     }
+  }
+
+  void showEditOptionRow() async {
+    final editTask =
+        await showEditOptionRowDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editEditOptionRowTask(EditOptionRowTask task) async {
+    final taskIndex = tasks.indexOf(task);
+    if (taskIndex == -1) return;
+
+    final data = await showEditOptionRowDialog(
+        context: context, tasks: tasks, initialTask: task);
+
+    if (data != null) {
+      setState(() {
+        task.optionChainId = data.optionChainId;
+        task.rowIndex = data.rowIndex;
+        task.updatedRow = data.updatedRow;
+      });
+    }
+  }
+
+  void showColumnVisiblityDialog() async {
+    final editTask =
+        await showEditColumnVisibilityDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editColumnVisibilityTask(EditColumnVisibilityTask task) async {
+    await showEditColumnVisibilityDialog(
+            context: context, tasks: tasks, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
+          task.updatedColumns = data.updatedColumns;
+        }
+      });
+    });
+  }
+
+  void showMaxSelectableRowsDialog() async {
+    final editTask =
+        await showSetMaxSelectableRowsDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editMaxSelectableRowsDialog(
+      SetMaxSelectableRowsTask task) async {
+    await showSetMaxSelectableRowsDialog(
+            context: context, tasks: tasks, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
+          task.maxSelectableRows = data.maxSelectableRows;
+        }
+      });
+    });
+  }
+
+  void showBuySellToggleDialog() async {
+    final editTask =
+        await showToggleBuySellVisibilityDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editBuySellToggleDialog(ToggleBuySellVisibilityTask task) async {
+    await showToggleBuySellVisibilityDialog(
+            context: context, tasks: tasks, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
+          task.isBuySellVisible = data.isBuySellVisible;
+        }
+      });
+    });
   }
 
   Future<void> editChooseBucketRows(ChooseBucketRowsTask task) async {

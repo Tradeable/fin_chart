@@ -1,12 +1,12 @@
 import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
 import 'package:fin_chart/models/tasks/task.dart';
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/utils/calculations.dart';
 
 class ClearBucketRowsTask extends Task {
   String? optionChainId;
-  List<AddOptionChainTask>? availableOptionChains;
+  List<CreateOptionChainTask>? availableOptionChains;
 
   ClearBucketRowsTask({
     this.optionChainId,
@@ -28,10 +28,10 @@ class ClearBucketRowsTask extends Task {
   }
 
   factory ClearBucketRowsTask.fromJson(Map<String, dynamic> json) {
-    List<AddOptionChainTask>? chains;
+    List<CreateOptionChainTask>? chains;
     if (json['availableOptionChains'] != null) {
       chains = (json['availableOptionChains'] as List)
-          .map((taskJson) => AddOptionChainTask.fromJson(taskJson))
+          .map((taskJson) => CreateOptionChainTask.fromJson(taskJson))
           .toList();
     }
     

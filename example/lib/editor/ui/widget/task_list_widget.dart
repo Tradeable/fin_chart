@@ -3,10 +3,12 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
 import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
+import 'package:fin_chart/models/tasks/set_maxselectable_rows.task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
@@ -16,7 +18,8 @@ import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
-import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
+import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
 
 class TaskListWidget extends StatefulWidget {
   final List<Task> task;
@@ -259,13 +262,13 @@ class _TaskListWidgetState extends State<TaskListWidget> {
       case TaskType.clearTask:
         return const Text("Clear");
 
-      case TaskType.addOptionChain:
+      case TaskType.createOptionChain:
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              (task as AddOptionChainTask).optionChainId,
+              (task as CreateOptionChainTask).optionChainId,
             ),
             const SizedBox(
               width: 20,
@@ -283,12 +286,12 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           ],
         );
 
-      case TaskType.chooseCorrectOptionChainValue:
+      case TaskType.addOptionChain:
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text((task as ChooseCorrectOptionValueChainTask).taskId.toString()),
+            Text((task as AddOptionChainTask).taskId.toString()),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {
@@ -461,9 +464,10 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         );
       case TaskType.highlightTableRow:
         final highlightTask = task as HighlightTableRowTask;
-        final summary = highlightTask.selectedRows.entries.map((e) =>
-          'Table ${e.key + 1}: Rows ${e.value.map((i) => i + 1).join(", ")}'
-        ).join(' | ');
+        final summary = highlightTask.selectedRows.entries
+            .map((e) =>
+                'Table ${e.key + 1}: Rows ${e.value.map((i) => i + 1).join(", ")}')
+            .join(' | ');
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -485,8 +489,7 @@ class _TaskListWidgetState extends State<TaskListWidget> {
       case TaskType.showInsightsV2Page:
         return Row(
           children: [
-            Text(
-                "Insights Page V2 ${(task as ShowInsightsPageV2Task).title}"),
+            Text("Insights Page V2 ${(task as ShowInsightsPageV2Task).title}"),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {
@@ -504,6 +507,87 @@ class _TaskListWidgetState extends State<TaskListWidget> {
         return Row(
           children: [
             Text("Show Sidenav ${(task as ShowSideNavTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.editOptionRow:
+        final t = task as EditOptionRowTask;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Edit Row in ${t.optionChainId} @ ${t.rowIndex}'),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.editColumnVisibility:
+        final t = task as EditColumnVisibilityTask;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Edited visibility in ${t.optionChainId}'),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.setMaxSelectableRows:
+        final t = task as SetMaxSelectableRowsTask;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${t.maxSelectableRows} Max selectable in ${t.optionChainId}'),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.toggleBuySellVisibility:
+        final t = task as ToggleBuySellVisibilityTask;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+                'B/S visibility set to ${t.isBuySellVisible} in ${t.optionChainId}'),
             const SizedBox(width: 20),
             InkWell(
               onTap: () {

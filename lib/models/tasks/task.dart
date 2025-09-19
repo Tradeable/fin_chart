@@ -5,10 +5,12 @@ import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
 import 'package:fin_chart/models/tasks/add_prompt.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
+import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
-import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
 import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
 import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
+import 'package:fin_chart/models/tasks/set_maxselectable_rows.task.dart';
 import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +19,7 @@ import 'highlight_correct_option_chain_value_task.dart';
 import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
 import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
+import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
 
 abstract class Task {
   final String id;
@@ -67,10 +70,12 @@ abstract class Task {
         return AddMcqTask.fromJson(json);
       case 'clearTask':
         return ClearTask.fromJson(json);
+      case 'createOptionChain':
+        return CreateOptionChainTask.fromJson(json);
       case 'addOptionChain':
         return AddOptionChainTask.fromJson(json);
-      case 'chooseCorrectOptionChainValue':
-        return ChooseCorrectOptionValueChainTask.fromJson(json);
+      case 'editOptionRowTask':
+        return EditOptionRowTask.fromJson(json);
       case 'highlightCorrectOptionChainValue':
         return HighlightCorrectOptionChainValueTask.fromJson(json);
       case 'showPayOffGraph':
@@ -99,6 +104,14 @@ abstract class Task {
         return ShowInsightsPageV2Task.fromJson(json);
       case 'showSideNav':
         return ShowSideNavTask.fromJson(json);
+      case 'editOptionRow':
+        return EditOptionRowTask.fromJson(json);
+      case 'editColumnVisibility':
+        return EditColumnVisibilityTask.fromJson(json);
+      case 'setMaxSelectableRows':
+        return SetMaxSelectableRowsTask.fromJson(json);
+      case 'toggleBuySellVisibility':
+        return ToggleBuySellVisibilityTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

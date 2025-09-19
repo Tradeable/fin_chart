@@ -15,6 +15,7 @@ import 'package:example/dialog/show_option_chain_by_id.dart';
 import 'package:example/dialog/show_popup_dialog.dart';
 import 'package:example/dialog/show_table_task_dialog.dart';
 import 'package:example/dialog/side_nav_dialog.dart';
+import 'package:example/dialog/toggle_buysell_visibility_dialog.dart';
 import 'package:example/editor/ui/pages/chart_demo.dart';
 import 'package:example/dialog/add_data_dialog.dart';
 import 'package:example/editor/ui/widget/markdown_textfield.dart';
@@ -276,6 +277,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.editOptionRow:
           case TaskType.editColumnVisibility:
           case TaskType.setMaxSelectableRows:
+          case TaskType.toggleBuySellVisibility:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -608,6 +610,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.setMaxSelectableRows:
           showMaxSelectableRowsDialog();
           break;
+        case TaskType.toggleBuySellVisibility:
+          showBuySellToggleDialog();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -692,6 +697,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.setMaxSelectableRows:
         editMaxSelectableRowsDialog(task as SetMaxSelectableRowsTask);
+        break;
+      case TaskType.toggleBuySellVisibility:
+        editBuySellToggleDialog(task as ToggleBuySellVisibilityTask);
         break;
     }
   }
@@ -1405,7 +1413,6 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void editPayoffGraph(ShowPayOffGraphTask task) async {
-    print("1${task.id}");
     await showOrEditPayOffGraphDialog(context: context, task: task)
         .then((data) {
       setState(() {
@@ -1417,7 +1424,6 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
-    print("2${task.id}");
   }
 
   void editMoveToTab(MoveTabTask task) async {
@@ -1618,6 +1624,27 @@ class _EditorPageState extends State<EditorPage> {
         if (data != null) {
           task.optionChainId = data.optionChainId;
           task.maxSelectableRows = data.maxSelectableRows;
+        }
+      });
+    });
+  }
+
+  void showBuySellToggleDialog() async {
+    final editTask =
+        await showToggleBuySellVisibilityDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editBuySellToggleDialog(ToggleBuySellVisibilityTask task) async {
+    await showToggleBuySellVisibilityDialog(
+            context: context, tasks: tasks, initialTask: task)
+        .then((data) {
+      setState(() {
+        if (data != null) {
+          task.optionChainId = data.optionChainId;
+          task.isBuySellVisible = data.isBuySellVisible;
         }
       });
     });

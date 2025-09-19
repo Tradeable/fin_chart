@@ -25,7 +25,8 @@ enum TaskType {
   showSideNav,
   editOptionRow,
   editColumnVisibility,
-  setMaxSelectableRows
+  setMaxSelectableRows,
+  toggleBuySellVisibility
 }
 
 // extension TaskTypeExtension on TaskType {

@@ -110,6 +110,8 @@ abstract class Task {
         return EditColumnVisibilityTask.fromJson(json);
       case 'setMaxSelectableRows':
         return SetMaxSelectableRowsTask.fromJson(json);
+      case 'toggleBuySellVisibility':
+        return ToggleBuySellVisibilityTask.fromJson(json);
       default:
         throw ArgumentError('Unknown task type: $taskType');
     }

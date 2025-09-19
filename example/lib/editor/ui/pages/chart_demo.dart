@@ -502,6 +502,20 @@ class _ChartDemoState extends State<ChartDemo> {
         }
         onTaskFinish();
         break;
+      case TaskType.toggleBuySellVisibility:
+        final task = currentTask as ToggleBuySellVisibilityTask;
+        final createChains =
+            recipe.tasks.whereType<CreateOptionChainTask>().toList();
+        final chainIdx = createChains
+            .indexWhere((t) => t.optionChainId == task.optionChainId);
+        if (chainIdx != -1) {
+          final chain = createChains[chainIdx];
+          setState(() {
+            chain.settings?.isBuySellVisible = task.isBuySellVisible;
+          });
+        }
+        onTaskFinish();
+        break;
     }
   }
 
@@ -810,6 +824,7 @@ class _ChartDemoState extends State<ChartDemo> {
       case TaskType.showSideNav:
       case TaskType.editColumnVisibility:
       case TaskType.setMaxSelectableRows:
+      case TaskType.toggleBuySellVisibility:
         return Container();
     }
   }

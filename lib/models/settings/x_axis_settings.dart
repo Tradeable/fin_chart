@@ -22,7 +22,7 @@ class XAxisSettings extends AxisSettings {
   factory XAxisSettings.fromJson(Map<String, dynamic> json) {
     return XAxisSettings(
       axisTextStyle: AxisSettings.textStyleFromJson(json['axisTextStyle']),
-      strokeWidth: json['strokeWidth'],
+      strokeWidth: json['strokeWidth'].toDouble(),
       axisColor: colorFromJson(json['axisColor']),
       xAxisPos: XAxisPos.values.firstWhere(
         (pos) => pos.name == json['xAxisPos'],

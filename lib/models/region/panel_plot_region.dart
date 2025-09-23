@@ -119,4 +119,7 @@ class PanelPlotRegion extends PlotRegion {
             onSettings: onSettings,
             onDelete: onDelete));
   }
+
+  @override
+  void handleIndicatorTap(Offset localPosition, TapDownDetails details) {}
 }

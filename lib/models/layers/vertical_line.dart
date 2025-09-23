@@ -17,12 +17,17 @@ class VerticalLine extends Layer {
   VerticalLine.fromTool({required this.pos})
       : super.fromTool(id: generateV4(), type: LayerType.verticalLine);
 
+  VerticalLine.fromRecipe({
+    required super.id,
+    required this.pos,
+  }) : super.fromTool(type: LayerType.verticalLine);
+
   factory VerticalLine.fromJson({required Map<String, dynamic> json}) {
     return VerticalLine._(
         id: json['id'],
         type: (json['type'] as String).toLayerType() ?? LayerType.verticalLine,
         isLocked: json['isLocked'] ?? false,
-        pos: json['pos'] ?? 0.0);
+        pos: json['pos'].toDouble() ?? 0.0);
   }
 
   @override
@@ -45,7 +50,8 @@ class VerticalLine extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(toX(pos), topPos),
-        Offset(toX(pos), bottomPos))) {
+        Offset(toX(pos), bottomPos),
+        tolerance: 0)) {
       return this;
     }
     return super.onTapDown(details: details);

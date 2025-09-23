@@ -26,9 +26,9 @@ class HorizontalLine extends Layer {
         id: json['id'],
         type:
             (json['type'] as String).toLayerType() ?? LayerType.horizontalLine,
-        value: json['value'] ?? 0.0,
+        value: json['value'].toDouble() ?? 0.0,
         color: colorFromJson(json['color']),
-        strokeWidth: json['strokeWidth'] ?? 2.0,
+        strokeWidth: json['strokeWidth'].toDouble() ?? 2.0,
         isLocked: json['isLocked'] ?? false);
   }
 
@@ -96,9 +96,12 @@ class HorizontalLine extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(leftPos, toY(value)),
-        Offset(rightPos, toY(value)))) {
+        Offset(rightPos, toY(value)),
+        tolerance: 10)) {
+      isSelected = true;
       return this;
     }
+    isSelected = false;
     return super.onTapDown(details: details);
   }
 

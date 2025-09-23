@@ -1,8 +1,37 @@
 import 'package:fin_chart/fin_chart.dart';
+import 'package:fin_chart/models/indicators/ev_ebitda.dart';
+import 'package:fin_chart/models/indicators/ev_sales.dart';
+import 'package:fin_chart/models/indicators/pivot_point.dart';
+import 'package:fin_chart/models/indicators/pe.dart';
+import 'package:fin_chart/models/indicators/pb.dart';
+import 'package:fin_chart/models/indicators/roc.dart';
+import 'package:fin_chart/models/indicators/scanner_indicator.dart';
+import 'package:fin_chart/models/indicators/supertrend.dart';
+import 'package:fin_chart/models/indicators/vwap.dart';
 import 'package:fin_chart/models/region/region_prop.dart';
+import 'package:fin_chart/utils/calculations.dart';
 import 'package:flutter/material.dart';
 
-enum IndicatorType { rsi, macd, sma, ema, bollingerBand, stochastic }
+enum IndicatorType {
+  rsi,
+  macd,
+  sma,
+  ema,
+  bollingerBand,
+  stochastic,
+  mfi,
+  adx,
+  atr,
+  pivotPoint,
+  pe,
+  pb,
+  supertrend,
+  vwap,
+  evEbitda,
+  evSales,
+  scanner,
+  roc,
+}
 
 enum DisplayMode { main, panel }
 
@@ -12,12 +41,29 @@ abstract class Indicator with RegionProp {
   final DisplayMode displayMode;
   late List<double> yValues;
   late Size yLabelSize;
+  void onTapDown({required TapDownDetails details}) {}
 
-  Indicator({required this.id, required this.type, required this.displayMode});
+  Indicator(
+      {required this.id,
+      required this.type,
+      required this.displayMode,
+      double yMinValue = 0,
+      double yMaxValue = 1}) {
+    this.yMinValue = yMinValue;
+    this.yMaxValue = yMaxValue;
+    yValues = generateNiceAxisValues(yMinValue, yMaxValue);
+    this.yMinValue = yValues.first;
+    this.yMaxValue = yValues.last;
+  }
+
+  calculateYValueRange(List<ICandle> data) {}
 
   updateData(List<ICandle> data);
 
   drawIndicator({required Canvas canvas});
+
+  showIndicatorSettings(
+      {required BuildContext context, required Function(Indicator) onUpdate});
 
   Widget indicatorToolTip(
       {Widget? child,
@@ -73,9 +119,6 @@ abstract class Indicator with RegionProp {
               ));
   }
 
-  showIndicatorSettings(
-      {required BuildContext context, required Function(Indicator) onUpdate}) {}
-
   factory Indicator.fromJson({required Map<String, dynamic> json}) {
     IndicatorType type = json['type'].toString().toIndicatorType()!;
     switch (type) {
@@ -91,6 +134,30 @@ abstract class Indicator with RegionProp {
         return BollingerBands.fromJson(json);
       case IndicatorType.stochastic:
         return Stochastic.fromJson(json);
+      case IndicatorType.atr:
+        return Atr.fromJson(json);
+      case IndicatorType.mfi:
+        return Mfi.fromJson(json);
+      case IndicatorType.adx:
+        return Adx.fromJson(json);
+      case IndicatorType.pivotPoint:
+        return PivotPoint.fromJson(json);
+      case IndicatorType.pe:
+        return Pe.fromJson(json);
+      case IndicatorType.pb:
+        return Pb.fromJson(json);
+      case IndicatorType.supertrend:
+        return Supertrend.fromJson(json);
+      case IndicatorType.vwap:
+        return Vwap.fromJson(json);
+      case IndicatorType.evEbitda:
+        return EvEbitda.fromJson(json);
+      case IndicatorType.evSales:
+        return EvSales.fromJson(json);
+      case IndicatorType.scanner:
+        return ScannerIndicator.fromJson(json);
+      case IndicatorType.roc:
+        return Roc.fromJson(json);
     }
   }
 

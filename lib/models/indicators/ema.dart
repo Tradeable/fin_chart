@@ -136,9 +136,7 @@ class Ema extends Indicator {
         indicator: this,
         onUpdate: onUpdate,
       ),
-    ).then((value) {
-      updateData(candles);
-    });
+    );
   }
 
   @override

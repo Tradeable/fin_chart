@@ -3,8 +3,26 @@ enum TaskType {
   addIndicator,
   addLayer,
   addPrompt,
+  addMcq,
   // addLayerOfType,
-  waitTask
+  waitTask,
+  clearTask,
+  addOptionChain,
+  chooseCorrectOptionChainValue,
+  highlightCorrectOptionChainValue,
+  showPayOffGraph,
+  addTab,
+  removeTab,
+  moveTab,
+  popUpTask,
+  showBottomSheet,
+  showInsightsPage,
+  chooseBucketRows,
+  clearBucketRows,
+  tableTask,
+  highlightTableRow,
+  showInsightsV2Page,
+  showSideNav
 }
 
 // extension TaskTypeExtension on TaskType {

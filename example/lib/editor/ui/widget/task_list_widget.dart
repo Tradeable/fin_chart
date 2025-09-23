@@ -1,20 +1,29 @@
+import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/tasks/add_data.task.dart';
 import 'package:fin_chart/models/tasks/add_indicator.task.dart';
 import 'package:fin_chart/models/tasks/add_layer.task.dart';
+import 'package:fin_chart/models/tasks/choose_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/choose_correct_option_chain_task.dart';
+import 'package:fin_chart/models/tasks/clear_bucket_rows_task.dart';
+import 'package:fin_chart/models/tasks/highlight_correct_option_chain_value_task.dart';
+import 'package:fin_chart/models/tasks/highlight_table_row_task.dart';
+import 'package:fin_chart/models/tasks/show_bottom_sheet.task.dart';
+import 'package:fin_chart/models/tasks/show_insights_page.task.dart';
+import 'package:fin_chart/models/tasks/table_task.dart';
 import 'package:fin_chart/models/tasks/task.dart';
 import 'package:example/editor/ui/widget/task_type_dropdown.dart';
 import 'package:fin_chart/models/tasks/wait.task.dart';
 import 'package:flutter/material.dart';
 import 'package:fin_chart/models/enums/action_type.dart';
 import 'package:fin_chart/models/enums/task_type.dart';
+import 'package:fin_chart/models/tasks/add_option_chain.task.dart';
 
 class TaskListWidget extends StatefulWidget {
   final List<Task> task;
-  final Function(TaskType) onTaskAdd;
+  final Function(TaskType, int) onTaskAdd; // Modified to include position
   final Function(Task) onTaskClick;
   final Function(Task) onTaskEdit;
   final Function(Task) onTaskDelete;
-  final Function(int, int) onTaskReorder;
 
   const TaskListWidget({
     super.key,
@@ -23,7 +32,6 @@ class TaskListWidget extends StatefulWidget {
     required this.onTaskClick,
     required this.onTaskEdit,
     required this.onTaskDelete,
-    required this.onTaskReorder,
   });
 
   @override
@@ -31,89 +39,142 @@ class TaskListWidget extends StatefulWidget {
 }
 
 class _TaskListWidgetState extends State<TaskListWidget> {
-  @override
-  void initState() {
-    super.initState();
+  void _showTaskTypeSelectionDialog(BuildContext context, int position) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Task Type'),
+          content: SizedBox(
+            width: 300,
+            child: TaskTypeDropdown(
+              selectedType: null,
+              onChanged: (taskType) {
+                Navigator.of(context).pop();
+                widget.onTaskAdd(taskType, position);
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAddButton(int position) {
+    return InkWell(
+      onTap: () => _showTaskTypeSelectionDialog(context, position),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: const CircleAvatar(
+          radius: 15,
+          backgroundColor: Colors.blue,
+          child: Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.task.isEmpty) {
+      // Show only a centered + button when list is empty
+      return Center(
+        child: _buildAddButton(0),
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           flex: 9,
-          child: ReorderableListView(
-            scrollDirection: Axis.horizontal,
-            onReorder: widget.onTaskReorder,
-            children: [
-              ...widget.task.asMap().entries.map((entry) {
-                Task task = entry.value;
-                return InkWell(
-                  key: ValueKey(task),
-                  onTap: () {
-                    widget.onTaskClick(task);
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(8.0),
-                    padding: const EdgeInsets.all(12.0),
-                    //width: 180,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.grey,
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 0.0),
-                          child: Icon(
-                            Icons.drag_indicator,
-                            color: Colors.grey,
-                            size: 16,
+          child: SizedBox(
+            height: 80, // Set height for horizontal list
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                // Add button at the beginning
+                _buildAddButton(0),
+
+                // Tasks with add buttons in between
+                ...widget.task.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  Task task = entry.value;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        key: ValueKey("task-$index"),
+                        onTap: () {
+                          widget.onTaskClick(task);
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8.0),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.grey,
+                                spreadRadius: 1,
+                                blurRadius: 3,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 0.0),
+                                child: Icon(
+                                  Icons.drag_indicator,
+                                  color: Colors.grey,
+                                  size: 16,
+                                ),
+                              ),
+                              Text(
+                                '${task.taskType.toString().split('.').last} ${task.actionType == ActionType.interupt ? ": " : ""}',
+                              ),
+                              taskBaseOptions(task),
+                              const SizedBox(
+                                width: 20,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  widget.onTaskDelete(task);
+                                },
+                                child: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                  size: 18,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Text(
-                          '${task.taskType.toString().split('.').last} ${task.actionType == ActionType.interupt ? ": " : ""}',
-                        ),
-                        taskBaseOptions(task),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            widget.onTaskDelete(task);
-                          },
-                          child: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: TaskTypeDropdown(
-            selectedType: null,
-            onChanged: (taskType) {
-              widget.onTaskAdd(taskType);
-            },
+                      ),
+                      // Add button after each task except the last one
+                      _buildAddButton(index + 1),
+                    ],
+                  );
+                }),
+              ],
+            ),
           ),
         ),
       ],
@@ -156,11 +217,294 @@ class _TaskListWidgetState extends State<TaskListWidget> {
           children: [
             Text(
               (task as WaitTask).btnText,
-              //style: const TextStyle(fontSize: 10),
             ),
             const SizedBox(
               width: 20,
             ),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.addMcq:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (task as AddMcqTask).arrangementType.name,
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.clearTask:
+        return const Text("Clear");
+
+      case TaskType.addOptionChain:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (task as AddOptionChainTask).optionChainId,
+            ),
+            const SizedBox(
+              width: 20,
+            ),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+
+      case TaskType.chooseCorrectOptionChainValue:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text((task as ChooseCorrectOptionValueChainTask).taskId.toString()),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+
+      case TaskType.highlightCorrectOptionChainValue:
+        return Text(
+            ((task as HighlightCorrectOptionChainValueTask).optionChainId)
+                .toString());
+      case TaskType.showPayOffGraph:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text((task as ShowPayOffGraphTask).id),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.addTab:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Added ${(task as AddTabTask).taskId} tab"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.removeTab:
+        return Text("Removed ${(task as RemoveTabTask).tabTitle} tab");
+      case TaskType.moveTab:
+        return Text("Moved to ${(task as MoveTabTask).tabTaskID} tab}");
+      case TaskType.popUpTask:
+        return Row(
+          children: [
+            Text("Show Popup ${(task as ShowPopupTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.showBottomSheet:
+        return Row(
+          children: [
+            Text("Show Bottomsheet ${(task as ShowBottomSheetTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.showInsightsPage:
+        return Row(
+          children: [
+            Text("Show Insights Page ${(task as ShowInsightsPageTask).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.chooseBucketRows:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+                "Bucket Rows in ${(task as ChooseBucketRowsTask).optionChainId}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.clearBucketRows:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+                "Bucket Rows in ${(task as ClearBucketRowsTask).optionChainId}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.tableTask:
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Bucket Rows in ${(task as TableTask).id}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.highlightTableRow:
+        final highlightTask = task as HighlightTableRowTask;
+        final summary = highlightTask.selectedRows.entries.map((e) =>
+          'Table ${e.key + 1}: Rows ${e.value.map((i) => i + 1).join(", ")}'
+        ).join(' | ');
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Highlight Table Row ${highlightTask.id} $summary"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.showInsightsV2Page:
+        return Row(
+          children: [
+            Text(
+                "Insights Page V2 ${(task as ShowInsightsPageV2Task).title}"),
+            const SizedBox(width: 20),
+            InkWell(
+              onTap: () {
+                widget.onTaskEdit(task);
+              },
+              child: const Icon(
+                Icons.edit,
+                color: Colors.blue,
+                size: 18,
+              ),
+            ),
+          ],
+        );
+      case TaskType.showSideNav:
+        return Row(
+          children: [
+            Text("Show Sidenav ${(task as ShowSideNavTask).title}"),
+            const SizedBox(width: 20),
             InkWell(
               onTap: () {
                 widget.onTaskEdit(task);

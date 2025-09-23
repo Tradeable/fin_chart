@@ -25,8 +25,8 @@ class HorizontalBand extends Layer {
         id: json['id'],
         type:
             (json['type'] as String).toLayerType() ?? LayerType.horizontalBand,
-        value: json['value'] ?? 0.0,
-        allowedError: json['allowedError'] ?? 40.0,
+        value: json['value'].toDouble() ?? 0.0,
+        allowedError: json['allowedError'].toDouble() ?? 40.0,
         color: colorFromJson(json['color']),
         isLocked: json['isLocked'] ?? false);
   }
@@ -55,14 +55,18 @@ class HorizontalBand extends Layer {
   @override
   Layer? onTapDown({required TapDownDetails details}) {
     if (isPointOnLine(details.localPosition, Offset(leftPos, toY(value)),
-        Offset(rightPos, toY(value)))) {
+        Offset(rightPos, toY(value)),
+        tolerance: allowedError / 2)) {
+      isSelected = true;
       return this;
     }
+    isSelected = false;
     return super.onTapDown(details: details);
   }
 
   @override
   void onScaleUpdate({required ScaleUpdateDetails details}) {
+    if (isLocked) return;
     value = toYInverse(toY(value) + details.focalPointDelta.dy);
   }
 

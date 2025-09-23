@@ -64,9 +64,9 @@ class RectArea extends Layer {
         bottomLeft: offsetFromJson(json['bottomLeft']),
         bottomRight: offsetFromJson(json['bottomRight']),
         color: colorFromJson(json['color']),
-        strokeWidth: json['strokeWidth'] ?? 2.0,
+        strokeWidth: json['strokeWidth'].toDouble() ?? 2.0,
         alpha: json['alpha'] ?? 51,
-        endPointRadius: json['endPointRadius'] ?? 5.0,
+        endPointRadius: json['endPointRadius'].toDouble() ?? 5.0,
         isLocked: json['isLocked'] ?? false);
   }
 
@@ -140,6 +140,15 @@ class RectArea extends Layer {
   Layer? onTapDown({required TapDownDetails details}) {
     final hitTestRadius = endPointRadius * 2;
 
+    if (isPointNearRectFromDiagonalVertices(
+        details.localPosition, toCanvas(topLeft), toCanvas(bottomRight),
+        tolerance: 0)) {
+      isSelected = true;
+      dragStartPos = details.localPosition;
+      selectedHandle = DragHandleType.move;
+      return this;
+    }
+
     if (isPointInCircularRegion(
         details.localPosition, toCanvas(topLeft), hitTestRadius)) {
       isSelected = true;
@@ -170,7 +179,8 @@ class RectArea extends Layer {
     }
 
     if (isPointOnLine(
-        details.localPosition, toCanvas(topLeft), toCanvas(topRight))) {
+        details.localPosition, toCanvas(topLeft), toCanvas(topRight),
+        tolerance: endPointRadius)) {
       isSelected = true;
       dragStartPos = details.localPosition;
       selectedHandle = DragHandleType.top;
@@ -178,7 +188,8 @@ class RectArea extends Layer {
     }
 
     if (isPointOnLine(
-        details.localPosition, toCanvas(topRight), toCanvas(bottomRight))) {
+        details.localPosition, toCanvas(topRight), toCanvas(bottomRight),
+        tolerance: endPointRadius)) {
       isSelected = true;
       dragStartPos = details.localPosition;
       selectedHandle = DragHandleType.right;
@@ -186,7 +197,8 @@ class RectArea extends Layer {
     }
 
     if (isPointOnLine(
-        details.localPosition, toCanvas(bottomRight), toCanvas(bottomLeft))) {
+        details.localPosition, toCanvas(bottomRight), toCanvas(bottomLeft),
+        tolerance: endPointRadius)) {
       isSelected = true;
       dragStartPos = details.localPosition;
       selectedHandle = DragHandleType.bottom;
@@ -194,18 +206,11 @@ class RectArea extends Layer {
     }
 
     if (isPointOnLine(
-        details.localPosition, toCanvas(bottomLeft), toCanvas(topLeft))) {
+        details.localPosition, toCanvas(bottomLeft), toCanvas(topLeft),
+        tolerance: endPointRadius)) {
       isSelected = true;
       dragStartPos = details.localPosition;
       selectedHandle = DragHandleType.left;
-      return this;
-    }
-
-    if (isPointNearRectFromDiagonalVertices(
-        details.localPosition, toCanvas(topLeft), toCanvas(bottomRight))) {
-      isSelected = true;
-      dragStartPos = details.localPosition;
-      selectedHandle = DragHandleType.move;
       return this;
     }
 

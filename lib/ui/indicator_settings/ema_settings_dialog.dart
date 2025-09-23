@@ -75,6 +75,7 @@ class _EmaSettingsDialogState extends State<EmaSettingsDialog> {
             widget.indicator.period = period;
             widget.indicator.lineColor = lineColor;
             widget.onUpdate(widget.indicator);
+            widget.indicator.updateData(widget.indicator.candles);
             Navigator.of(context).pop();
           },
           child: const Text('Apply'),

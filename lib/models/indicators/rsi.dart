@@ -301,6 +301,14 @@ class Rsi extends Indicator {
       }
     }
 
+    calculateYValueRange(data);
+
+    // yLabelSize = getLargetRnderBoxSizeForList(
+    //     yValues.map((v) => v.toString()).toList(), yAxisSettings.axisTextStyle);
+  }
+
+  @override
+  calculateYValueRange(List<ICandle> data) {
     yMaxValue = 100;
     yMinValue = 0;
 
@@ -308,9 +316,6 @@ class Rsi extends Indicator {
 
     yMinValue = yValues.first;
     yMaxValue = yValues.last;
-
-    // yLabelSize = getLargetRnderBoxSizeForList(
-    //     yValues.map((v) => v.toString()).toList(), yAxisSettings.axisTextStyle);
   }
 
   @override
@@ -323,9 +328,7 @@ class Rsi extends Indicator {
         indicator: this,
         onUpdate: onUpdate,
       ),
-    ).then((value) {
-      updateData(candles);
-    });
+    );
   }
 
   @override

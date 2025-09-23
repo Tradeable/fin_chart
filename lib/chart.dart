@@ -3,16 +3,19 @@ import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/chart_settings.dart';
 import 'package:fin_chart/models/enums/data_fit_type.dart';
 import 'package:fin_chart/models/enums/layer_type.dart';
+import 'package:fin_chart/models/fundamental/fundamental_event.dart';
 import 'package:fin_chart/models/indicators/indicator.dart';
+import 'package:fin_chart/models/indicators/scanner_indicator.dart';
 import 'package:fin_chart/models/layers/layer.dart';
 import 'package:fin_chart/models/recipe.dart';
 import 'package:fin_chart/models/region/main_plot_region.dart';
 import 'package:fin_chart/models/region/panel_plot_region.dart';
 import 'package:fin_chart/models/region/plot_region.dart';
+import 'package:fin_chart/models/scanners/scanner_result.dart';
 import 'package:fin_chart/models/settings/x_axis_settings.dart';
+import 'package:fin_chart/utils/calculations.dart';
 import 'package:fin_chart/utils/constants.dart';
 import 'package:flutter/material.dart';
-
 import 'models/settings/y_axis_settings.dart';
 
 class Chart extends StatefulWidget {
@@ -26,25 +29,31 @@ class Chart extends StatefulWidget {
   final Function(PlotRegion region)? onRegionSelect;
   final Function(Indicator indicator)? onIndicatorSelect;
   final Recipe? recipe;
+  final ChartType chartType;
+  final Function(ScannerResult?)? onScannerResultSelect;
 
-  const Chart(
-      {super.key,
-      required this.candles,
-      this.padding = const EdgeInsets.all(8),
-      this.dataFit = DataFit.adaptiveWidth,
-      this.onInteraction,
-      this.onLayerSelect,
-      this.onRegionSelect,
-      this.onIndicatorSelect,
-      this.yAxisSettings = const YAxisSettings(),
-      this.xAxisSettings = const XAxisSettings(),
-      this.recipe});
+  const Chart({
+    super.key,
+    required this.candles,
+    this.padding = const EdgeInsets.all(8),
+    this.dataFit = DataFit.adaptiveWidth,
+    this.onInteraction,
+    this.onLayerSelect,
+    this.onRegionSelect,
+    this.onIndicatorSelect,
+    this.yAxisSettings = const YAxisSettings(),
+    this.xAxisSettings = const XAxisSettings(),
+    this.recipe,
+    this.chartType = ChartType.candlestick,
+    this.onScannerResultSelect,
+  });
 
   factory Chart.from(
       {required GlobalKey key,
       required Recipe recipe,
       Function(Offset, Offset)? onInteraction,
       Function(PlotRegion region, Layer layer)? onLayerSelect,
+      Function(ScannerResult?)? onScannerResultSelect,
       final Function(PlotRegion region)? onRegionSelect,
       final Function(Indicator indicator)? onIndicatorSelect}) {
     return Chart(
@@ -59,6 +68,8 @@ class Chart extends StatefulWidget {
       yAxisSettings: recipe.chartSettings.yAxisSettings,
       xAxisSettings: recipe.chartSettings.xAxisSettings,
       recipe: recipe,
+      chartType: recipe.chartSettings.chartType,
+      onScannerResultSelect: onScannerResultSelect,
     );
   }
 
@@ -66,7 +77,8 @@ class Chart extends StatefulWidget {
   State<Chart> createState() => ChartState();
 }
 
-class ChartState extends State<Chart> with TickerProviderStateMixin {
+class ChartState extends State<Chart>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   double leftPos = 0;
   double topPos = 0;
   double rightPos = 0;
@@ -106,9 +118,21 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
   Offset layerToolBoxOffset = Offset.zero;
 
+  bool isUserInteracting = false;
+
+  FundamentalEvent? selectedEvent;
+
+  bool isWaitingForEventPosition = false;
+  double? eventSelectionPosition;
+
+  late ChartType chartType;
+
+  ScannerResult? _selectedScannerResult;
+
   @override
   void initState() {
     super.initState();
+    chartType = widget.chartType;
     if (widget.recipe != null) {
       _initializeFromFactory();
     } else {
@@ -117,22 +141,49 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     _initializeControllers();
   }
 
+  void setChartType(ChartType type) {
+    setState(() {
+      chartType = type;
+      // Update the chart type on the region itself
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          region.chartType = type;
+        }
+      }
+    });
+  }
+
   void _initializeDefault() {
     currentData.addAll(widget.candles);
     regions.add(MainPlotRegion(
       candles: currentData,
       yAxisSettings: widget.yAxisSettings!,
+      chartType: chartType,
+      // fundamentalEvents: fundamentalEvents,
     ));
   }
 
   void _initializeFromFactory() {
     Recipe recipe = widget.recipe!;
+    chartType = recipe.chartSettings.chartType;
+
+    (double, double) range = findMinMaxWithPercentage(recipe.data);
+
+    List<double> yValues = generateNiceAxisValues(range.$1, range.$2);
+
+    yMinValue = yValues.first;
+    yMaxValue = yValues.last;
 
     regions.add(MainPlotRegion(
-      id: recipe.chartSettings.mainPlotRegionId,
-      candles: currentData,
-      yAxisSettings: widget.yAxisSettings!,
-    ));
+        id: recipe.chartSettings.mainPlotRegionId,
+        candles: currentData,
+        yAxisSettings: widget.yAxisSettings!,
+        yMinValue: yMinValue,
+        yMaxValue: yMaxValue,
+        chartType: chartType));
+
+    (regions[0] as MainPlotRegion)
+        .updateFundamentalEvents(recipe.fundamentalEvents ?? []);
   }
 
   void _initializeControllers() {
@@ -162,6 +213,25 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  void removeSelectedScannerResult() {
+    setState(() {
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          for (var indicator in region.indicators) {
+            if (indicator is ScannerIndicator &&
+                indicator.selectedResult != null) {
+              indicator.removeSelectedResult();
+              indicator.updateData(currentData);
+              _selectedScannerResult = null;
+              widget.onScannerResultSelect?.call(null);
+              return;
+            }
+          }
+        }
+      }
+    });
+  }
+
   void addIndicator(Indicator indicator) {
     setState(() {
       if (indicator.displayMode == DisplayMode.panel) {
@@ -172,6 +242,10 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
         double multiplier = 1 - addRegionWeight;
 
         _updateRegionBounds(multiplier);
+
+        if (widget.recipe != null) {
+          indicator.calculateYValueRange(widget.recipe!.data);
+        }
 
         region.updateData(currentData);
 
@@ -189,8 +263,8 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
       } else if (indicator.displayMode == DisplayMode.main) {
         for (PlotRegion region in regions) {
           if (region is MainPlotRegion) {
-            indicator.updateData(currentData);
             region.indicators.add(indicator);
+            region.updateData(currentData);
           }
         }
       }
@@ -244,13 +318,50 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
-  void addData(List<ICandle> newData) {
+  void addData(List<ICandle> newData, {List<FundamentalEvent>? newEvents}) {
     setState(() {
       currentData.addAll(newData);
       for (int i = 0; i < regions.length; i++) {
         regions[i].updateData(currentData);
+        if (regions[i] is MainPlotRegion &&
+            newEvents != null &&
+            newEvents.isNotEmpty) {
+          (regions[i] as MainPlotRegion).updateFundamentalEvents(newEvents);
+        }
       }
     });
+  }
+
+  void addFundamentalEvent(FundamentalEvent event) {
+    setState(() {
+      for (int i = 0; i < regions.length; i++) {
+        if (regions[i] is MainPlotRegion) {
+          (regions[i] as MainPlotRegion).updateFundamentalEvents([event]);
+          break;
+        }
+      }
+      isWaitingForEventPosition = false;
+    });
+  }
+
+  Future<bool> addDataWithAnimation(
+      List<ICandle> newData, Duration durationPerCandle) async {
+    for (ICandle iCandle in newData) {
+      setState(() {
+        currentData.add(iCandle);
+        for (int i = 0; i < regions.length; i++) {
+          regions[i].updateData(currentData);
+        }
+      });
+      await Future.delayed(durationPerCandle).then((value) {
+        if (!isUserInteracting) {
+          setState(() {
+            xOffset = _getMaxLeftOffset();
+          });
+        }
+      });
+    }
+    return true;
   }
 
   void removeLayerById(String layerId) {
@@ -262,8 +373,17 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
+  void clearChart() {
+    setState(() {
+      for (PlotRegion region in regions) {
+        region.layers.clear();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
         padding: widget.padding,
         child: LayoutBuilder(builder: (context, constraints) {
@@ -277,6 +397,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                 height: constraints.maxHeight,
                 child: GestureDetector(
                   onTapDown: _onTapDown,
+                  onTapUp: _onTapUp,
                   onDoubleTap: _onDoubleTap,
                   onScaleStart: _onScaleStart,
                   onScaleEnd: _onScaleEnd,
@@ -284,18 +405,20 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                       _onScaleUpdate(details, constraints),
                   child: CustomPaint(
                     painter: ChartPainter(
-                        regions: regions,
-                        xAxisSettings: widget.xAxisSettings!,
-                        xOffset: xOffset,
-                        xStepWidth: xStepWidth,
-                        dataLength: currentData.length,
-                        leftPos: leftPos,
-                        topPos: topPos,
-                        rightPos: rightPos,
-                        bottomPos: bottomPos,
-                        data: currentData,
-                        selectedLayer: selectedLayer,
-                        animationValue: _animation.value),
+                      regions: regions,
+                      xAxisSettings: widget.xAxisSettings!,
+                      xOffset: xOffset,
+                      xStepWidth: xStepWidth,
+                      dataLength: currentData.length,
+                      leftPos: leftPos,
+                      topPos: topPos,
+                      rightPos: rightPos,
+                      bottomPos: bottomPos,
+                      data: currentData,
+                      selectedLayer: selectedLayer,
+                      animationValue: _animation.value,
+                      eventSelectionPosition: eventSelectionPosition,
+                    ),
                     size: Size(constraints.maxWidth, constraints.maxHeight),
                   ),
                 ),
@@ -312,6 +435,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
                     selectedIndicator?.showIndicatorSettings(
                         context: context,
                         onUpdate: (indicator) {
+                          indicator.updateData(currentData);
                           setState(() {
                             selectedIndicator = indicator;
                           });
@@ -388,10 +512,10 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     double lastCandlePosition =
         xStepWidth / 2 + (currentData.length - 1) * xStepWidth;
 
-    if (lastCandlePosition < (rightPos - leftPos) / 2) {
+    if (lastCandlePosition < (rightPos - leftPos) * 0.8) {
       return 0;
     } else {
-      return -lastCandlePosition + (rightPos - leftPos) / 2;
+      return -lastCandlePosition + (rightPos - leftPos) * 0.8;
     }
   }
 
@@ -417,6 +541,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   }
 
   _recalculate(BoxConstraints constraints) {
+    double oldHeight = bottomPos - topPos;
     for (PlotRegion region in regions) {
       if (region.yLabelSize.width > yLabelWidth) {
         yLabelWidth = region.yLabelSize.width;
@@ -467,7 +592,14 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
 
     isInit = false;
 
-    _updateRegionBounds(1);
+    double newHeight = bottomPos - topPos;
+
+    if (oldHeight != 0) {
+      double multiplier = newHeight / oldHeight;
+      _updateRegionBounds(multiplier);
+    } else {
+      _updateRegionBounds(1);
+    }
   }
 
   _handleSwipeEnd(ScaleEndDetails details) {
@@ -493,54 +625,91 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
-  _onTapDown(TapDownDetails details) {
+  void _onTapDown(TapDownDetails details) {
     setState(() {
-      selectedIndicator = null;
-      for (PlotRegion region in regions) {
-        if (selectedRegionForResize.length < 2) {
-          if (region.isRegionReadyForResize(details.localPosition) != null) {
-            selectedRegionForResize.add(region);
-          }
-        }
-      }
+      isUserInteracting = true;
 
-      if (selectedRegionForResize.length == 2) {
-        selectedLayer?.isSelected = false;
-        selectedLayer = null;
-        return;
-      }
-
+      // --- Deselect everything first ---
+      _selectedScannerResult = null;
+      widget.onScannerResultSelect?.call(null);
+      selectedLayer?.isSelected = false;
       selectedLayer = null;
-      selectedRegion = null;
-      for (PlotRegion region in regions) {
-        selectedRegion ??= region.regionSelect(details.localPosition);
-
-        if (selectedRegion != null) {
-          widget.onRegionSelect?.call(selectedRegion!);
-          if (isLayerGettingAdded) {
-            widget.onInteraction?.call(
-                selectedRegion!.getRealCoordinates(details.localPosition),
-                details.localPosition);
-          } else {
-            for (Layer layer in region.layers) {
-              if (selectedLayer == null) {
-                selectedLayer = layer.onTapDown(details: details);
-                if (selectedLayer != null && selectedRegion != null) {
-                  widget.onLayerSelect?.call(selectedRegion!, selectedLayer!);
-                }
-              } else {
-                layer.isSelected = false;
-              }
+      selectedEvent = null;
+      for (var region in regions) {
+        if (region is MainPlotRegion) {
+          for (var event in region.fundamentalEvents) {
+            event.isSelected = false;
+          }
+          // Also deselect scanner results in all indicators
+          for (var indicator in region.indicators) {
+            if (indicator is ScannerIndicator) {
+              indicator.selectedResult?.isSelected = false;
+              indicator.selectedResult = null;
             }
           }
         }
       }
+
+      // --- Hit test regions from top to bottom ---
+      for (PlotRegion region in regions) {
+        if (region.isPointInside(details.localPosition)) {
+          // Priority 1: Check for indicator hits (like scanner results)
+          region.handleIndicatorTap(details.localPosition, details);
+
+          if (region is MainPlotRegion) {
+            for (var indicator in region.indicators) {
+              if (indicator is ScannerIndicator &&
+                  indicator.selectedResult != null) {
+                _selectedScannerResult = indicator.selectedResult;
+                widget.onScannerResultSelect?.call(_selectedScannerResult);
+                return; // Stop processing tap, a scanner result was selected
+              }
+            }
+          }
+
+          // Priority 2: Check for layer hits
+          for (Layer layer in region.layers) {
+            selectedLayer = layer.onTapDown(details: details);
+            if (selectedLayer != null) {
+              widget.onLayerSelect?.call(region, selectedLayer!);
+              return; // Stop processing tap, a layer was selected
+            }
+          }
+
+          // Priority 3: Check for fundamental event hits
+          if (region is MainPlotRegion) {
+            region.handleEventTap(details.localPosition);
+            if (region.selectedEvent != null) {
+              selectedEvent = region.selectedEvent;
+              // Add a callback for EditorPage if needed
+              return; // Stop processing tap, an event was selected
+            }
+          }
+
+          // If nothing inside the region was hit, it's a general interaction
+          selectedRegion = region;
+          widget.onRegionSelect?.call(selectedRegion!);
+          if (isLayerGettingAdded || isWaitingForEventPosition) {
+            widget.onInteraction?.call(
+                selectedRegion!.getRealCoordinates(details.localPosition),
+                details.localPosition);
+          }
+          return;
+        }
+      }
+    });
+  }
+
+  _onTapUp(TapUpDetails details) {
+    setState(() {
+      isUserInteracting = false;
     });
   }
 
   _onScaleStart(ScaleStartDetails details) {
     setState(() {
       _isAnimating = false;
+      isUserInteracting = true;
       if (details.pointerCount == 2) {
         previousHorizontalScale = horizontalScale;
         lastFocalPoint = details.focalPoint;
@@ -551,6 +720,7 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
   _onScaleEnd(ScaleEndDetails details) {
     setState(() {
       lastFocalPoint = null;
+      isUserInteracting = false;
       _handleSwipeEnd(details);
       selectedRegionForResize.clear();
     });
@@ -615,13 +785,16 @@ class ChartState extends State<Chart> with TickerProviderStateMixin {
     });
   }
 
-  /// Convert chart state to JSON
   ChartSettings getChartSettings() {
     return ChartSettings(
         dataFit: widget.dataFit,
         yAxisSettings: widget.yAxisSettings!,
         xAxisSettings: widget.xAxisSettings!,
+        chartType: chartType,
         mainPlotRegionId:
             regions.firstWhere((region) => region is MainPlotRegion).id);
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

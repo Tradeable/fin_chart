@@ -39,6 +39,8 @@ abstract class Layer with RegionProp {
         return VerticalLine.fromJson(json: json);
       case LayerType.parallelChannel:
         return ParallelChannel.fromJson(json: json);
+      case LayerType.arrowTextPointer:
+        return ArrowTextPointer.fromJson(json: json);
       default:
         throw UnimplementedError();
     }

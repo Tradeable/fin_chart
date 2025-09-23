@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 enum _ScannerGroup {
   candlestick,
   oscillator,
+  pivotPoints,
+  highLowScanners,
   priceAboveSMA,
   priceBelowSMA,
   priceAboveEMA,
@@ -12,11 +14,13 @@ enum _ScannerGroup {
 
 const Map<_ScannerGroup, String> _scannerGroupNames = {
   _ScannerGroup.candlestick: 'Candlestick Patterns',
-  _ScannerGroup.oscillator: 'Oscillator Patterns',
+  _ScannerGroup.oscillator: 'Technical Indicators',
   _ScannerGroup.priceAboveSMA: 'Price Above SMA',
   _ScannerGroup.priceBelowSMA: 'Price Below SMA',
   _ScannerGroup.priceAboveEMA: 'Price Above EMA',
   _ScannerGroup.priceBelowEMA: 'Price Below EMA',
+  _ScannerGroup.pivotPoints: 'Pivot Levels',
+  _ScannerGroup.highLowScanners: 'Price and Volume',
 };
 
 const List<int> _smaPeriods = [5, 10, 20, 30, 50, 100, 150, 200];
@@ -24,11 +28,35 @@ const List<int> _emaPeriods = [5, 10, 12, 20, 26, 50, 100, 200];
 
 _ScannerGroup _getCategoryForType(ScannerType type) {
   String name = type.name;
+
+  if (RegExp(r'^priceAbove\d+SMA$').hasMatch(name)) {
+    return _ScannerGroup.priceAboveSMA;
+  }
+  if (RegExp(r'^priceBelow\d+SMA$').hasMatch(name)) {
+    return _ScannerGroup.priceBelowSMA;
+  }
+  if (RegExp(r'^priceAbove\d+EMA$').hasMatch(name)) {
+    return _ScannerGroup.priceAboveEMA;
+  }
+  if (RegExp(r'^priceBelow\d+EMA$').hasMatch(name)) {
+    return _ScannerGroup.priceBelowEMA;
+  }
+
   if (name.startsWith('priceAboveSMA')) return _ScannerGroup.priceAboveSMA;
   if (name.startsWith('priceBelowSMA')) return _ScannerGroup.priceBelowSMA;
   if (name.startsWith('priceAboveEMA')) return _ScannerGroup.priceAboveEMA;
   if (name.startsWith('priceBelowEMA')) return _ScannerGroup.priceBelowEMA;
   if (name.startsWith('mfi')) return _ScannerGroup.oscillator;
+  if (name.startsWith('dual')) return _ScannerGroup.oscillator;
+  if (name.startsWith('macd')) return _ScannerGroup.oscillator;
+  if (name.startsWith('rsiB')) return _ScannerGroup.oscillator;
+  if (name.startsWith('rocO')) return _ScannerGroup.oscillator;
+  if (name.startsWith('weakeningTechnicals')) return _ScannerGroup.oscillator;
+  if (name.startsWith('bollingerBand')) return _ScannerGroup.oscillator;
+  if (name.startsWith('goldenCrossover')) return _ScannerGroup.oscillator;
+  if (name.startsWith('deathCrossover')) return _ScannerGroup.oscillator;
+  if (name.startsWith('pivot')) return _ScannerGroup.pivotPoints;
+  if (name.contains('Week')) return _ScannerGroup.highLowScanners;
   return _ScannerGroup.candlestick;
 }
 
@@ -80,7 +108,9 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             if (group == _ScannerGroup.candlestick ||
-                group == _ScannerGroup.oscillator) {
+                group == _ScannerGroup.oscillator ||
+                group == _ScannerGroup.pivotPoints ||
+                group == _ScannerGroup.highLowScanners) {
               setState(() {
                 _selectedGroup = group;
               });
@@ -138,6 +168,12 @@ class _ScannerSelectionDialogState extends State<ScannerSelectionDialog> {
           break;
         case _ScannerGroup.priceBelowEMA:
           enumName = 'priceBelow${period}EMA';
+          break;
+        case _ScannerGroup.pivotPoints:
+          enumName = 'pivotPoint${period}Breakout';
+          break;
+        case _ScannerGroup.highLowScanners:
+          enumName = '52WeekHighLow';
           break;
         case _ScannerGroup.candlestick:
         case _ScannerGroup.oscillator:

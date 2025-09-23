@@ -25,12 +25,55 @@ enum ScannerType {
   darkCloudCover,
   hangingMan,
   bullishKicker,
+  bearishKicker,
   morningStar,
   dragonflyDoji,
+  gravestoneDoji,
+  tweezerBottom,
+  tweezerTop,
+  nr4,
+  nr7,
+  strongClose,
+  weakClose,
+  risingWindow,
+  fallingWindow,
+  marketStructureLow,
+  marketStructureHigh,
+  goldenCrossover,
+  deathCrossover,
 
   // Oscillator Scanners
   mfiOverbought,
   mfiOversold,
+  dualOverboughtRsiMfi,
+  dualOversoldRsiMfi,
+  macdCrossAboveZero,
+  macdCrossBelowZero,
+  macdCrossAboveSignal,
+  macdCrossBelowSignal,
+  rsiBullish,
+  rsiBearish,
+  rocOversold,
+  rocOverbought,
+  weakeningTechnicals,
+
+  // Bollinger Band Scanners
+  bollingerBandBreakoutBullish,
+  bollingerBandBreakoutBearish,
+
+  // Pivot Point Breakouts
+  pivotPointR1Breakout,
+  pivotPointR2Breakout,
+  pivotPointR3Breakout,
+  pivotPointS1Breakdown,
+  pivotPointS2Breakdown,
+  pivotPointS3Breakdown,
+
+  // Price and Volume
+  recoveryFrom52WeekLow,
+  recoveryFromWeekLow,
+  fallFrom52WeekHigh,
+  fallFromWeekHigh,
 
   // SMA Price Above
   priceAbove5SMA,

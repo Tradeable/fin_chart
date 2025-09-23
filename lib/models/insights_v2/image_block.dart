@@ -22,6 +22,6 @@ class ImageBlock extends ContentBlock {
       id: json['id'],
       url: json['url'],
       alt: json['alt'],
-      height: json['height'].toDouble(),
-      width: json['width'].toDouble());
+      height: json['height']?.toDouble(),
+      width: json['width']?.toDouble());
 }

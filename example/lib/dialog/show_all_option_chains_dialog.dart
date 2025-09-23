@@ -135,109 +135,115 @@ Future<HighlightCorrectOptionChainValueTask?> showAllOptionChains({
 
   if (selectedOptionChain == null) return null;
 
-  final selectedRowIndex = await showDialog<dynamic>(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      final previewKey = GlobalKey<PreviewScreenState>();
+  final selectedRowIndex = context.mounted
+      ? await showDialog<dynamic>(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            final previewKey = GlobalKey<PreviewScreenState>();
 
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Select Row in ${selectedOptionChain.optionChainId}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: PreviewScreen(
-                    key: previewKey,
-                    previewData: PreviewData(
-                        optionData: selectedOptionChain.data,
-                        columns: selectedOptionChain.columns,
-                        visibility: selectedOptionChain.visibility,
-                        settings: (selectedOptionChain.settings ?? OptionChainSettings())
-                          ..isBuySellVisible = false,
-                        isEditorMode: false,
-                        maxSelectableRows: getMaxSelectableRows(
-                            selectedOptionChain.optionChainId)),
-                  ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(dialogContext),
-                      child: const Text('Cancel'),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Select Row in ${selectedOptionChain.optionChainId}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        final selectionMode =
-                            selectedOptionChain.settings?.selectionMode ??
-                                SelectionMode.entireRow;
-                        
-                        if (selectionMode == SelectionMode.bucketRow) {
-                          final bucketRows =
-                              previewKey.currentState?.getBucketRows();
-                          if (bucketRows != null && bucketRows.isNotEmpty) {
-                            Navigator.pop(dialogContext, bucketRows);
-                          } else {
-                            ScaffoldMessenger.of(dialogContext).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Please select at least one row')),
-                            );
-                          }
-                        } else {
-                          final selectedIndex =
-                              previewKey.currentState?.getCorrectRowIndex();
-                          if (selectedIndex != null &&
-                              selectedIndex.isNotEmpty) {
-                            Navigator.pop(dialogContext, selectedIndex);
-                          } else {
-                            ScaffoldMessenger.of(dialogContext).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Please select at least one row')),
-                            );
-                          }
-                        }
-                      },
-                      child: const Text('Select'),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: PreviewScreen(
+                          key: previewKey,
+                          previewData: PreviewData(
+                              optionData: selectedOptionChain.data,
+                              columns: selectedOptionChain.columns,
+                              visibility: selectedOptionChain.visibility,
+                              settings: (selectedOptionChain.settings ??
+                                  OptionChainSettings())
+                                ..isBuySellVisible = false,
+                              isEditorMode: false,
+                              maxSelectableRows: getMaxSelectableRows(
+                                  selectedOptionChain.optionChainId)),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final selectionMode =
+                                  selectedOptionChain.settings?.selectionMode ??
+                                      SelectionMode.entireRow;
+
+                              if (selectionMode == SelectionMode.bucketRow) {
+                                final bucketRows =
+                                    previewKey.currentState?.getBucketRows();
+                                if (bucketRows != null &&
+                                    bucketRows.isNotEmpty) {
+                                  Navigator.pop(dialogContext, bucketRows);
+                                } else {
+                                  ScaffoldMessenger.of(dialogContext)
+                                      .showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Please select at least one row')),
+                                  );
+                                }
+                              } else {
+                                final selectedIndex = previewKey.currentState
+                                    ?.getCorrectRowIndex();
+                                if (selectedIndex != null &&
+                                    selectedIndex.isNotEmpty) {
+                                  Navigator.pop(dialogContext, selectedIndex);
+                                } else {
+                                  ScaffoldMessenger.of(dialogContext)
+                                      .showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Please select at least one row')),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text('Select'),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
+            );
+          },
+        )
+      : null;
 
   if (selectedRowIndex != null) {
     final selectionMode =
         selectedOptionChain.settings?.selectionMode ?? SelectionMode.entireRow;
-    
+
     if (selectionMode == SelectionMode.bucketRow) {
       final bucketRows = selectedRowIndex as List<OptionLeg>;
       return HighlightCorrectOptionChainValueTask(

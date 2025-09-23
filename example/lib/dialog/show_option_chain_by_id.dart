@@ -189,52 +189,54 @@ Future<ChooseCorrectOptionValueChainTask?> showOptionChainById({
   if (selectedTask == null) return null;
 
   // Show dialog to get maxSelectableRows input
-  final maxRows = await showDialog<int>(
-    context: context,
-    builder: (BuildContext dialogContext) {
-      final controller = TextEditingController(
-        text: initialTask?.maxSelectableRows?.toString() ?? '',
-      );
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Enter Maximum Selectable Rows'),
-            content: TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Maximum Selectable Rows',
-                hintText: 'Enter a number',
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (!context.mounted) return;
-                  final rows = int.tryParse(controller.text);
-                  if (rows != null && rows > 0) {
-                    Navigator.pop(dialogContext, rows);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Please enter a valid number greater than 0'),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
+  final maxRows = context.mounted
+      ? await showDialog<int>(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            final controller = TextEditingController(
+              text: initialTask?.maxSelectableRows?.toString() ?? '',
+            );
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: const Text('Enter Maximum Selectable Rows'),
+                  content: TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Maximum Selectable Rows',
+                      hintText: 'Enter a number',
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        if (!context.mounted) return;
+                        final rows = int.tryParse(controller.text);
+                        if (rows != null && rows > 0) {
+                          Navigator.pop(dialogContext, rows);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Please enter a valid number greater than 0'),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        )
+      : null;
 
   if (maxRows == null || !context.mounted) return null;
 

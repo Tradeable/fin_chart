@@ -1412,8 +1412,8 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void editPayoffGraph(ShowPayOffGraphTask task) async {
-    print("1${task.id}");
-    await showOrEditPayOffGraphDialog(context: context, task: task).then((data) {
+    await showOrEditPayOffGraphDialog(context: context, task: task)
+        .then((data) {
       setState(() {
         if (data != null) {
           task.quantity = data.quantity;
@@ -1423,7 +1423,6 @@ class _EditorPageState extends State<EditorPage> {
         }
       });
     });
-    print("2${task.id}");
   }
 
   void editMoveToTab(MoveTabTask task) async {
@@ -1653,11 +1652,14 @@ class _EditorPageState extends State<EditorPage> {
       tableTaskId = selected;
     }
     final tableTask = tableTasks.firstWhere((t) => t.id == tableTaskId);
-    final result = await showHighlightTableRowDialog(
-      context: context,
-      tableTaskId: tableTaskId,
-      tables: tableTask.tables.tables,
-    );
+    final result = mounted
+        ? await showHighlightTableRowDialog(
+            context: context,
+            tableTaskId: tableTaskId,
+            tables: tableTask.tables.tables,
+          )
+        : null;
+
     if (result != null) {
       final selectedRows = result.map((k, v) => MapEntry(k, v.toList()));
       _updateTaskList(HighlightTableRowTask(

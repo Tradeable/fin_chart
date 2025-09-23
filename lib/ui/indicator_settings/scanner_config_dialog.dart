@@ -69,9 +69,9 @@ class _ScannerConfigDialogState extends State<ScannerConfigDialog> {
             false;
     final isCandlestickScanner =
         selectedType != null && _candlestickScanners.contains(selectedType);
-    final displayableResults = widget.indicator.activeScanResults
-        .where((result) => !removedIndices.contains(result.targetIndex))
-        .toList();
+    // final displayableResults = widget.indicator.activeScanResults
+    //     .where((result) => !removedIndices.contains(result.targetIndex))
+    //     .toList();
     return AlertDialog(
       title: Text(
           'Configure "${widget.indicator.selectedScannerType?.displayName}"'),

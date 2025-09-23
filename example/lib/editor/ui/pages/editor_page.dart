@@ -1659,7 +1659,6 @@ class _EditorPageState extends State<EditorPage> {
             tables: tableTask.tables.tables,
           )
         : null;
-
     if (result != null) {
       final selectedRows = result.map((k, v) => MapEntry(k, v.toList()));
       _updateTaskList(HighlightTableRowTask(

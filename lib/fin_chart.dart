@@ -32,3 +32,4 @@ export 'package:fin_chart/models/tasks/show_sidenav.task.dart';
 export 'package:fin_chart/models/tasks/edit_option_row_task.dart';
 export 'package:fin_chart/models/tasks/set_maxselectable_rows.task.dart';
 export 'package:fin_chart/models/tasks/toggle_buysell_visibility.task.dart';
+export 'package:fin_chart/models/tasks/select_rows.task.dart';

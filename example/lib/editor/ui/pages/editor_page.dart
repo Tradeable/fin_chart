@@ -4,6 +4,7 @@ import 'package:example/dialog/choose_bucket_rows_dialog.dart';
 import 'package:example/dialog/edit_added_tab_dialog.dart';
 import 'package:example/dialog/edit_move_tab_dialog.dart';
 import 'package:example/dialog/pay_off_graph_dialog.dart';
+import 'package:example/dialog/select_rows_dialog.dart';
 import 'package:example/dialog/set_maxselectable_rows_dialog.dart';
 import 'package:example/dialog/show_all_added_tabs_dialog.dart';
 import 'package:example/dialog/show_all_option_chains_dialog.dart';
@@ -278,6 +279,7 @@ class _EditorPageState extends State<EditorPage> {
           case TaskType.editColumnVisibility:
           case TaskType.setMaxSelectableRows:
           case TaskType.toggleBuySellVisibility:
+          case TaskType.selectRows:
             break;
           case TaskType.addData:
             VerticalLine layer = VerticalLine.fromRecipe(
@@ -613,6 +615,9 @@ class _EditorPageState extends State<EditorPage> {
         case TaskType.toggleBuySellVisibility:
           showBuySellToggleDialog();
           break;
+        case TaskType.selectRows:
+          showSelectRowsDialog();
+          break;
       }
       if (pos >= 0 && pos <= tasks.length) {
         insertPosition = pos;
@@ -700,6 +705,9 @@ class _EditorPageState extends State<EditorPage> {
         break;
       case TaskType.toggleBuySellVisibility:
         editBuySellToggleDialog(task as ToggleBuySellVisibilityTask);
+        break;
+      case TaskType.selectRows:
+        editSelectRowsDialog(task as SelectRowTask);
         break;
     }
   }
@@ -1582,6 +1590,28 @@ class _EditorPageState extends State<EditorPage> {
         task.optionChainId = data.optionChainId;
         task.rowIndex = data.rowIndex;
         task.updatedRow = data.updatedRow;
+      });
+    }
+  }
+
+  void showSelectRowsDialog() async {
+    final editTask = await showSelectRowDialog(context: context, tasks: tasks);
+    if (editTask != null) {
+      _updateTaskList(editTask);
+    }
+  }
+
+  Future<void> editSelectRowsDialog(SelectRowTask task) async {
+    final taskIndex = tasks.indexOf(task);
+    if (taskIndex == -1) return;
+
+    final data = await showSelectRowDialog(
+        context: context, tasks: tasks, initialTask: task);
+
+    if (data != null) {
+      setState(() {
+        task.optionChainId = data.optionChainId;
+        task.selectedRowIndexes = data.selectedRowIndexes;
       });
     }
   }

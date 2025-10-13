@@ -56,6 +56,7 @@ class _ChartDemoState extends State<ChartDemo> {
   bool isSideNavVisible = false;
   Map<String, String?> sideNavSelectedDesc = {};
   String? expandedSideNavId;
+  Map<String, List<int>> optionChainSelectedRows = {};
 
   @override
   void initState() {
@@ -516,6 +517,9 @@ class _ChartDemoState extends State<ChartDemo> {
         }
         onTaskFinish();
         break;
+      case TaskType.selectRows:
+        setState(() {});
+        break;
     }
   }
 
@@ -616,7 +620,14 @@ class _ChartDemoState extends State<ChartDemo> {
                                   key: previewScreenKeys[taskId] ??
                                       _previewScreenKey,
                                   task: optionChainTask,
-                                  isEditorMode: false);
+                                  isEditorMode: false,
+                                  onSelectionChanged:
+                                      (List<int> selectedRowIndexes, _) {
+                                    setState(() {
+                                      optionChainSelectedRows[optionChainTask
+                                          .optionChainId] = selectedRowIndexes;
+                                    });
+                                  });
                             case "payoff":
                               final taskId = tab["taskId"]!;
                               final payoffTask = payoffGraphTasks.firstWhere(
@@ -800,6 +811,7 @@ class _ChartDemoState extends State<ChartDemo> {
           ],
         );
       case TaskType.waitTask:
+      case TaskType.selectRows:
         return ElevatedButton(
             onPressed: () {
               onTaskFinish();

@@ -1,7 +1,6 @@
+import 'package:fin_chart/fin_chart.dart';
 import 'package:fin_chart/models/tasks/create_option_chain.task.dart';
 import 'package:fin_chart/models/tasks/edit_column_visibility.task.dart';
-import 'package:fin_chart/models/tasks/edit_option_row_task.dart';
-import 'package:fin_chart/models/tasks/set_maxselectable_rows.task.dart';
 import 'package:fin_chart/option_chain/models/option_data.dart';
 import 'package:fin_chart/option_chain/models/column_config.dart';
 import 'package:fin_chart/option_chain/models/option_chain_settings.dart';
@@ -21,6 +20,7 @@ class OptionChainState {
     List<OptionData>? data,
     List<ColumnConfig>? columns,
     OptionChainSettings? settings,
+    List<int>? selectedRows,
   }) {
     return OptionChainState(
       data: data ?? this.data,

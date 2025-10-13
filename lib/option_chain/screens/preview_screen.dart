@@ -10,12 +10,14 @@ class PreviewScreen extends StatefulWidget {
   final PreviewData previewData;
   final Function(int rowIndex, bool isCallSide)? onBuySellSelected;
   final void Function(int rowIndex)? onRowEditRequested;
+  final void Function(List<int> selectedRowIndices, List<OptionLeg>? bucketRows)? onSelectionChanged;
 
   const PreviewScreen({
     super.key,
     required this.previewData,
     this.onBuySellSelected,
     this.onRowEditRequested,
+    this.onSelectionChanged
   });
 
   factory PreviewScreen.from({
@@ -27,6 +29,7 @@ class PreviewScreen extends StatefulWidget {
     required bool isEditorMode,
     int? maxSelectableRows,
     required CreateOptionChainTask task,
+    Function(List<int> selectedRowIndices, List<OptionLeg>? bucketRows)? onSelectionChanged
   }) {
     return PreviewScreen(
       key: key,
@@ -44,6 +47,7 @@ class PreviewScreen extends StatefulWidget {
       ),
       onBuySellSelected: onBuySellSelected,
       onRowEditRequested: onRowEditRequested,
+      onSelectionChanged: onSelectionChanged,
     );
   }
 
@@ -277,6 +281,10 @@ class PreviewScreenState extends State<PreviewScreen> {
       return bucketRows;
     }
     return null;
+  }
+
+  void _notifySelectionChanged() {
+    widget.onSelectionChanged?.call(userSelectedIndex, getBucketRows());
   }
 
   @override
@@ -607,6 +615,7 @@ class PreviewScreenState extends State<PreviewScreen> {
         }
       }
       _isChecked = false;
+      _notifySelectionChanged();
     });
   }
 
@@ -744,6 +753,7 @@ class PreviewScreenState extends State<PreviewScreen> {
         }
       }
       _isChecked = false;
+      _notifySelectionChanged();
     });
   }
 

@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.5.3
   markdown_toolbar: ^0.5.0
   web: ^1.1.1
 

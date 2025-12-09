@@ -1,6 +1,9 @@
+import 'dart:js_interop';
+
 import 'package:example/editor/ui/pages/editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web/web.dart' as web;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -18,6 +21,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _checkForSavedSession();
+    _setupPostMessageListener();
   }
 
   Future<void> _checkForSavedSession() async {
@@ -37,6 +41,32 @@ class _HomeState extends State<Home> {
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => EditorPage(recipeStr: savedRecipe)));
     }
+  }
+
+  void _setupPostMessageListener() {
+    web.window.onMessage.listen((event) {
+      if (event.data == null) return;
+
+      final data = event.data?.dartify();
+      if (data is! Map) {
+        print("Received non-map message: $data");
+        return;
+      }
+
+      final channel = data['type'];
+      final payload = data['payload'];
+
+      switch (channel) {
+        case "LOAD_RECIPE":
+          if (payload != null && mounted) {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => EditorPage(recipeStr: payload)));
+          }
+          break;
+        default:
+          print("Unhandled channel: $channel");
+      }
+    });
   }
 
   @override

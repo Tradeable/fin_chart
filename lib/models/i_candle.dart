@@ -26,10 +26,10 @@ class ICandle {
   ICandle.fromJson(Map<String, dynamic> candle) {
     id = candle['id'];
     date = DateTime.parse(candle['date']);
-    open = candle['open'];
-    high = candle['high'];
-    low = candle['low'];
-    close = candle['close'];
+    open = candle['open'].toDouble();
+    high = candle['high'].toDouble();
+    low = candle['low'].toDouble();
+    close = candle['close'].toDouble();
     volume = candle['volume'].toDouble();
     promptText = candle['promptText'];
     state = (candle['state'] as String).toCandleState();
